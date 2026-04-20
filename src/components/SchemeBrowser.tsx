@@ -1,0 +1,108 @@
+'use client';
+
+import { useDeferredValue, useMemo, useState } from 'react';
+
+import type { Scheme, SchemeCategory } from '@/types';
+
+import {
+  SchemeCategorySidebar,
+  type CategoryOption,
+} from './SchemeCategorySidebar';
+import { SchemeRow } from './SchemeRow';
+
+interface SchemeBrowserProps {
+  readonly schemes: ReadonlyArray<Scheme>;
+}
+
+type SchemeFilter = 'All' | SchemeCategory;
+
+export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
+  const [selectedCategory, setSelectedCategory] = useState<SchemeFilter>('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  const categories = useMemo<ReadonlyArray<CategoryOption>>(() => {
+    const counts = schemes.reduce<Map<SchemeCategory, number>>((accumulator, scheme) => {
+      const currentCount = accumulator.get(scheme.category) ?? 0;
+      accumulator.set(scheme.category, currentCount + 1);
+      return accumulator;
+    }, new Map<SchemeCategory, number>());
+
+    return [
+      { label: 'All', count: schemes.length },
+      ...Array.from(counts.entries())
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([label, count]) => ({ label, count })),
+    ];
+  }, [schemes]);
+
+  const filteredSchemes = useMemo(() => {
+    const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
+
+    return schemes.filter((scheme) => {
+      const matchesCategory =
+        selectedCategory === 'All' || scheme.category === selectedCategory;
+      const matchesSearch =
+        normalizedSearch.length === 0 ||
+        scheme.name.toLowerCase().includes(normalizedSearch) ||
+          scheme.shortDescription.toLowerCase().includes(normalizedSearch) ||
+          scheme.category.toLowerCase().includes(normalizedSearch);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [deferredSearchTerm, schemes, selectedCategory]);
+
+  return (
+    <div className="grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <SchemeCategorySidebar
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+
+      <section>
+        <div className="flex flex-col gap-4 border-b border-border pb-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-text-tertiary">
+              Find Schemes
+            </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Browse the live registry. Easy BUD is clickable; future schemes stay visible as placeholders.
+            </p>
+          </div>
+
+          <label className="flex w-full items-center gap-3 rounded-lg border border-border bg-surface/70 px-4 py-3 md:max-w-md">
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-text-tertiary">
+              Search
+            </span>
+            <input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search all schemes"
+              className="w-full bg-transparent text-sm text-text-primary outline-none placeholder:text-text-tertiary"
+            />
+          </label>
+        </div>
+
+        <div className="mt-5 overflow-hidden rounded-lg border border-border bg-surface/70">
+          <div className="hidden border-b border-border px-3 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-text-tertiary md:grid md:grid-cols-[60px_minmax(0,1fr)_150px_140px]">
+            <div>#</div>
+            <div>Funding Schemes</div>
+            <div>Funding Cap</div>
+            <div>Status</div>
+          </div>
+
+          {filteredSchemes.map((scheme, index) => (
+            <SchemeRow key={scheme.id} index={index} scheme={scheme} />
+          ))}
+
+          {filteredSchemes.length === 0 ? (
+            <div className="px-6 py-12 text-center text-sm text-text-secondary">
+              No schemes match that search yet.
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  );
+}
