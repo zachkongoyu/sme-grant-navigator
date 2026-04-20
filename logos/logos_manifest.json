@@ -1,0 +1,306 @@
+{
+  "generated": "2026-04-20",
+  "source": "Government Funding Schemes at a Glance (SMELink)",
+  "total_orgs": 28,
+  "logos": [
+    {
+      "org": "Hong Kong Productivity Council",
+      "short_name": "HKPC",
+      "filename": "hkpc.svg",
+      "logo_url": "https://www.hkpc.org/themes/custom/hkpc/assetsv2/img/hkpc_logo.svg",
+      "website": "https://www.hkpc.org",
+      "status": "found",
+      "schemes": [1, 2, 12, 14, 32, 38, 77]
+    },
+    {
+      "org": "Agriculture, Fisheries and Conservation Department",
+      "short_name": "AFCD",
+      "filename": "afcd.gif",
+      "logo_url": "https://www.afcd.gov.hk/images/logo_afcd_chi.gif",
+      "website": "https://www.afcd.gov.hk",
+      "status": "found_chinese_only",
+      "note": "Only Chinese-language logo found; English text version may require manual download",
+      "schemes": [4, 5, 15, 16, 68, 69, 70, 71, 74, 75]
+    },
+    {
+      "org": "Environmental Protection Department",
+      "short_name": "EPD",
+      "filename": "epd.png",
+      "logo_url": null,
+      "website": "https://www.epd.gov.hk",
+      "status": "not_found",
+      "note": "Site returned minimal content. Download manually from https://www.epd.gov.hk",
+      "schemes": [3]
+    },
+    {
+      "org": "Hong Kong Monetary Authority",
+      "short_name": "HKMA",
+      "filename": "hkma.jpg",
+      "logo_url": "https://www.hkma.gov.hk/statics/assets/img/logo.jpg",
+      "website": "https://www.hkma.gov.hk",
+      "status": "found",
+      "schemes": [6, 11]
+    },
+    {
+      "org": "Marine Department",
+      "short_name": "MarineDept",
+      "filename": "marine_dept.png",
+      "logo_url": null,
+      "website": "https://www.mardep.gov.hk",
+      "status": "not_found",
+      "note": "Site returned minimal content. Download manually from https://www.mardep.gov.hk",
+      "schemes": [7, 8]
+    },
+    {
+      "org": "Environment and Ecology Bureau",
+      "short_name": "EEB",
+      "filename": "eeb.png",
+      "logo_url": null,
+      "website": "https://www.eeb.gov.hk",
+      "status": "not_found",
+      "note": "Site returned minimal content. Download manually from https://www.eeb.gov.hk",
+      "schemes": [9, 10]
+    },
+    {
+      "org": "Trade and Industry Department",
+      "short_name": "TID",
+      "filename": "tid.png",
+      "logo_url": null,
+      "website": "https://www.tid.gov.hk",
+      "status": "not_found",
+      "note": "Site returned minimal content. Download manually from https://www.tid.gov.hk",
+      "schemes": [17, 20]
+    },
+    {
+      "org": "HKMC Insurance Limited",
+      "short_name": "HKMC",
+      "filename": "hkmc.png",
+      "logo_url": "https://www.hkmc.com.hk/images/logo.png",
+      "website": "https://www.hkmc.com.hk",
+      "status": "found",
+      "schemes": [18, 19]
+    },
+    {
+      "org": "Innovation and Technology Commission",
+      "short_name": "ITC",
+      "filename": "itc.png",
+      "logo_url": null,
+      "website": "https://www.itc.gov.hk",
+      "status": "blocked",
+      "note": "Site returned 403. Download logo manually from https://www.itc.gov.hk or https://www.itf.gov.hk",
+      "schemes": [23, 24, 25, 26, 27, 28, 29, 30, 31, 34, 35, 36, 37]
+    },
+    {
+      "org": "Vocational Training Council",
+      "short_name": "VTC",
+      "filename": "vtc.svg",
+      "logo_url": "https://www.vtc.edu.hk/vtc_image/images/navigation/vtc_logo_en.svg",
+      "website": "https://www.vtc.edu.hk",
+      "status": "found",
+      "schemes": [33]
+    },
+    {
+      "org": "Cyberport",
+      "short_name": "Cyberport",
+      "filename": "cyberport.png",
+      "logo_url": null,
+      "website": "https://www.cyberport.hk",
+      "status": "blocked",
+      "note": "Main site returned 403. DTSPP sub-scheme logo available separately. Download from https://www.cyberport.hk",
+      "schemes": [23, 58, 59, 60, 61, 62, 63]
+    },
+    {
+      "org": "Cyberport – DTSPP",
+      "short_name": "DTSPP",
+      "filename": "dtspp.png",
+      "logo_url": "https://dtspp.cyberport.hk/wp-content/uploads/elementor/thumbs/DTSPP_logo-02-qerbb46xbq3u2888ng5v6m44e3nrwdlefmzdj64wlc.png",
+      "website": "https://dtspp.cyberport.hk",
+      "status": "found",
+      "schemes": [63]
+    },
+    {
+      "org": "Hong Kong Science and Technology Parks Corporation",
+      "short_name": "HKSTP",
+      "filename": "hkstp.svg",
+      "logo_url": "https://www.hkstp.org/-/media/corpsite/assets/park-life/news-and-events/news/logo/hkstp_logo_eng_op-01.svg",
+      "website": "https://www.hkstp.org",
+      "status": "found",
+      "schemes": [52, 53, 54, 55, 56, 57]
+    },
+    {
+      "org": "Travel Industry Council of Hong Kong",
+      "short_name": "TIC",
+      "filename": "tic.svg",
+      "logo_url": "https://www.tichk.org/themes/custom/tic/src/images/tic_logo_header.svg",
+      "website": "https://www.tichk.org",
+      "status": "found",
+      "schemes": [47, 48, 49]
+    },
+    {
+      "org": "Hong Kong Tourism Board",
+      "short_name": "HKTB",
+      "filename": "hktb.png",
+      "logo_url": null,
+      "website": "https://www.discoverhongkong.com",
+      "status": "blocked",
+      "note": "Site returned 403. Download manually from https://www.discoverhongkong.com or https://partnernet.hktb.com",
+      "schemes": [50]
+    },
+    {
+      "org": "Travel Industry Authority",
+      "short_name": "TIA",
+      "filename": "tia.svg",
+      "logo_url": "https://www.tia.org.hk/_nuxt/img/logo.a614acb.svg",
+      "website": "https://www.tia.org.hk",
+      "status": "found",
+      "schemes": [51]
+    },
+    {
+      "org": "Culture, Sports and Tourism Bureau",
+      "short_name": "CSTB",
+      "filename": "cstb.png",
+      "logo_url": null,
+      "website": "https://www.cstb.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected in HTML. Download manually from https://www.cstb.gov.hk",
+      "schemes": [41, 42]
+    },
+    {
+      "org": "Cultural and Creative Industries Development Agency",
+      "short_name": "CCIDA",
+      "filename": "ccida.png",
+      "logo_url": null,
+      "website": "https://www.ccidahk.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected in HTML. Download manually from https://www.ccidahk.gov.hk",
+      "schemes": [43]
+    },
+    {
+      "org": "Hong Kong Design Centre",
+      "short_name": "HKDC",
+      "filename": "hkdc.svg",
+      "logo_url": "https://www.hkdesigncentre.org/assets/img/hkdc-logo-white.svg",
+      "website": "https://www.hkdesigncentre.org",
+      "status": "found",
+      "note": "White version of logo – may need dark background in UI",
+      "schemes": [44, 45]
+    },
+    {
+      "org": "Hong Kong Film Development Council",
+      "short_name": "FDC",
+      "filename": "fdc.png",
+      "logo_url": null,
+      "website": "https://www.fdc.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected in HTML. Download manually from https://www.fdc.gov.hk",
+      "schemes": [46]
+    },
+    {
+      "org": "Construction Industry Council",
+      "short_name": "CIC",
+      "filename": "cic.png",
+      "logo_url": "https://www.citf.cic.hk/img/common/logo.png",
+      "website": "https://www.cic.hk",
+      "status": "found",
+      "schemes": [76]
+    },
+    {
+      "org": "Securities and Futures Commission",
+      "short_name": "SFC",
+      "filename": "sfc.svg",
+      "logo_url": "https://www.sfc.hk/assets/images/common/logo.svg",
+      "website": "https://www.sfc.hk",
+      "status": "found",
+      "schemes": [80]
+    },
+    {
+      "org": "Hong Kong Securities and Investment Institute",
+      "short_name": "HKSI",
+      "filename": "hksi.png",
+      "logo_url": null,
+      "website": "https://www.hksi.org.hk",
+      "status": "ssl_error",
+      "note": "SSL certificate error on wamtalent.org.hk. Try https://www.hksi.org.hk for logo",
+      "schemes": [81]
+    },
+    {
+      "org": "Labour and Welfare Bureau",
+      "short_name": "LWB",
+      "filename": "lwb.png",
+      "logo_url": null,
+      "website": "https://www.lwb.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected. Download manually from https://www.lwb.gov.hk",
+      "schemes": [82]
+    },
+    {
+      "org": "Social Welfare Department",
+      "short_name": "SWD",
+      "filename": "swd.png",
+      "logo_url": null,
+      "website": "https://www.swd.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected. Download manually from https://www.swd.gov.hk",
+      "schemes": [83]
+    },
+    {
+      "org": "Digital Policy Office",
+      "short_name": "DPO",
+      "filename": "dpo_sie.png",
+      "logo_url": "https://www.sie.gov.hk/f/frontpage/1/160c88/logo_L5.png",
+      "website": "https://www.sie.gov.hk",
+      "status": "found",
+      "note": "SIE Fund logo; Digital Policy Office main logo may differ",
+      "schemes": [84]
+    },
+    {
+      "org": "Youth Development Commission",
+      "short_name": "YDC",
+      "filename": "ydc.png",
+      "logo_url": null,
+      "website": "https://www.hyab.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected. Download manually from https://www.hyab.gov.hk",
+      "schemes": [64, 65]
+    },
+    {
+      "org": "Commerce and Economic Development Bureau",
+      "short_name": "CEDB",
+      "filename": "cedb.png",
+      "logo_url": "https://www.cedb.gov.hk/assets/images/cedb/cedb_logo_en_new.png",
+      "website": "https://www.cedb.gov.hk",
+      "status": "found",
+      "schemes": [13, 78, 79]
+    },
+    {
+      "org": "Transport and Logistics Bureau",
+      "short_name": "TLB",
+      "filename": "tlb.png",
+      "logo_url": null,
+      "website": "https://www.tlb.gov.hk",
+      "status": "not_found",
+      "note": "Logo not detected. Download manually from https://www.tlb.gov.hk",
+      "schemes": [39]
+    },
+    {
+      "org": "Cleaner Production Partnership Programme",
+      "short_name": "CPPP",
+      "filename": "cppp.png",
+      "logo_url": "https://www.cleanerproduction.hk/img/logo_cppp.png",
+      "website": "https://www.cleanerproduction.hk",
+      "status": "found",
+      "note": "Scheme-specific logo (administered by HKPC)",
+      "schemes": [1]
+    },
+    {
+      "org": "Chinese Medicine Development Fund",
+      "short_name": "CMDF",
+      "filename": "cmdf.svg",
+      "logo_url": "https://www.cmdevfund.hk/assets/img/logo.svg",
+      "website": "https://www.cmdevfund.hk",
+      "status": "found",
+      "note": "Scheme-specific logo (administered by HKPC)",
+      "schemes": [77]
+    }
+  ]
+}
