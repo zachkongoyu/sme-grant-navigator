@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { GeistPixelSquare } from 'geist/font/pixel';
 
 import { QuickStats } from '@/components/QuickStats';
 import { SchemeBrowser } from '@/components/SchemeBrowser';
@@ -7,7 +7,7 @@ import { getFundContentBySchemeId } from '@/lib/schemes/content';
 import { getAllSchemes } from '@/lib/schemes/registry';
 
 export const metadata: Metadata = {
-  title: 'HK Grant Navigator - AI Application Drafts for SME Funding',
+  title: 'Thunder | AI Application Drafts for SME Funding',
   description:
     'Explore Easy BUD and upcoming Hong Kong SME funding schemes. Check fit fast and generate AI-assisted Easy BUD 2026 application drafts.',
 };
@@ -32,21 +32,7 @@ export default function HomePage() {
   return (
     <main className="relative overflow-hidden">
       <div className="relative mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        <header className="sticky top-0 z-20 -mx-4 mb-3 border-b border-border bg-background/80 px-4 py-1 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-            <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-text-tertiary">
-                SME Grant Navigator
-              </p>
-            </div>
-            <nav className="hidden items-center gap-2.5 font-mono text-[9px] uppercase tracking-[0.14em] text-text-secondary sm:flex">
-              <Link href="#schemes">Schemes</Link>
-              <a href="#pricing">Pricing</a>
-            </nav>
-          </div>
-        </header>
-
-        <section className="mb-4">
+        <section className="relative z-0 mb-4 pt-4">
           <div className="px-1 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">
             Funding Schemes Inspired From
           </div>
@@ -58,16 +44,6 @@ export default function HomePage() {
                   <span className="inline-flex h-7 w-7 items-center justify-center overflow-hidden">
                     {(() => {
                       const fundContent = getFundContentBySchemeId(scheme.id);
-
-                      if (fundContent?.administeringBodyLogoUrl) {
-                        return (
-                          <img
-                            src={fundContent.administeringBodyLogoUrl}
-                            alt={fundContent.administeringBodyLogoAlt ?? `${fundContent.administeringBody} logo`}
-                            className="h-6 w-6 object-contain"
-                          />
-                        );
-                      }
 
                       return (
                         <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-text-secondary">
@@ -83,31 +59,32 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="grid gap-2 pb-1 xl:grid-cols-[minmax(0,1fr)_250px] xl:items-start">
-          <div className="relative overflow-hidden p-2 sm:p-3">
-            <div className="relative z-10">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-tertiary">
-                Hong Kong Funding Index
-              </p>
-            </div>
+        <section className="relative z-20 grid gap-2 pb-1 xl:grid-cols-[minmax(0,1fr)_250px] xl:items-stretch">
+          <div className="relative h-full p-2 sm:p-3">
             <div className="relative z-10 mt-1.5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between lg:gap-3">
               <div>
-                <h1 className="max-w-4xl font-mono text-xl uppercase leading-[0.9] tracking-[-0.08em] text-text-primary sm:text-2xl lg:text-[2.15rem]">
-                  SME GRANT <span className="text-accent">NAVIGATOR</span>
+                <h1
+                  className={`${GeistPixelSquare.className} max-w-4xl text-3xl uppercase leading-[0.9] tracking-[-0.04em] text-status-success sm:text-4xl lg:text-[4rem]`}
+                >
+                  THUNDER
                 </h1>
                 <p className="mt-1.5 max-w-2xl text-xs leading-5 text-text-secondary sm:text-sm sm:leading-5">
-                  Searchable long-list of Hong Kong funding schemes, with Easy BUD live first.
+                  This is an open-source project to unlock funding constraints by centralizing scattered grant
+                  information in one place. We provide MCP, API, and agentic matching, draft application support,
+                  and eligibility checking.
                 </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:items-end">
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-text-tertiary">
-                  Last updated • Apr 20, 2026
-                </p>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border/70 bg-surface/40 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-text-secondary">
+                  <span className="relative inline-flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-danger opacity-70" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-status-danger" />
+                  </span>
+                  Live Update
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 xl:grid-cols-1 xl:grid-rows-[1fr_auto]">
+          <div className="h-full">
             <QuickStats
               className="h-full p-3"
               stats={[
@@ -117,22 +94,10 @@ export default function HomePage() {
                 { label: 'Last Updated', value: 'Apr 20, 2026' },
               ]}
             />
-
-            <section className="rounded-lg border border-border bg-surface/80 p-2.5 xl:block">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-                Live Now
-              </p>
-              <div className="mt-1.5 flex items-center justify-between gap-3">
-                <span className="text-sm text-text-primary">Easy BUD</span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent">
-                  HK$100K
-                </span>
-              </div>
-            </section>
           </div>
         </section>
 
-        <section id="schemes" className="mt-3 scroll-mt-16">
+        <section id="schemes" className="mt-2 scroll-mt-16">
           <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
@@ -158,12 +123,12 @@ export default function HomePage() {
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-lg text-text-primary">Free eligibility preview. HK$299 to unlock the full draft.</p>
-            <Link
+            <a
               href="#schemes"
               className="inline-flex items-center justify-center rounded-lg border border-border bg-surface px-4 py-3 font-mono text-xs uppercase tracking-[0.22em] text-text-primary transition hover:border-accent hover:text-accent"
             >
               Start with Easy BUD
-            </Link>
+            </a>
           </div>
         </section>
       </div>

@@ -57,12 +57,12 @@ export function generateMetadata({ params }: FundDetailPageProps): Metadata {
 
   if (!scheme) {
     return {
-      title: 'Fund Not Found | SME Grant Navigator',
+      title: 'Fund Not Found | Thunder',
     };
   }
 
   return {
-    title: `${scheme.name} | SME Grant Navigator`,
+    title: `${scheme.name} | Thunder`,
     description: scheme.shortDescription,
   };
 }
@@ -99,13 +99,7 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
         <div className="mt-5">
           <h1 className="flex flex-wrap items-center gap-2 text-3xl font-semibold tracking-[-0.03em] text-text-primary sm:text-5xl">
             <span className="inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center overflow-hidden align-middle text-accent">
-              {fundContent?.administeringBodyLogoUrl ? (
-                <img
-                  src={fundContent.administeringBodyLogoUrl}
-                  alt={fundContent.administeringBodyLogoAlt ?? `${fundContent.administeringBody} logo`}
-                  className="h-full w-full object-contain"
-                />
-              ) : fundContent ? (
+              {fundContent ? (
                 <span className="font-mono text-[0.22em] uppercase tracking-[0.08em] leading-none text-text-secondary">
                   {bodyAcronym(fundContent.administeringBody)}
                 </span>
@@ -132,7 +126,7 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
 
           <div className="mt-5 rounded-2xl border border-border bg-background/60 p-4">
             <div className="rounded-xl border border-border bg-surface-elevated px-4 py-4 font-mono text-lg text-text-primary">
-              npx grant navigator open {scheme.id}
+              npx thunder open {scheme.id}
             </div>
             <p className="mt-4 text-sm leading-6 text-text-secondary">
               View this funding scheme, save it, and return to it instantly from your bookmark list.

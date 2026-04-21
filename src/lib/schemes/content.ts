@@ -8,8 +8,6 @@ export interface FundContent {
   readonly objective: string;
   readonly targetRecipients: ReadonlyArray<string>;
   readonly administeringBody: string;
-  readonly administeringBodyLogoUrl?: string;
-  readonly administeringBodyLogoAlt?: string;
   readonly contact: FundContact;
   readonly notes?: ReadonlyArray<string>;
 }
@@ -22,9 +20,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-listed Hong Kong enterprises with substantive business operations in Hong Kong.',
     ],
     administeringBody: 'Hong Kong Productivity Council',
-    administeringBodyLogoUrl:
-      'https://www.hkpc.org/themes/custom/hkpc/assetsv2/img/hkpc_logo.svg',
-    administeringBodyLogoAlt: 'Hong Kong Productivity Council logo',
     contact: {
       tel: '2788 6088',
       email: 'bud_sec@hkpc.org',
@@ -41,9 +36,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-listed Hong Kong enterprises with substantive business operations in Hong Kong.',
     ],
     administeringBody: 'Hong Kong Productivity Council',
-    administeringBodyLogoUrl:
-      'https://www.hkpc.org/themes/custom/hkpc/assetsv2/img/hkpc_logo.svg',
-    administeringBodyLogoAlt: 'Hong Kong Productivity Council logo',
     contact: {
       tel: '2788 6088',
       email: 'bud_sec@hkpc.org',
@@ -57,9 +49,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-listed Hong Kong enterprises with substantive business operations in Hong Kong.',
     ],
     administeringBody: 'Hong Kong Productivity Council',
-    administeringBodyLogoUrl:
-      'https://www.hkpc.org/themes/custom/hkpc/assetsv2/img/hkpc_logo.svg',
-    administeringBodyLogoAlt: 'Hong Kong Productivity Council logo',
     contact: {
       tel: '2788 6088',
       email: 'bud_sec@hkpc.org',
@@ -73,7 +62,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Eligible local companies, R&D centres, public research institutions and organisations under respective ITF programmes.',
     ],
     administeringBody: 'Innovation and Technology Commission',
-    administeringBodyLogoAlt: 'Innovation and Technology Commission',
     contact: {
       tel: '3655 5678',
       email: 'enquiry@itf.gov.hk',
@@ -87,10 +75,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Technology startups and innovation companies that meet HKSTP programme requirements.',
     ],
     administeringBody: 'Hong Kong Science and Technology Parks Corporation',
-    administeringBodyLogoUrl:
-      'https://www.hkstp.org/-/media/corpsite/assets/park-life/news-and-events/news/logo/hkstp_logo_eng_op-01.svg',
-    administeringBodyLogoAlt:
-      'Hong Kong Science and Technology Parks Corporation logo',
     contact: {
       tel: '2629 6872 / 2629 6873',
       email: 'enquiry.marketing@hkstp.org',
@@ -104,8 +88,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Locally registered institutions and organisations, including academic institutions, trade associations, professional bodies, research institutes and companies.',
     ],
     administeringBody: 'Cultural and Creative Industries Development Agency',
-    administeringBodyLogoAlt:
-      'Cultural and Creative Industries Development Agency',
     contact: {
       tel: '2294 2774 / 2294 2786',
       email: 'createsmart@ccidahk.gov.hk',
@@ -119,7 +101,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-listed Hong Kong enterprises with substantive business operation in Hong Kong.',
     ],
     administeringBody: 'Trade and Industry Department',
-    administeringBodyLogoAlt: 'Trade and Industry Department',
     contact: {
       tel: '2398 5127',
       email: 'emf_enquiry@tid.gov.hk',
@@ -136,9 +117,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-listed Hong Kong enterprises with substantive business operations in Hong Kong.',
     ],
     administeringBody: 'Hong Kong Productivity Council',
-    administeringBodyLogoUrl:
-      'https://www.hkpc.org/themes/custom/hkpc/assetsv2/img/hkpc_logo.svg',
-    administeringBodyLogoAlt: 'Hong Kong Productivity Council logo',
     contact: {
       tel: '2788 6088',
       email: 'bud_sec@hkpc.org',
@@ -155,7 +133,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Non-profit-distributing organisations, such as trade and industrial organisations, professional bodies, or research institutes.',
     ],
     administeringBody: 'Trade and Industry Department',
-    administeringBodyLogoAlt: 'Trade and Industry Department',
     contact: {
       tel: '2398 5128',
       email: 'tsf_enquiry@tid.gov.hk',
@@ -170,8 +147,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'For some guarantee products, enterprises must have been in operation in Hong Kong for at least one year.',
     ],
     administeringBody: 'HKMC Insurance Limited',
-    administeringBodyLogoUrl: 'https://www.hkmc.com.hk/images/logo.png',
-    administeringBodyLogoAlt: 'HKMC Insurance Limited logo',
     contact: {
       tel: '2536 0392',
       email: 'sfgs_enquiry@hkmci.hk',
@@ -187,7 +162,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Support local companies to conduct in-house R&D work and encourage private-sector investment in research and development.',
     targetRecipients: ['Locally incorporated and registered companies.'],
     administeringBody: 'Innovation and Technology Commission',
-    administeringBodyLogoAlt: 'Innovation and Technology Commission',
     contact: {
       tel: '3422 3700',
       email: 'ess@itc.gov.hk',
@@ -201,7 +175,6 @@ const schemeContentById: Readonly<Record<string, FundContent>> = {
       'Locally incorporated companies, charitable institutions or trusts of a public character.',
     ],
     administeringBody: 'Culture, Sports and Tourism Bureau',
-    administeringBodyLogoAlt: 'Culture, Sports and Tourism Bureau',
     contact: {
       tel: '3102 2934 / 3102 2935',
       email: 'acdfs@cstb.gov.hk',

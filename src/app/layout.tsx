@@ -1,23 +1,13 @@
 import type { Metadata } from 'next';
-import { IBM_Plex_Mono, Space_Grotesk } from 'next/font/google';
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
+
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 import './globals.css';
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-sans',
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '600'],
-  variable: '--font-mono',
-});
-
 export const metadata: Metadata = {
-  title: 'SME Grant Navigator',
+  title: 'Thunder',
   description: 'AI-powered draft generation and grant eligibility guidance for Hong Kong SMEs.',
 };
 
@@ -27,11 +17,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  try {
+    const key = 'sme-grant-navigator.theme';
+    const saved = localStorage.getItem(key);
+    const isValid = saved === 'light' || saved === 'dark';
+    const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.dataset.theme = isValid ? saved : system;
+  } catch {
+    document.documentElement.dataset.theme = 'dark';
+  }
+})();`,
+          }}
+        />
+      </head>
       <body
-        className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} min-h-screen bg-background text-text-primary antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} min-h-screen bg-background text-text-primary antialiased`}
       >
         {children}
+        <ThemeToggle />
       </body>
     </html>
   );

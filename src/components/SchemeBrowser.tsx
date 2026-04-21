@@ -72,7 +72,21 @@ export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
           </div>
 
           <label className="flex w-full items-center gap-3 rounded-lg border border-border bg-surface/70 px-4 py-3 md:max-w-md">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-text-tertiary">
+            <span className="inline-flex items-center text-text-tertiary" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </span>
+            <span className="sr-only">
               Search
             </span>
             <input
@@ -84,7 +98,7 @@ export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
           </label>
         </div>
 
-        <div className="mt-5 overflow-hidden rounded-lg border border-border bg-surface/70">
+        <div className="mt-5 overflow-hidden border-y border-border bg-transparent">
           <div className="hidden border-b border-border px-3 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-text-tertiary md:grid md:grid-cols-[60px_minmax(0,1fr)_150px_140px]">
             <div>#</div>
             <div>Funding Schemes</div>

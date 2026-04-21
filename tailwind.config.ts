@@ -9,26 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#050507",
+        background: "var(--color-background)",
         surface: {
-          DEFAULT: "#101010",
-          elevated: "#171717",
+          DEFAULT: "var(--color-surface)",
+          elevated: "var(--color-surface-elevated)",
         },
-        border: "#3d3a39",
+        border: "var(--color-border)",
         accent: {
-          DEFAULT: "#00d992",
-          muted: "#2fd6a1",
-          teal: "#4cb3d4",
+          DEFAULT: "var(--color-accent)",
+          muted: "var(--color-accent-muted)",
+          teal: "var(--color-accent-teal)",
         },
         text: {
-          primary: "#f2f2f2",
-          secondary: "#b8b3b0",
-          tertiary: "#8b949e",
+          primary: "var(--color-text-primary)",
+          secondary: "var(--color-text-secondary)",
+          tertiary: "var(--color-text-tertiary)",
         },
         status: {
-          warning: "#ffba00",
-          danger: "#fb565b",
-          success: "#008b00",
+          warning: "var(--color-status-warning)",
+          danger: "var(--color-status-danger)",
+          success: "var(--color-status-success)",
         },
       },
       fontFamily: {

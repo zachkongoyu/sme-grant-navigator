@@ -1,18 +1,50 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 :root {
   color-scheme: dark;
-  --color-background: #050507;
-  --color-surface: #101010;
-  --color-surface-elevated: #171717;
-  --color-border: #3d3a39;
-  --color-accent: #00d992;
-  --color-accent-muted: #2fd6a1;
-  --color-text-primary: #f2f2f2;
-  --color-text-secondary: #b8b3b0;
-  --color-text-tertiary: #8b949e;
+  --color-background: #000000;
+  --color-surface: #0a0a0a;
+  --color-surface-elevated: #111111;
+  --color-border: #262626;
+  --color-accent: #fafafa;
+  --color-accent-muted: #d4d4d8;
+  --color-accent-teal: #3b82f6;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
+  --color-status-warning: #f59e0b;
+  --color-status-danger: #ef4444;
+  --color-status-success: #22c55e;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] body::before {
+  opacity: 0.1;
+}
+
+:root[data-theme='dark'] body::after {
+  opacity: 0.05;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-background: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f4f4f5;
+  --color-border: #e4e4e7;
+  --color-accent: #111111;
+  --color-accent-muted: #3f3f46;
+  --color-accent-teal: #2563eb;
+  --color-text-primary: #111111;
+  --color-text-secondary: #52525b;
+  --color-text-tertiary: #71717a;
+  --color-status-warning: #b45309;
+  --color-status-danger: #b91c1c;
+  --color-status-success: #15803d;
 }
 
 * {
@@ -44,23 +76,33 @@ body::after {
 
 body::before {
   background:
-    radial-gradient(circle at 12% 18%, rgba(0, 217, 146, 0.11), transparent 44%),
-    radial-gradient(circle at 84% 24%, rgba(126, 185, 255, 0.14), transparent 38%),
-    radial-gradient(circle at 55% 78%, rgba(255, 255, 255, 0.06), transparent 42%);
-  filter: blur(56px) saturate(0.85);
-  opacity: 0.66;
-  animation: storm-drift 26s ease-in-out infinite alternate;
+    radial-gradient(circle at 16% 20%, rgba(255, 120, 170, 0.2), transparent 42%),
+    radial-gradient(circle at 80% 24%, rgba(120, 180, 255, 0.24), transparent 38%),
+    radial-gradient(circle at 54% 78%, rgba(145, 255, 210, 0.2), transparent 44%),
+    radial-gradient(circle at 36% 60%, rgba(255, 220, 135, 0.16), transparent 46%);
+  filter: blur(44px) saturate(1.28);
+  opacity: 0.48;
+  animation: iridescent-drift 32s ease-in-out infinite alternate;
 }
 
 body::after {
   background:
-    linear-gradient(112deg, transparent 18%, rgba(198, 229, 255, 0.08) 36%, transparent 54%),
-    linear-gradient(75deg, transparent 24%, rgba(255, 255, 255, 0.14) 45%, transparent 67%),
-    radial-gradient(circle at 72% 16%, rgba(255, 255, 255, 0.18), transparent 32%);
-  filter: blur(42px);
+    linear-gradient(110deg, transparent 14%, rgba(130, 195, 255, 0.16) 34%, transparent 56%),
+    linear-gradient(72deg, transparent 24%, rgba(255, 155, 200, 0.15) 46%, transparent 68%),
+    radial-gradient(circle at 70% 18%, rgba(255, 255, 255, 0.24), transparent 34%),
+    radial-gradient(circle at 28% 82%, rgba(145, 255, 210, 0.16), transparent 36%);
+  filter: blur(30px);
   mix-blend-mode: screen;
   opacity: 0.34;
-  animation: lightning-flicker 9s linear infinite;
+  animation: bubble-shimmer 24s ease-in-out infinite alternate;
+}
+
+:root[data-theme='light'] body::before {
+  opacity: 0.38;
+}
+
+:root[data-theme='light'] body::after {
+  opacity: 0.28;
 }
 
 body > * {
@@ -74,7 +116,7 @@ a {
 }
 
 ::selection {
-  background: rgba(0, 217, 146, 0.2);
+  background: rgba(59, 130, 246, 0.28);
   color: var(--color-text-primary);
 }
 
@@ -140,57 +182,30 @@ a {
   }
 }
 
-@keyframes storm-drift {
+@keyframes iridescent-drift {
   0% {
-    transform: translate3d(-1.5%, -1.2%, 0) scale(1);
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1);
   }
 
   100% {
-    transform: translate3d(1.4%, 1.1%, 0) scale(1.04);
+    transform: translate3d(1.1%, 0.9%, 0) scale(1.035);
   }
 }
 
-@keyframes lightning-flicker {
-  0%,
-  22%,
-  28%,
-  46%,
-  54%,
-  72%,
+@keyframes bubble-shimmer {
+  0% {
+    transform: translate3d(-0.8%, 0, 0) scale(1);
+    opacity: 0.2;
+  }
+
+  45% {
+    transform: translate3d(0.6%, -0.7%, 0) scale(1.02);
+    opacity: 0.3;
+  }
+
   100% {
-    opacity: 0.18;
-  }
-
-  24% {
-    opacity: 0.42;
-  }
-
-  25% {
-    opacity: 0.26;
-  }
-
-  26% {
-    opacity: 0.48;
-  }
-
-  49% {
-    opacity: 0.36;
-  }
-
-  51% {
+    transform: translate3d(0.9%, 0.8%, 0) scale(1.03);
     opacity: 0.22;
-  }
-
-  75% {
-    opacity: 0.4;
-  }
-
-  76.5% {
-    opacity: 0.24;
-  }
-
-  78% {
-    opacity: 0.42;
   }
 }
 

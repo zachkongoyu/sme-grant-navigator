@@ -55,17 +55,11 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
       <div className="px-3 py-4">
         <div className="flex items-center gap-2">
           <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden">
-            {fundContent?.administeringBodyLogoUrl ? (
-              <img
-                src={fundContent.administeringBodyLogoUrl}
-                alt={fundContent.administeringBodyLogoAlt ?? `${fundContent.administeringBody} logo`}
-                className="h-9 w-9 object-contain"
-              />
-            ) : (
+            {
               <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-text-secondary">
                 {fundContent ? bodyAcronym(fundContent.administeringBody) : 'SG'}
               </span>
-            )}
+            }
           </span>
 
           <span className="font-semibold text-text-primary transition hover:text-accent">
