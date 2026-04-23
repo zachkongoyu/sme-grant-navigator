@@ -25,17 +25,27 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className = '' }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') {
+      return 'dark';
+    }
+
+    const savedTheme = window.localStorage.getItem(STORAGE_KEY);
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      return savedTheme;
+    }
+
+    const domTheme = document.documentElement.dataset.theme;
+    if (domTheme === 'light' || domTheme === 'dark') {
+      return domTheme;
+    }
+
+    return getSystemTheme();
+  });
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(STORAGE_KEY);
-    const nextTheme = savedTheme === 'light' || savedTheme === 'dark'
-      ? (savedTheme as Theme)
-      : getSystemTheme();
-
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   function toggleTheme() {
     const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -48,7 +58,7 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps) {
     <button
       type="button"
       onClick={toggleTheme}
-      className={`fixed right-5 top-5 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-elevated text-text-primary shadow-ambient transition hover:scale-[1.03] hover:border-accent/60 ${className}`}
+      className={`fixed right-5 top-5 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-text-primary transition hover:border-border-strong ${className}`}
       style={{ position: 'fixed', top: '1.25rem', right: '1.25rem', bottom: 'auto', left: 'auto' }}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}

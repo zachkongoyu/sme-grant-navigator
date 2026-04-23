@@ -66,12 +66,9 @@ export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-text-tertiary">
               Find Schemes
             </p>
-            <p className="mt-2 text-sm text-text-secondary">
-              Browse the live registry. Easy BUD is clickable; future schemes stay visible as placeholders.
-            </p>
           </div>
 
-          <label className="flex w-full items-center gap-3 rounded-lg border border-border bg-surface/70 px-4 py-3 md:max-w-md">
+          <label className="flex w-full items-center gap-3 rounded-lg border border-border bg-background-elevated px-4 py-3 focus-within:border-accent transition-colors md:max-w-md">
             <span className="inline-flex items-center text-text-tertiary" aria-hidden="true">
               <svg
                 viewBox="0 0 24 24"

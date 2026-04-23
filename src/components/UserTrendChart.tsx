@@ -34,7 +34,7 @@ function TrendTooltip({ active, label, payload }: TooltipProps) {
   const users = Number(payload[0]?.value ?? 0);
 
   return (
-    <div className="rounded-md border border-border bg-surface/95 px-3 py-2 shadow-lg backdrop-blur">
+    <div className="rounded-md border border-border bg-surface px-3 py-2">
       <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
         {label}
       </p>

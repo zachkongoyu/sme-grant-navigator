@@ -5,12 +5,15 @@ import { notFound } from 'next/navigation';
 import { FundDetailActions } from '@/components/FundDetailActions';
 import type { Scheme } from '@/types';
 import { getFundContentBySchemeId } from '@/lib/schemes/content';
-import { getAllSchemes, getSchemeById } from '@/lib/schemes/registry';
+import {
+  getAllSchemesFromDatabase,
+  getSchemeByIdFromDatabase,
+} from '@/lib/schemes/db';
 
 interface FundDetailPageProps {
-  readonly params: {
+  readonly params: Promise<{
     readonly schemeId: string;
-  };
+  }>;
 }
 
 function formatFundingCap(fundingCap: number | null) {
@@ -31,7 +34,7 @@ function statusStyle(status: Scheme['status']) {
   }
 
   if (status === 'coming-soon') {
-    return 'border-status-warning/40 text-status-warning';
+    return 'border-warning/40 text-warning';
   }
 
   return 'border-border text-text-tertiary';
@@ -46,14 +49,17 @@ function bodyAcronym(name: string): string {
   return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
 }
 
-export function generateStaticParams() {
-  return getAllSchemes().map((scheme) => ({
+export async function generateStaticParams() {
+  const schemes = await getAllSchemesFromDatabase();
+
+  return schemes.map((scheme) => ({
     schemeId: scheme.id,
   }));
 }
 
-export function generateMetadata({ params }: FundDetailPageProps): Metadata {
-  const scheme = getSchemeById(params.schemeId);
+export async function generateMetadata({ params }: FundDetailPageProps): Promise<Metadata> {
+  const { schemeId } = await params;
+  const scheme = await getSchemeByIdFromDatabase(schemeId);
 
   if (!scheme) {
     return {
@@ -67,11 +73,10 @@ export function generateMetadata({ params }: FundDetailPageProps): Metadata {
   };
 }
 
-export default function FundDetailPage({ params }: FundDetailPageProps) {
-  const scheme = getSchemeById(params.schemeId);
-  const fundContent = getFundContentBySchemeId(params.schemeId);
-  const plannedBackendEndpoints = 3;
-  const wiredBackendEndpoints = 0;
+export default async function FundDetailPage({ params }: FundDetailPageProps) {
+  const { schemeId } = await params;
+  const scheme = await getSchemeByIdFromDatabase(schemeId);
+  const fundContent = getFundContentBySchemeId(schemeId);
 
   if (!scheme) {
     notFound();
@@ -80,20 +85,28 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 text-text-primary sm:px-6 lg:px-8">
       <div className="mb-8 border-b border-border pb-6">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/#schemes"
+              className="font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
+            >
+              Back to Schemes
+            </Link>
+            <span
+              className={`inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${statusStyle(
+                scheme.status,
+              )}`}
+            >
+              {scheme.status.replace('-', ' ')}
+            </span>
+          </div>
           <Link
-            href="/#schemes"
-            className="font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
+            href={`/chat?scheme=${scheme.id}`}
+            className="inline-flex h-9 items-center rounded-lg bg-accent px-4 font-mono text-xs uppercase tracking-[0.12em] text-accent-foreground transition-opacity hover:opacity-90"
           >
-            Back to Schemes
+            Use this in chat
           </Link>
-          <span
-            className={`inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${statusStyle(
-              scheme.status,
-            )}`}
-          >
-            {scheme.status.replace('-', ' ')}
-          </span>
         </div>
 
         <div className="mt-5">
@@ -119,13 +132,13 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
       </div>
 
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="rounded-2xl border border-border bg-surface/80 p-6">
+        <div className="rounded-lg border border-border bg-surface p-6">
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-tertiary">
             Usage
           </p>
 
-          <div className="mt-5 rounded-2xl border border-border bg-background/60 p-4">
-            <div className="rounded-xl border border-border bg-surface-elevated px-4 py-4 font-mono text-lg text-text-primary">
+          <div className="mt-5 rounded-lg border border-border bg-background-elevated p-4">
+            <div className="rounded-lg border border-border bg-surface px-4 py-4 font-mono text-lg text-text-primary">
               npx thunder open {scheme.id}
             </div>
             <p className="mt-4 text-sm leading-6 text-text-secondary">
@@ -134,7 +147,7 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
           </div>
 
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-border bg-background/60 p-4">
+            <div className="rounded-lg border border-border bg-background-elevated p-4">
               <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
                 Maximum Funding
               </dt>
@@ -143,7 +156,7 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
               </dd>
             </div>
 
-            <div className="rounded-xl border border-border bg-background/60 p-4">
+            <div className="rounded-lg border border-border bg-background-elevated p-4">
               <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
                 Project Duration
               </dt>
@@ -155,7 +168,7 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
             </div>
           </dl>
 
-          <section className="mt-6 rounded-xl border border-border bg-background/60 p-4">
+          <section className="mt-6 rounded-lg border border-border bg-background-elevated p-4">
             <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
               Fund Content
             </h2>
@@ -236,32 +249,11 @@ export default function FundDetailPage({ params }: FundDetailPageProps) {
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-xl border border-border bg-surface/80 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-                Integration Status
-              </h2>
-              <span className="inline-flex rounded-full border border-status-warning/40 bg-status-warning/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-status-warning">
-                Mock Mode
-              </span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-text-secondary">
-              Backend endpoints are placeholders for future integration.
-            </p>
-            <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-text-primary">
-              {wiredBackendEndpoints}/{plannedBackendEndpoints} endpoints wired
-            </p>
-          </section>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="grid gap-3">
             <FundDetailActions schemeId={scheme.id} />
           </div>
 
-          <div className="rounded-xl border border-border bg-surface-elevated px-4 py-3 text-sm font-semibold text-text-primary">
-            Download Scheme Notes
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface/80 p-4">
+          <div className="rounded-lg border border-border bg-surface p-4">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-text-tertiary">
                 {scheme.category}

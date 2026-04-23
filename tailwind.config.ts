@@ -9,39 +9,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--color-background)",
-        surface: {
-          DEFAULT: "var(--color-surface)",
-          elevated: "var(--color-surface-elevated)",
+        background: {
+          DEFAULT: "var(--background)",
+          elevated: "var(--background-elevated)",
         },
-        border: "var(--color-border)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          hover: "var(--surface-hover)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
+        },
         accent: {
-          DEFAULT: "var(--color-accent)",
-          muted: "var(--color-accent-muted)",
-          teal: "var(--color-accent-teal)",
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
         },
         text: {
-          primary: "var(--color-text-primary)",
-          secondary: "var(--color-text-secondary)",
-          tertiary: "var(--color-text-tertiary)",
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          tertiary: "var(--text-tertiary)",
         },
-        status: {
-          warning: "var(--color-status-warning)",
-          danger: "var(--color-status-danger)",
-          success: "var(--color-status-success)",
-        },
+        success: "var(--success)",
+        warning: "var(--warning)",
+        danger: "var(--danger)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
-      boxShadow: {
-        ambient: "0 18px 40px rgba(0, 0, 0, 0.35)",
-        dramatic: "0 20px 60px rgba(0, 0, 0, 0.55)",
-      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };
 
 export default config;

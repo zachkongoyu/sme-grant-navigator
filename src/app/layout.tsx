@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
+import { Suspense } from 'react';
 
+import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 import './globals.css';
@@ -38,6 +40,9 @@ export default function RootLayout({
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} min-h-screen bg-background text-text-primary antialiased`}
       >
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         {children}
         <ThemeToggle />
       </body>

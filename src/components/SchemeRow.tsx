@@ -26,7 +26,7 @@ function statusClasses(status: Scheme['status']) {
   }
 
   if (status === 'coming-soon') {
-    return 'border-status-warning/40 text-status-warning';
+    return 'border-warning/40 text-warning';
   }
 
   return 'border-border text-text-tertiary';
@@ -47,7 +47,7 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
   return (
     <Link
       href={`/funds/${scheme.id}`}
-      className="grid border-b border-border transition hover:bg-surface/80 md:grid-cols-[60px_minmax(0,1fr)_150px_140px]"
+      className="grid border-b border-border transition hover:bg-surface-hover md:grid-cols-[60px_minmax(0,1fr)_150px_140px]"
     >
       <div className="hidden px-3 py-4 font-mono text-xs text-text-tertiary md:block">
         {String(index + 1).padStart(2, '0')}
