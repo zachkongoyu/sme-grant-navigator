@@ -30,7 +30,7 @@ function formatFundingCap(fundingCap: number | null) {
 
 function statusStyle(status: Scheme['status']) {
   if (status === 'active') {
-    return 'border-accent/40 text-accent';
+    return 'border-success/40 bg-success/10 text-success';
   }
 
   if (status === 'coming-soon') {
@@ -103,7 +103,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
           </div>
           <Link
             href={`/chat?scheme=${scheme.id}`}
-            className="inline-flex h-9 items-center rounded-lg bg-accent px-4 font-mono text-xs uppercase tracking-[0.12em] text-accent-foreground transition-opacity hover:opacity-90"
+            className="inline-flex h-9 items-center rounded-lg border border-success/35 bg-success px-4 font-mono text-xs uppercase tracking-[0.12em] text-background transition-opacity hover:opacity-90"
           >
             Use this in chat
           </Link>

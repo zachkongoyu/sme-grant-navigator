@@ -22,7 +22,7 @@ function formatFundingCap(fundingCap: number | null) {
 
 function statusClasses(status: Scheme['status']) {
   if (status === 'active') {
-    return 'border-accent/40 text-accent';
+    return 'border-success/40 bg-success/10 text-success';
   }
 
   if (status === 'coming-soon') {
