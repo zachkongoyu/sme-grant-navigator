@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import { Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -45,6 +46,7 @@ export default function RootLayout({
         </Suspense>
         {children}
         <ThemeToggle />
+        <Analytics />
       </body>
     </html>
   );
