@@ -1,14 +1,21 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { createClient } from '@/utils/supabase/client';
+
+function getNext() {
+  if (typeof window === 'undefined') return '/';
+  return new URLSearchParams(window.location.search).get('next') ?? '/';
+}
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,7 +26,7 @@ export default function SignInPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNext())}`,
       },
     });
 
@@ -33,30 +40,37 @@ export default function SignInPage() {
   }
 
   async function handleGoogleSignIn() {
+    setGoogleLoading(true);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNext())}`,
       },
     });
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="relative flex min-h-screen items-center justify-center px-4">
+      <Link
+        href={getNext()}
+        className="absolute top-6 left-6 inline-flex items-center gap-1.5 font-mono text-xs text-text-secondary hover:text-text-primary transition-colors"
+      >
+        <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 3L5 8l5 5" />
+        </svg>
+        Back
+      </Link>
       <div className="w-full max-w-sm">
-        <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-text-tertiary">
-          Thunder
-        </p>
-        <h1 className="mb-6 text-2xl font-semibold text-text-primary">Sign in</h1>
+        <h1 className="mb-6 text-2xl font-semibold text-text-primary">Sign in / Sign up</h1>
 
         {sent ? (
           <div className="rounded-lg border border-success/30 bg-success/5 px-4 py-3">
             <p className="text-sm text-text-primary">
-              Check <span className="font-medium">{email}</span> for a magic link.
+              We sent a sign-in link to <span className="font-medium">{email}</span>.
             </p>
             <p className="mt-1 text-xs text-text-tertiary">
-              The link expires in 10 minutes.
+              Click the link in the email to continue — it expires in 10 minutes.
             </p>
           </div>
         ) : (
@@ -64,10 +78,18 @@ export default function SignInPage() {
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-hover"
+              disabled={googleLoading}
+              className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition hover:bg-surface-hover disabled:opacity-60"
             >
-              <GoogleIcon />
-              Continue with Google
+              {googleLoading ? (
+                <svg className="h-4 w-4 animate-spin text-text-tertiary" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+              ) : (
+                <GoogleIcon />
+              )}
+              {googleLoading ? 'Redirecting…' : 'Continue with Google'}
             </button>
 
             <div className="my-5 flex items-center gap-3">
@@ -100,9 +122,9 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent/90 disabled:opacity-50"
+                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-background transition hover:bg-accent/90 disabled:opacity-50"
               >
-                {loading ? 'Sending…' : 'Send magic link'}
+                {loading ? 'Sending…' : 'Send sign-in link'}
               </button>
             </form>
           </>

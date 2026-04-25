@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { CopyFundContext } from '@/components/CopyFundContext';
 import { FundDetailActions } from '@/components/FundDetailActions';
 import type { Scheme } from '@/types';
 import { getFundContentBySchemeId } from '@/lib/schemes/content';
@@ -17,10 +18,7 @@ interface FundDetailPageProps {
 }
 
 function formatFundingCap(fundingCap: number | null) {
-  if (fundingCap === null) {
-    return 'Varies by programme call';
-  }
-
+  if (fundingCap === null) return 'Varies';
   return new Intl.NumberFormat('en-HK', {
     style: 'currency',
     currency: 'HKD',
@@ -29,44 +27,20 @@ function formatFundingCap(fundingCap: number | null) {
 }
 
 function statusStyle(status: Scheme['status']) {
-  if (status === 'active') {
-    return 'border-success/40 bg-success/10 text-success';
-  }
-
-  if (status === 'coming-soon') {
-    return 'border-warning/40 text-warning';
-  }
-
+  if (status === 'active') return 'border-success/40 bg-success/10 text-success';
+  if (status === 'coming-soon') return 'border-warning/40 text-warning';
   return 'border-border text-text-tertiary';
-}
-
-function bodyAcronym(name: string): string {
-  const parts = name
-    .split(/\s+/)
-    .filter((part) => part.length > 0)
-    .slice(0, 3);
-
-  return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
 }
 
 export async function generateStaticParams() {
   const schemes = await getAllSchemesFromDatabase();
-
-  return schemes.map((scheme) => ({
-    schemeId: scheme.id,
-  }));
+  return schemes.map((scheme) => ({ schemeId: scheme.id }));
 }
 
 export async function generateMetadata({ params }: FundDetailPageProps): Promise<Metadata> {
   const { schemeId } = await params;
   const scheme = await getSchemeByIdFromDatabase(schemeId);
-
-  if (!scheme) {
-    return {
-      title: 'Fund Not Found | Thunder',
-    };
-  }
-
+  if (!scheme) return { title: 'Fund Not Found | Thunder' };
   return {
     title: `${scheme.name} | Thunder`,
     description: scheme.shortDescription,
@@ -78,217 +52,178 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const scheme = await getSchemeByIdFromDatabase(schemeId);
   const fundContent = getFundContentBySchemeId(schemeId);
 
-  if (!scheme) {
-    notFound();
-  }
+  if (!scheme) notFound();
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 text-text-primary sm:px-6 lg:px-8">
-      <div className="mb-8 border-b border-border pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/#schemes"
-              className="font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
-            >
-              Back to Schemes
-            </Link>
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${statusStyle(
-                scheme.status,
-              )}`}
-            >
-              {scheme.status.replace('-', ' ')}
-            </span>
-          </div>
+    <main className="min-h-screen bg-background text-text-primary">
+
+      {/* ── Top bar ── */}
+      <div className="border-b border-border">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
           <Link
-            href={`/chat?scheme=${scheme.id}`}
-            className="inline-flex h-9 items-center rounded-lg border border-success/35 bg-success px-4 font-mono text-xs uppercase tracking-[0.12em] text-background transition-opacity hover:opacity-90"
+            href="/#schemes"
+            className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
           >
-            Use this in chat
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
+              <path d="M10 13L5 8l5-5" />
+            </svg>
+            All schemes
           </Link>
-        </div>
 
-        <div className="mt-5">
-          <h1 className="flex flex-wrap items-center gap-2 text-3xl font-semibold tracking-[-0.03em] text-text-primary sm:text-5xl">
-            <span className="inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center overflow-hidden align-middle text-accent">
-              {fundContent ? (
-                <span className="font-mono text-[0.22em] uppercase tracking-[0.08em] leading-none text-text-secondary">
-                  {bodyAcronym(fundContent.administeringBody)}
-                </span>
-              ) : (
-                <span className="font-mono text-[0.22em] uppercase tracking-[0.08em] leading-none text-text-secondary">
-                  SG
-                </span>
-              )}
-            </span>
-            <span>{scheme.name}</span>
-          </h1>
+          {/* Agent-ready badge */}
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Agent-ready
+          </span>
         </div>
-
-        <p className="mt-3 max-w-3xl text-xl leading-8 text-text-secondary">
-          {scheme.shortDescription}
-        </p>
       </div>
 
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-text-tertiary">
-            Usage
-          </p>
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 
-          <div className="mt-5 rounded-lg border border-border bg-background-elevated p-4">
-            <div className="rounded-lg border border-border bg-surface px-4 py-4 font-mono text-lg text-text-primary">
-              npx thunder open {scheme.id}
+        {/* ── Hero ── */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] ${statusStyle(scheme.status)}`}>
+                {scheme.status.replace('-', ' ')}
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{scheme.category}</span>
             </div>
-            <p className="mt-4 text-sm leading-6 text-text-secondary">
-              View this funding scheme, save it, and return to it instantly from your bookmark list.
-            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">{scheme.name}</h1>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">{scheme.shortDescription}</p>
           </div>
-
-          <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-border bg-background-elevated p-4">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-                Maximum Funding
-              </dt>
-              <dd className="mt-2 font-mono text-lg text-text-primary">
-                {formatFundingCap(scheme.fundingCap)}
-              </dd>
-            </div>
-
-            <div className="rounded-lg border border-border bg-background-elevated p-4">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-                Project Duration
-              </dt>
-              <dd className="mt-2 font-mono text-lg text-text-primary">
-              {scheme.durationMonths === null
-                ? 'Depends on scheme'
-                : `${scheme.durationMonths} months`}
-              </dd>
-            </div>
-          </dl>
-
-          <section className="mt-6 rounded-lg border border-border bg-background-elevated p-4">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
-              Fund Content
-            </h2>
-
-            {fundContent ? (
-              <div className="mt-3 space-y-4">
-                <div>
-                  <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                    Objective
-                  </h3>
-                  <p className="mt-1 text-sm leading-6 text-text-secondary">
-                    {fundContent.objective}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                    Target Recipients
-                  </h3>
-                  <ul className="mt-1 space-y-1 text-sm leading-6 text-text-secondary">
-                    {fundContent.targetRecipients.map((recipient) => (
-                      <li key={recipient}>- {recipient}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                    Administering Body
-                  </h3>
-                  <p className="mt-1 text-sm leading-6 text-text-secondary">
-                    {fundContent.administeringBody}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                    Contact
-                  </h3>
-                  <ul className="mt-1 space-y-1 text-sm leading-6 text-text-secondary">
-                    {fundContent.contact.tel ? <li>Tel: {fundContent.contact.tel}</li> : null}
-                    {fundContent.contact.email ? <li>Email: {fundContent.contact.email}</li> : null}
-                    {fundContent.contact.website ? (
-                      <li>
-                        Website:{' '}
-                        <a
-                          href={fundContent.contact.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent"
-                        >
-                          {fundContent.contact.website}
-                        </a>
-                      </li>
-                    ) : null}
-                  </ul>
-                </div>
-
-                {fundContent.notes && fundContent.notes.length > 0 ? (
-                  <div>
-                    <h3 className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                      Notes
-                    </h3>
-                    <ul className="mt-1 space-y-1 text-sm leading-6 text-text-secondary">
-                      {fundContent.notes.map((note) => (
-                        <li key={note}>- {note}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-text-secondary">
-                Detailed fund content for this scheme is being expanded. Official references are listed on the right.
-              </p>
-            )}
-          </section>
         </div>
 
-        <aside className="space-y-4">
-          <div className="grid gap-3">
-            <FundDetailActions schemeId={scheme.id} />
+        {/* ── Key stats ── */}
+        <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
+          <div className="bg-surface px-5 py-4">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</dt>
+            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">{formatFundingCap(scheme.fundingCap)}</dd>
           </div>
-
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-text-tertiary">
-                {scheme.category}
-              </p>
-              <span className="inline-flex rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                Sample Data
-              </span>
+          <div className="bg-surface px-5 py-4">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</dt>
+            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">
+              {scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} mo`}
+            </dd>
+          </div>
+          {fundContent && (
+            <div className="col-span-2 bg-surface px-5 py-4 sm:col-span-1">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Administered by</dt>
+              <dd className="mt-1.5 text-sm leading-5 text-text-primary">{fundContent.administeringBody}</dd>
             </div>
+          )}
+        </dl>
 
-            <h2 className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
-              Official References
-            </h2>
-            {scheme.links.length === 0 ? (
-              <p className="mt-3 text-sm text-text-secondary">
-                Official links will be added as this scheme record is expanded.
-              </p>
+        {/* ── Content ── */}
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
+
+          {/* Fund details */}
+          <div className="space-y-8">
+            {fundContent ? (
+              <>
+                <section>
+                  <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Objective</h2>
+                  <p className="mt-3 text-sm leading-6 text-text-secondary">{fundContent.objective}</p>
+                </section>
+
+                <section>
+                  <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Who can apply</h2>
+                  <ul className="mt-3 space-y-2">
+                    {fundContent.targetRecipients.map((r) => (
+                      <li key={r} className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary">
+                        <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-accent/60" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                {fundContent.notes && fundContent.notes.length > 0 && (
+                  <section>
+                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Notes</h2>
+                    <ul className="mt-3 space-y-2">
+                      {fundContent.notes.map((note) => (
+                        <li key={note} className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary">
+                          <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-text-tertiary/60" />
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {(fundContent.contact.tel || fundContent.contact.email || fundContent.contact.website) && (
+                  <section>
+                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Contact</h2>
+                    <ul className="mt-3 space-y-1 text-sm leading-6 text-text-secondary">
+                      {fundContent.contact.tel && <li>Tel: {fundContent.contact.tel}</li>}
+                      {fundContent.contact.email && <li>Email: {fundContent.contact.email}</li>}
+                      {fundContent.contact.website && (
+                        <li>
+                          <a href={fundContent.contact.website} target="_blank" rel="noreferrer"
+                            className="text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
+                            {fundContent.contact.website}
+                          </a>
+                        </li>
+                      )}
+                    </ul>
+                  </section>
+                )}
+
+                {scheme.links.length > 0 && (
+                  <section>
+                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Official references</h2>
+                    <ul className="mt-3 space-y-1.5">
+                      {scheme.links.map((link) => (
+                        <li key={link.url}>
+                          <a href={link.url} target="_blank" rel="noreferrer"
+                            className="text-sm text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
+                            {link.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </>
             ) : (
-              <ul className="mt-3 space-y-2">
-                {scheme.links.map((link) => (
-                  <li key={link.url}>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm leading-6 text-text-secondary">
+                Detailed content for this scheme is being expanded.
+              </p>
             )}
           </div>
-        </aside>
-      </section>
+
+          {/* Actions sidebar */}
+          <aside className="space-y-3 lg:pt-0">
+
+            {/* Agent callout */}
+            <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">For your agent</p>
+              <p className="mt-1.5 text-sm font-medium text-text-primary">Give your agent everything it needs</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">
+                Paste into Claude, GPT, Cursor, or any chat to get scheme-specific answers instantly.
+              </p>
+              <div className="mt-3">
+                <CopyFundContext scheme={scheme} fundContent={fundContent ?? null} />
+              </div>
+            </div>
+
+            {/* Ask Thunder */}
+            <Link
+              href="/chat"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4 shrink-0" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              Ask Thunder
+            </Link>
+
+            {/* Save */}
+            <FundDetailActions schemeId={scheme.id} />
+          </aside>
+        </div>
+      </div>
     </main>
   );
 }

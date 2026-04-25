@@ -6,12 +6,11 @@ import type { Artifact, AssistantMessage, Attachment, ChatMessage, SystemMessage
 
 interface UseChatOptions {
   readonly sessionId: string;
-  readonly initialMessages?: ReadonlyArray<ChatMessage>;
   readonly seedMessage?: { text: string; attachments: ReadonlyArray<Attachment> };
 }
 
-export function useChat({ sessionId, initialMessages = [], seedMessage }: UseChatOptions) {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [...initialMessages]);
+export function useChat({ sessionId, seedMessage }: UseChatOptions) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -126,15 +125,5 @@ export function useChat({ sessionId, initialMessages = [], seedMessage }: UseCha
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedMessage]);
 
-  const addSystemMessage = useCallback((text: string) => {
-    const msg: SystemMessage = {
-      id: crypto.randomUUID(),
-      role: 'system',
-      text,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, msg]);
-  }, []);
-
-  return { messages, streamingText, isStreaming, sendMessage, stop, addSystemMessage };
+  return { messages, streamingText, isStreaming, sendMessage, stop };
 }

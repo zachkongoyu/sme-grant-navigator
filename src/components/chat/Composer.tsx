@@ -135,7 +135,7 @@ export function Composer({ onSend, isStreaming, onStop, variant = 'chat', prefil
   const outerClass =
     variant === 'hero'
       ? `py-0 transition-colors ${isDragging ? 'bg-surface rounded-lg' : ''}`
-      : `border-t border-border bg-background px-4 py-4 transition-colors ${isDragging ? 'bg-surface' : ''}`;
+      : `transition-colors ${isDragging ? 'opacity-80' : ''}`;
 
   return (
     <div

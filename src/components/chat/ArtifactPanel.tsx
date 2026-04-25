@@ -17,21 +17,21 @@ export function ArtifactPanel({ artifact, sessionId, paid, onClose }: ArtifactPa
 
   return (
     <div className="flex h-full flex-col border-l border-border bg-surface">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-border px-3 py-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+          aria-label="Close panel"
+        >
+          ×
+        </button>
         <div>
           <p className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary">
             {artifact.kind}
           </p>
           <p className="text-sm font-medium text-text-primary">{artifact.title}</p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close panel"
-        >
-          ×
-        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">

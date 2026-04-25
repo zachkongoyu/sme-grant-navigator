@@ -9,10 +9,14 @@ import type { Attachment } from '@/components/chat/types';
 import { storePending } from '@/lib/pending-sessions';
 
 const SUGGESTIONS = [
-  'Series A SaaS company, 12 employees',
-  'Hardware R&D project',
-  'E-commerce expansion into new markets',
-  'Upload my pitch deck — find matching schemes',
+  'Series A SaaS, 12 staff',
+  'Hardware R&D',
+  'E-commerce cross-border expansion',
+  'Match my pitch deck',
+  'B2B logistics startup',
+  'Non-dilutive capital',
+  'TVP application',
+  'SME branding grant',
 ] as const;
 
 export function HeroComposer() {
@@ -39,14 +43,10 @@ export function HeroComposer() {
         variant="hero"
         prefill={prefill}
       />
-      <div className="mt-3 flex flex-wrap justify-center gap-2">
+      <div className="mt-3 flex flex-wrap justify-center gap-1.5">
         {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => applyChip(s)}
-            className="inline-flex h-7 items-center rounded-md border border-border bg-surface-hover px-3 font-mono text-xs text-text-secondary transition-colors hover:border-border-strong hover:text-text-primary"
-          >
+          <button key={s} type="button" onClick={() => applyChip(s)}
+            className="inline-flex h-6 items-center rounded border border-border bg-surface-hover px-2.5 font-mono text-[11px] text-text-secondary transition-colors hover:border-border-strong hover:text-text-primary">
             {s}
           </button>
         ))}
