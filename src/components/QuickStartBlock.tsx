@@ -5,39 +5,39 @@ import { useState } from 'react';
 type Lang = 'curl' | 'python' | 'node';
 
 const SAMPLES: Record<Lang, string> = {
-  curl: `# 1. Get your key at thunder.hk/settings
+  curl: `# 1. Get your key at thunder.app/settings
 export THUNDER_KEY="sk_live_..."
 
 # 2. List all schemes
-curl https://api.thunder.hk/v1/schemes \\
+curl https://api.thunder.app/v1/schemes \\
   -H "Authorization: Bearer $THUNDER_KEY"
 
 # 3. Get a specific scheme
-curl https://api.thunder.hk/v1/schemes/easy-bud \\
+curl https://api.thunder.app/v1/schemes/innovation-fund \\
   -H "Authorization: Bearer $THUNDER_KEY"`,
 
   python: `import httpx
 
 THUNDER_KEY = "sk_live_..."
-BASE = "https://api.thunder.hk/v1"
+BASE = "https://api.thunder.app/v1"
 headers = {"Authorization": f"Bearer {THUNDER_KEY}"}
 
 # List all schemes
 schemes = httpx.get(f"{BASE}/schemes", headers=headers).json()
 
 # Get a specific scheme
-scheme = httpx.get(f"{BASE}/schemes/easy-bud", headers=headers).json()
+scheme = httpx.get(f"{BASE}/schemes/innovation-fund", headers=headers).json()
 print(scheme["name"])`,
 
   node: `const KEY = process.env.THUNDER_KEY;
-const BASE = "https://api.thunder.hk/v1";
+const BASE = "https://api.thunder.app/v1";
 const headers = { Authorization: \`Bearer \${KEY}\` };
 
 // List all schemes
 const schemes = await fetch(\`\${BASE}/schemes\`, { headers }).then(r => r.json());
 
 // Get a specific scheme
-const scheme = await fetch(\`\${BASE}/schemes/easy-bud\`, { headers }).then(r => r.json());
+const scheme = await fetch(\`\${BASE}/schemes/innovation-fund\`, { headers }).then(r => r.json());
 console.log(scheme.name);`,
 };
 

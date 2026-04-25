@@ -58,7 +58,7 @@ export default function RestApiPage() {
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
             <span className="font-mono text-[11px] text-text-tertiary">Base URL</span>
             <span className="h-3.5 w-px bg-border" />
-            <code className="font-mono text-sm text-text-primary">https://api.thunder.hk/v1</code>
+            <code className="font-mono text-sm text-text-primary">https://api.thunder.app/v1</code>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function RestApiPage() {
             </p>
           </div>
           <a
-            href="mailto:api@thunder.hk?subject=API%20Early%20Access"
+            href="mailto:api@thunder.app?subject=API%20Early%20Access"
             className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-background transition hover:opacity-90"
           >
             Request access →

@@ -1,6 +1,15 @@
 import { type NextRequest } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
+
+// Route segment config.
+// maxDuration: max execution time in seconds (for slow PDF extraction).
+// dynamic: opt out of static caching so auth/session checks always run.
+export const maxDuration = 30;
+export const dynamic = 'force-dynamic';
+// Note: Next.js Route Handler body size is controlled by the platform/infra
+// layer. Per-file size enforcement is done in the POST handler below.
 
 /**
  * Attempt to require an optional package without failing the build if it's absent.
@@ -56,8 +65,14 @@ async function extractText(buffer: Buffer, mime: string, name: string): Promise<
   }
 }
 
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILES_PER_REQUEST = 5;
+
 export async function POST(request: NextRequest) {
   const supabase = getSupabase();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+
   const formData = await request.formData();
   const sessionId = formData.get('sessionId');
   const files = formData.getAll('files');
@@ -66,24 +81,53 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'sessionId is required' }, { status: 400 });
   }
 
+  // Verify the session exists and belongs to the caller.
+  const { data: session } = await supabase
+    .from('sessions')
+    .select('user_id')
+    .eq('id', sessionId)
+    .single();
+
+  if (!session) {
+    return Response.json({ error: 'Session not found' }, { status: 404 });
+  }
+
+  if (session.user_id != null && session.user_id !== user?.id) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  if (files.length > MAX_FILES_PER_REQUEST) {
+    return Response.json(
+      { error: `Maximum ${MAX_FILES_PER_REQUEST} files per request` },
+      { status: 400 },
+    );
+  }
+
   const results: { attachmentId: string; name: string; size: number; mime: string }[] = [];
 
   for (const file of files) {
     if (!(file instanceof File)) continue;
 
+    // Fast pre-reject on the client-reported size to avoid buffering obviously
+    // oversized files. Confirmed below against the actual buffered byteLength.
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return Response.json(
+        { error: `${file.name} exceeds the 10 MB file size limit` },
+        { status: 400 },
+      );
+    }
+
     const attachmentId = crypto.randomUUID();
-    const storagePath = `${sessionId}/${attachmentId}/${file.name}`;
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // TODO: Upload raw bytes to Supabase Storage (disabled for MVP — storage_path is null).
-    // const { error: uploadError } = await supabase.storage
-    //   .from('attachments')
-    //   .upload(storagePath, buffer, { contentType: file.type, upsert: false });
-    // if (uploadError) {
-    //   console.error('Storage upload error:', uploadError);
-    //   return Response.json({ error: `Failed to upload ${file.name}` }, { status: 500 });
-    // }
+    // Verify the actual buffered size — file.size is client-reported and untrustworthy.
+    if (buffer.byteLength > MAX_FILE_SIZE_BYTES) {
+      return Response.json(
+        { error: `${file.name} exceeds the 10 MB file size limit` },
+        { status: 400 },
+      );
+    }
 
     const extractedText = await extractText(buffer, file.type, file.name);
 
@@ -92,7 +136,7 @@ export async function POST(request: NextRequest) {
       session_id: sessionId,
       name: file.name,
       mime: file.type,
-      size: file.size,
+      size: buffer.byteLength,
       storage_path: null,
       extracted_text: extractedText || null,
     });
@@ -102,7 +146,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: `Failed to save ${file.name} metadata` }, { status: 500 });
     }
 
-    results.push({ attachmentId, name: file.name, size: file.size, mime: file.type });
+    results.push({ attachmentId, name: file.name, size: buffer.byteLength, mime: file.type });
   }
 
   return Response.json(results);

@@ -7,12 +7,12 @@ describe('schemesFromRows', () => {
     const rows: ReadonlyArray<SchemeRow> = [
       {
         id: 'db-easy-bud',
-        name: 'Easy BUD',
-        sponsor: 'Hong Kong Productivity Council',
+        name: 'Innovation Grant',
+        sponsor: 'Innovation Agency',
         category: 'Export',
         status: 'closed',
         funding_cap: 123456,
-        currency: 'HKD',
+        currency: 'USD',
         duration_months: 18,
         short_description: 'Live description from Supabase.',
         guidance_md: 'Live guidance',
@@ -25,7 +25,7 @@ describe('schemesFromRows', () => {
 
     expect(scheme).toBeDefined();
     expect(scheme?.id).toBe('db-easy-bud');
-    expect(scheme?.name).toBe('Easy BUD');
+    expect(scheme?.name).toBe('Innovation Grant');
     expect(scheme?.shortDescription).toBe('Live description from Supabase.');
     expect(scheme?.category).toBe('Export');
     expect(scheme?.status).toBe('closed');

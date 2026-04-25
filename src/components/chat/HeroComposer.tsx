@@ -15,7 +15,7 @@ const SUGGESTIONS = [
   'Match my pitch deck',
   'B2B logistics startup',
   'Non-dilutive capital',
-  'TVP application',
+  'R&D grant application',
   'SME branding grant',
 ] as const;
 

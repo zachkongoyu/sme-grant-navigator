@@ -8,9 +8,11 @@ import {
   type ResolvedScheme,
 } from '@/lib/schemes/db';
 import { getSupabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import type { ShortlistItem } from '@/components/chat/types';
 
 const encoder = new TextEncoder();
+const MAX_ATTACHMENT_CHARS = 20_000;
 
 function sse(data: unknown): Uint8Array {
   return encoder.encode(`data: ${JSON.stringify(data)}\n\n`);
@@ -79,7 +81,7 @@ function selectArtifacts(
 
   const wantsDraft =
     /\bdraft\b|write.*application|generate.*application|create.*application/.test(u) ||
-    // Response has 4+ sections and a budget table ??treat as a draft
+    // Response has 4+ sections and a budget table — treat as a draft
     (assistantText.split(/^#{1,3} /m).length >= 4 && a.includes('budget'));
 
   const wantsChecklist =
@@ -98,32 +100,55 @@ export async function POST(request: NextRequest) {
   };
   const { sessionId, message } = body;
 
+  if (!sessionId || typeof sessionId !== 'string') {
+    return Response.json({ error: 'sessionId is required' }, { status: 400 });
+  }
+
+  if (!message || typeof message.text !== 'string' || !Array.isArray(message.attachmentIds)) {
+    return Response.json({ error: 'Invalid message payload' }, { status: 400 });
+  }
+
   const supabase = getSupabase();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+
   const schemes = await getAllSchemesFromDatabase();
 
   // Load session message history
   const { data: session } = await supabase
     .from('sessions')
-    .select('messages, title')
+    .select('messages, title, user_id')
     .eq('id', sessionId)
     .single();
+
+  // Reject if this session belongs to a different authenticated user.
+  if (session?.user_id != null && session.user_id !== user?.id) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   type StoredMessage = { role: 'user' | 'assistant'; content: string };
   const history: StoredMessage[] = (session?.messages as StoredMessage[] | null) ?? [];
 
-  // Fetch extracted text from any attachments
+  // Fetch extracted text from any attachments (scoped to this session to prevent
+  // cross-session attachment reads).
   let attachmentContext = '';
   if (message.attachmentIds.length > 0) {
     const { data: attachments } = await supabase
       .from('attachments')
       .select('name, extracted_text')
-      .in('id', message.attachmentIds);
+      .in('id', message.attachmentIds)
+      .eq('session_id', sessionId);
 
     const withText = attachments?.filter((a) => a.extracted_text) ?? [];
     if (withText.length > 0) {
-      attachmentContext = withText
+      const rawContext = withText
         .map((a) => `--- ${a.name} ---\n${a.extracted_text}`)
         .join('\n\n');
+      // Cap attachment context to prevent context-window exhaustion.
+      attachmentContext =
+        rawContext.length > MAX_ATTACHMENT_CHARS
+          ? rawContext.slice(0, MAX_ATTACHMENT_CHARS) + '\n[Attachment content truncated]'
+          : rawContext;
     }
   }
 
@@ -147,13 +172,13 @@ export async function POST(request: NextRequest) {
         const abortController = new AbortController();
         request.signal.addEventListener('abort', () => abortController.abort());
 
-        // Phase 1 ??stream tokens to the client
+        // Phase 1 — stream tokens to the client
         for await (const token of streamChat(llmMessages, undefined, abortController.signal)) {
           fullText += token;
           controller.enqueue(sse({ type: 'token', value: token }));
         }
 
-        // Phase 2 ??emit artifact cards
+        // Phase 2 — emit artifact cards
         const { shortlist, draft, checklist } = selectArtifacts(
           message.text,
           fullText,
@@ -196,13 +221,13 @@ export async function POST(request: NextRequest) {
             .filter((s): s is NonNullable<typeof s> => s !== undefined);
 
           const applicationDocs = mentionedSchemes.flatMap((s) =>
-            s.documentChecklist
+            (s.documentChecklist ?? [])
               .filter((d) => d.stage === 'application')
               .map((d) => ({ id: d.id, label: d.label, note: d.note })),
           );
 
           const reimbursementDocs = mentionedSchemes.flatMap((s) =>
-            s.documentChecklist
+            (s.documentChecklist ?? [])
               .filter((d) => d.stage === 'reimbursement')
               .map((d) => ({ id: d.id, label: d.label, note: d.note })),
           );
@@ -234,6 +259,8 @@ export async function POST(request: NextRequest) {
 
         await supabase.from('sessions').upsert({
           id: sessionId,
+          // Preserve existing owner; only set user_id when creating a new session.
+          user_id: session?.user_id ?? user?.id ?? null,
           title: !session ? deriveTitle(message.text) : (session.title ?? 'Session'),
           messages: updatedMessages,
           updated_at: new Date().toISOString(),

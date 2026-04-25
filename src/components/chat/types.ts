@@ -19,7 +19,7 @@ export interface ShortlistItem {
   readonly name: string;
   readonly shortDescription: string;
   readonly fundingCap: number | null;
-  readonly currency: 'HKD';
+  readonly currency: string | null;
 }
 
 export interface ChecklistEntry {

@@ -13,9 +13,9 @@ function formatFundingCap(fundingCap: number | null) {
     return 'Varies';
   }
 
-  return new Intl.NumberFormat('en-HK', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'HKD',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(fundingCap);
 }

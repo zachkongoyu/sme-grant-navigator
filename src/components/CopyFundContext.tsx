@@ -14,9 +14,9 @@ function buildContext(scheme: Scheme, fundContent: FundContent | null): string {
   const cap =
     scheme.fundingCap === null
       ? 'Varies'
-      : new Intl.NumberFormat('en-HK', {
+      : new Intl.NumberFormat('en-US', {
           style: 'currency',
-          currency: 'HKD',
+          currency: 'USD',
           maximumFractionDigits: 0,
         }).format(scheme.fundingCap);
 
@@ -76,7 +76,7 @@ export function CopyFundContext({ scheme, fundContent }: CopyFundContextProps) {
     setTimeout(() => setCopied(false), 2500);
   }
 
-  const preview = `## Grant Scheme: ${scheme.name}\n**Status:** ${scheme.status.replace('-', ' ')} · **Max Funding:** ${scheme.fundingCap === null ? 'Varies' : `HK$${(scheme.fundingCap / 1000000).toFixed(1)}M`}\n...`;
+  const preview = `## Grant Scheme: ${scheme.name}\n**Status:** ${scheme.status.replace('-', ' ')} · **Max Funding:** ${scheme.fundingCap === null ? 'Varies' : `${scheme.currency ?? '$'}${(scheme.fundingCap / 1000000).toFixed(1)}M`}\n...`;
 
   return (
     <div className="space-y-3">

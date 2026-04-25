@@ -17,11 +17,11 @@ interface FundDetailPageProps {
   }>;
 }
 
-function formatFundingCap(fundingCap: number | null) {
+function formatFundingCap(fundingCap: number | null, currency: string | null) {
   if (fundingCap === null) return 'Varies';
-  return new Intl.NumberFormat('en-HK', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'HKD',
+    currency: currency ?? 'HKD',
     maximumFractionDigits: 0,
   }).format(fundingCap);
 }
@@ -98,7 +98,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
         <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
           <div className="bg-surface px-5 py-4">
             <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</dt>
-            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">{formatFundingCap(scheme.fundingCap)}</dd>
+            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">{formatFundingCap(scheme.fundingCap, scheme.currency)}</dd>
           </div>
           <div className="bg-surface px-5 py-4">
             <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</dt>
@@ -214,7 +214,8 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4 shrink-0" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                <path d="M20 3v4M22 5h-4" />
               </svg>
               Ask Thunder
             </Link>

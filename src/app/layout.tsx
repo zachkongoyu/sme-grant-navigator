@@ -13,7 +13,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Thunder',
-  description: 'AI-powered draft generation and grant eligibility guidance for Hong Kong SMEs.',
+  description: 'AI-powered draft generation and grant eligibility guidance for SMEs and startups.',
 };
 
 export default function RootLayout({

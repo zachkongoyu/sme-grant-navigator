@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/server';
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
-  return new Stripe(key, { apiVersion: '2025-03-31.basil' });
+  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' });
 }
 
 export async function POST(request: NextRequest) {
@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     line_items: [
       {
         price_data: {
-          currency: 'hkd',
-          unit_amount: 29900, // HK$299.00
+          currency: 'usd',
+          unit_amount: 29900, // $299.00
           product_data: {
             name: 'Thunder — Full application draft',
             description: 'Unlock all sections of your AI-generated grant application draft.',

@@ -20,34 +20,34 @@ const ENDPOINTS: Endpoint[] = [
     description: 'List all schemes with name, category, status, and funding cap',
     phase: 'v1',
     requests: {
-      curl: `curl https://api.thunder.hk/v1/schemes \\
+      curl: `curl https://api.thunder.app/v1/schemes \\
   -H "Authorization: Bearer $THUNDER_KEY"`,
       python: `import httpx
 
 resp = httpx.get(
-    "https://api.thunder.hk/v1/schemes",
+    "https://api.thunder.app/v1/schemes",
     headers={"Authorization": f"Bearer {THUNDER_KEY}"},
 )
 schemes = resp.json()`,
-      node: `const res = await fetch("https://api.thunder.hk/v1/schemes", {
+      node: `const res = await fetch("https://api.thunder.app/v1/schemes", {
   headers: { Authorization: \`Bearer \${process.env.THUNDER_KEY}\` },
 });
 const schemes = await res.json();`,
     },
     response: `[
   {
-    "id": "easy-bud",
-    "name": "Easy BUD — General Support Programme",
+    "id": "innovation-fund",
+    "name": "Innovation Grant",
     "status": "active",
-    "fundingCap": 700000,
-    "category": "Brand & Upgrade"
+    "fundingCap": 250000,
+    "category": "Innovation"
   },
   {
-    "id": "itf",
-    "name": "Innovation and Technology Fund",
+    "id": "export-support",
+    "name": "Export Development Fund",
     "status": "active",
-    "fundingCap": 6000000,
-    "category": "R&D"
+    "fundingCap": 100000,
+    "category": "Export"
   }
 ]`,
   },
@@ -57,31 +57,31 @@ const schemes = await res.json();`,
     description: 'Full scheme detail — objectives, eligibility, contacts, guidance',
     phase: 'v1',
     requests: {
-      curl: `curl https://api.thunder.hk/v1/schemes/easy-bud \\
+      curl: `curl https://api.thunder.app/v1/schemes/innovation-fund \\
   -H "Authorization: Bearer $THUNDER_KEY"`,
       python: `resp = httpx.get(
-    "https://api.thunder.hk/v1/schemes/easy-bud",
+    "https://api.thunder.app/v1/schemes/innovation-fund",
     headers={"Authorization": f"Bearer {THUNDER_KEY}"},
 )
 scheme = resp.json()`,
-      node: `const res = await fetch("https://api.thunder.hk/v1/schemes/easy-bud", {
+      node: `const res = await fetch("https://api.thunder.app/v1/schemes/innovation-fund", {
   headers: { Authorization: \`Bearer \${process.env.THUNDER_KEY}\` },
 });
 const scheme = await res.json();`,
     },
     response: `{
-  "id": "easy-bud",
-  "name": "Easy BUD — General Support Programme",
+  "id": "innovation-fund",
+  "name": "Innovation Grant",
   "status": "active",
-  "fundingCap": 700000,
-  "currency": "HKD",
-  "category": "Brand & Upgrade",
+  "fundingCap": 250000,
+  "currency": "USD",
+  "category": "Innovation",
   "eligibility": {
     "minLocalOwnership": 0.5,
-    "maxEmployees": 100
+    "maxEmployees": 250
   },
   "contacts": [
-    { "email": "bud@hkpc.org", "phone": "+852 2788 5088" }
+    { "email": "grants@innovationagency.example" }
   ],
   "updatedAt": "2026-04-01T00:00:00Z"
 }`,
@@ -92,45 +92,45 @@ const scheme = await res.json();`,
     description: 'Rank schemes by fit for a given business profile',
     phase: 'v2',
     requests: {
-      curl: `curl -X POST https://api.thunder.hk/v1/match \\
+      curl: `curl -X POST https://api.thunder.app/v1/match \\
   -H "Authorization: Bearer $THUNDER_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "industry": "logistics",
-    "employees": 12,
+    "industry": "software",
+    "employees": 15,
     "ownership": 1.0
   }'`,
       python: `resp = httpx.post(
-    "https://api.thunder.hk/v1/match",
+    "https://api.thunder.app/v1/match",
     headers={"Authorization": f"Bearer {THUNDER_KEY}"},
     json={
-        "industry": "logistics",
-        "employees": 12,
+        "industry": "software",
+        "employees": 15,
         "ownership": 1.0,
     },
 )
 matches = resp.json()`,
-      node: `const res = await fetch("https://api.thunder.hk/v1/match", {
+      node: `const res = await fetch("https://api.thunder.app/v1/match", {
   method: "POST",
   headers: {
     Authorization: \`Bearer \${process.env.THUNDER_KEY}\`,
     "Content-Type": "application/json",
   },
-  body: JSON.stringify({ industry: "logistics", employees: 12, ownership: 1.0 }),
+  body: JSON.stringify({ industry: "software", employees: 15, ownership: 1.0 }),
 });
 const matches = await res.json();`,
     },
     response: `{
   "matches": [
     {
-      "schemeId": "easy-bud",
+      "schemeId": "innovation-fund",
       "score": 0.94,
-      "reason": "Qualifies on headcount and ownership."
+      "reason": "Strong fit on headcount and R&D activity."
     },
     {
-      "schemeId": "itf",
+      "schemeId": "export-support",
       "score": 0.61,
-      "reason": "Eligible, but R&D focus is a weak fit."
+      "reason": "Eligible, but export activity is a weak fit."
     }
   ]
 }`,
@@ -141,49 +141,49 @@ const matches = await res.json();`,
     description: 'Generate a structured application draft for a scheme',
     phase: 'v2',
     requests: {
-      curl: `curl -X POST https://api.thunder.hk/v1/draft \\
+      curl: `curl -X POST https://api.thunder.app/v1/draft \\
   -H "Authorization: Bearer $THUNDER_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "schemeId": "easy-bud",
-    "context": "We are a 12-person logistics startup..."
+    "schemeId": "innovation-fund",
+    "context": "We are a 15-person SaaS startup..."
   }'`,
       python: `resp = httpx.post(
-    "https://api.thunder.hk/v1/draft",
+    "https://api.thunder.app/v1/draft",
     headers={"Authorization": f"Bearer {THUNDER_KEY}"},
     json={
-        "schemeId": "easy-bud",
-        "context": "We are a 12-person logistics startup...",
+        "schemeId": "innovation-fund",
+        "context": "We are a 15-person SaaS startup...",
     },
 )
 draft = resp.json()`,
-      node: `const res = await fetch("https://api.thunder.hk/v1/draft", {
+      node: `const res = await fetch("https://api.thunder.app/v1/draft", {
   method: "POST",
   headers: {
     Authorization: \`Bearer \${process.env.THUNDER_KEY}\`,
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    schemeId: "easy-bud",
-    context: "We are a 12-person logistics startup...",
+    schemeId: "innovation-fund",
+    context: "We are a 15-person SaaS startup...",
   }),
 });
 const draft = await res.json();`,
     },
     response: `{
-  "schemeId": "easy-bud",
+  "schemeId": "innovation-fund",
   "sections": {
-    "projectTitle": "Route Optimisation & Market Expansion",
+    "projectTitle": "AI-Powered Platform & Market Expansion",
     "objectives": [
-      "Develop a branded customer portal for SME shippers",
-      "Launch targeted marketing campaign across GBA markets"
+      "Develop a new AI feature with measurable productivity gains",
+      "Launch targeted marketing campaign in new export markets"
     ],
     "budget": {
-      "total": 700000,
+      "total": 250000,
       "breakdown": [
-        { "item": "Brand design & UX", "amount": 180000 },
-        { "item": "Digital marketing", "amount": 320000 },
-        { "item": "Product development", "amount": 200000 }
+        { "item": "R&D and engineering", "amount": 130000 },
+        { "item": "Market validation", "amount": 70000 },
+        { "item": "Product design", "amount": 50000 }
       ]
     }
   }
@@ -209,7 +209,7 @@ function highlightJson(raw: string): React.ReactNode[] {
       if (m.index > lastIdx) parts.push(<span key={`p${i}-pre${m.index}`}>{line.slice(lastIdx, m.index)}</span>);
       parts.push(<span key={`p${i}-k${m.index}`} style={{ color: 'var(--accent)' }}>{m[1]}</span>);
       parts.push(<span key={`p${i}-c${m.index}`} style={{ color: 'var(--text-tertiary)' }}>{m[2]}</span>);
-      const isStr = m[3].startsWith('"');
+      const isStr = m[3]?.startsWith('"') ?? false;
       parts.push(
         <span key={`p${i}-v${m.index}`} style={{ color: isStr ? 'var(--success)' : 'var(--warning)' }}>
           {m[3]}
@@ -381,7 +381,7 @@ function EndpointList({
 // ── Main export ───────────────────────────────────────────────────────────────
 export function ApiExplorer() {
   const [lang, setLang] = useState<Lang>('curl');
-  const [selected, setSelected] = useState<Endpoint>(ENDPOINTS[0]);
+  const [selected, setSelected] = useState<Endpoint>(ENDPOINTS[0]!);
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">

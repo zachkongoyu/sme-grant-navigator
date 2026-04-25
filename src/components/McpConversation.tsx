@@ -8,10 +8,10 @@ interface Turn {
 }
 
 const TURNS: Turn[] = [
-  { role: 'user',      text: 'What grants can a 12-person logistics startup apply for?' },
-  { role: 'call',      text: 'match_schemes({ industry: "logistics", employees: 12, ownership: 1.0 })' },
-  { role: 'return',    text: '3 matches — Easy BUD ▲▲▲  ITF ▲▲  CreateSmart ▲' },
-  { role: 'assistant', text: "Your strongest match is Easy BUD — up to HK$700k for market promotion and product development. Here's why you qualify and what to prepare…" },
+  { role: 'user',      text: 'What grants can a 15-person SaaS startup apply for?' },
+  { role: 'call',      text: 'match_schemes({ industry: "software", employees: 15, ownership: 1.0 })' },
+  { role: 'return',    text: '3 matches — Innovation Grant ▲▲▲  Export Support ▲▲  Digital Transform ▲' },
+  { role: 'assistant', text: "Your strongest match is the Innovation Grant — up to $250k for R&D and product development. Here's why you qualify and what to prepare…" },
 ];
 
 const ROLE_STYLES: Record<Turn['role'], string> = {

@@ -1,4 +1,6 @@
-import type { Metadata } from 'next';
+import pathlib
+
+content = """import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { McpConversation } from '@/components/McpConversation';
@@ -137,7 +139,7 @@ export default function McpPage() {
             <pre className="overflow-x-auto bg-surface px-5 py-4 font-mono text-xs leading-6 text-text-primary">{`{
   "mcpServers": {
     "thunder": {
-      "url": "https://mcp.thunder.app",
+      "url": "https://mcp.thunder.hk",
       "apiKey": "YOUR_THUNDER_KEY"
     }
   }
@@ -167,7 +169,7 @@ export default function McpPage() {
             </p>
           </div>
           <a
-            href="mailto:mcp@thunder.app?subject=MCP%20Early%20Access"
+            href="mailto:mcp@thunder.hk?subject=MCP%20Early%20Access"
             className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-background transition hover:opacity-90"
           >
             Request access →
@@ -177,3 +179,9 @@ export default function McpPage() {
     </main>
   );
 }
+"""
+
+p = pathlib.Path('/Users/ngoyuko/projects/sme-grant-navigator/src/app/mcp/page.tsx')
+p.write_text(content)
+lines = p.read_text().splitlines()
+print(f'Written {len(lines)} lines. Last: {repr(lines[-1])}')

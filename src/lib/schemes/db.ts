@@ -3,7 +3,7 @@ import type { Scheme, SchemeCategory, SchemeStatus } from '@/types';
 import { getSupabase } from '@/lib/supabase';
 
 const schemeCategories = [
-  'BUD Fund',
+  'Trade Support',
   'Innovation',
   'Incubation',
   'Creative',
@@ -56,7 +56,7 @@ function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
     fundingCap: row.funding_cap,
     currency: row.currency,
     durationMonths: row.duration_months,
-    links: row.source_url ? [{ label: row.source_url, url: row.source_url }] : [],
+    links: row.source_url ? [{ label: 'Official programme page', url: row.source_url }] : [],
     databaseId: row.id,
     guidanceMarkdown: row.guidance_md,
     sourceUrl: row.source_url,

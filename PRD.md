@@ -6,6 +6,8 @@
 **Launch Target:** May 11, 2026  
 **Hard Deadline Driver:** Easy BUD scheme launches April 23, 2026
 
+> **⚠ Strategy revised 2026-04-25: free-first launch, Easy BUD only, monetization moved to PDF export. Original HK$299 freemium gate plan deferred.** Sections marked *[SUPERSEDED]* reflect the prior plan and are kept for reference only. See `STRATEGY_REALIGN.md` for the full rationale.
+
 ---
 
 ## How the BUD Fund Works (Scheme Mechanics)
@@ -68,8 +70,9 @@ Hong Kong's 340,000+ registered SMEs have access to meaningful government grants
 3. Users understand which grant schemes they are eligible for without needing to read 20+ government information pages.
 
 **Business goals:**
-4. Achieve 10 paying users by end of May 2026, validating the HK$299/application price point.
+4. ~~Achieve 10 paying users by end of May 2026, validating the HK$299/application price point.~~ *[SUPERSEDED — 2026-04-25: monetization deferred. v1 goal is email list growth and organic traffic. PDF export gated behind email capture, optionally HK$99.]*
 5. Establish SEO presence for "Easy BUD 2026 application" before competing content fills the search results.
+6. **[NEW]** Build an audience: maximise signups (email capture at PDF export) as the leading v1 metric. The email list is the data-vault asset that funds later monetization.
 
 ---
 
@@ -143,14 +146,14 @@ The draft must:
 
 - Acceptance criteria: Generated draft references the user's specific business profile and selected activities (not generic filler). Every activity section includes at least one measurable KPI and a specific timeline. Budget table is present and populated. Generation completes in under 60 seconds.
 
-**Freemium gate**
-- Show sections 1–2 of the draft (company background + project description) for free.
-- Gate remaining sections behind a one-time HK$299 payment via Stripe.
-- Acceptance criteria: A user who has not paid sees a clear blur or paywall after section 2. Payment flow completes without errors. Paid users immediately see the full draft.
+**Freemium gate** *[SUPERSEDED — 2026-04-25]*
+- ~~Show sections 1–2 of the draft (company background + project description) for free.~~
+- ~~Gate remaining sections behind a one-time HK$299 payment via Stripe.~~
+- **New spec:** All draft sections rendered free. Gate only the **PDF export** behind email capture (and optionally HK$99). Full Stripe subscription billing deferred. See `STRATEGY_REALIGN.md` §9–10.
 
 **PDF export**
-- Allow paid users to download the completed draft as a formatted PDF.
-- Acceptance criteria: PDF is readable, sections are clearly labeled, and the document can be opened in standard PDF readers. File is generated within 10 seconds of request.
+- Allow users to download the completed draft as a formatted PDF, gated behind **email capture** (not payment) in v1.
+- Acceptance criteria: PDF is readable, sections are clearly labeled, and the document can be opened in standard PDF readers. File is generated within 10 seconds of request. User must provide email before download link is shown.
 
 **Reimbursement model education screen**
 
@@ -225,17 +228,18 @@ Reimbursement claim documents (informational only — not needed at application 
 
 ### Leading indicators (evaluate at 2 weeks post-launch)
 
-- **Draft completion rate**: % of users who start the intake form and receive a full draft. Target: ≥ 60%.
-- **Freemium-to-paid conversion**: % of users who view the free preview and proceed to pay. Target: ≥ 15%.
-- **Time-to-draft**: Median time from intake form start to draft displayed. Target: ≤ 20 minutes.
+- **Draft completion rate**: % of users who start a chat and receive a full Easy BUD draft. Target: ≥ 60%.
+- **Email capture rate**: % of users who complete a draft and submit their email to download the PDF. Target: ≥ 30%. *[Replaces freemium-to-paid conversion as the primary funnel metric — 2026-04-25]*
+- **Time-to-draft**: Median time from first message to draft displayed. Target: ≤ 20 minutes.
 - **Draft generation error rate**: % of API calls that fail or return an unusable draft. Target: < 2%.
 
 ### Lagging indicators (evaluate at 4–8 weeks post-launch)
 
-- **Paying users by end of May 2026**: Target: 10. Stretch: 25.
-- **Revenue by end of May 2026**: Target: HK$2,990 (10 × HK$299). Stretch: HK$7,500.
+- ~~**Paying users by end of May 2026**: Target: 10. Stretch: 25.~~ *[SUPERSEDED — 2026-04-25: payment deferred]*
+- ~~**Revenue by end of May 2026**: Target: HK$2,990 (10 × HK$299). Stretch: HK$7,500.~~ *[SUPERSEDED]*
+- **Email subscribers by end of May 2026**: Target: 100. Stretch: 300. *(New primary lagging metric)*
 - **Organic search traffic**: Target: 500 unique visitors/month from "Easy BUD 2026" and related terms by end of May.
-- **User-reported submission rate**: % of paying users who report they submitted or intend to submit the draft. Target: ≥ 40% (measured via optional post-payment survey).
+- **User-reported submission rate**: % of users who report they submitted or intend to submit the draft. Target: ≥ 40% (measured via optional post-PDF survey).
 
 ---
 
@@ -262,9 +266,9 @@ Reimbursement claim documents (informational only — not needed at application 
 | Date | Milestone |
 |---|---|
 | April 23, 2026 | Easy BUD scheme launches — capture official application form and rubric from HKPC event |
-| April 25–26, 2026 | Weekend 1: Easy BUD draft generator + business profile intake + basic UI |
-| May 2–3, 2026 | Weekend 2: BUD General + E-commerce Easy + PDF export + eligibility checker |
-| May 9–10, 2026 | Weekend 3: Auth + Stripe + landing page + first accountant outreach |
+| April 25–26, 2026 | Weekend 1: Easy BUD scheme content depth + landing rewrite + system prompt bias + remove paywall |
+| May 2–3, 2026 | Weekend 2: `/reimbursement`, `/easy-bud-guide`, `/easy-bud-vs-general` SEO pages + PDF export with email gate |
+| May 9–10, 2026 | Weekend 3: `/privacy` + `/terms` + coming-soon badges on other schemes + final QA |
 | **May 11, 2026** | **Public launch** |
 | End of May 2026 | 10 paying users checkpoint |
 | Weeks 4–8 post-launch | ITF + HKSTP support, accountant-reviewed tier, content/SEO expansion |

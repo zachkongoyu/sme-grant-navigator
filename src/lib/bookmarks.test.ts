@@ -31,25 +31,25 @@ describe('bookmarks', () => {
   it('adds and removes scheme bookmark with accurate count', () => {
     const storage = new MemoryStorage();
 
-    const firstToggle = toggleSchemeBookmark('easy-bud', storage);
+    const firstToggle = toggleSchemeBookmark('innovation-fund', storage);
     expect(firstToggle.isBookmarked).toBe(true);
     expect(firstToggle.count).toBe(1);
-    expect(isSchemeBookmarked('easy-bud', storage)).toBe(true);
+    expect(isSchemeBookmarked('innovation-fund', storage)).toBe(true);
 
-    const secondToggle = toggleSchemeBookmark('easy-bud', storage);
+    const secondToggle = toggleSchemeBookmark('innovation-fund', storage);
     expect(secondToggle.isBookmarked).toBe(false);
     expect(secondToggle.count).toBe(0);
-    expect(isSchemeBookmarked('easy-bud', storage)).toBe(false);
+    expect(isSchemeBookmarked('innovation-fund', storage)).toBe(false);
   });
 
   it('deduplicates malformed duplicated stored values', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'sme-grant-navigator.bookmarks',
-      JSON.stringify(['easy-bud', 'easy-bud', 'itf']),
+      JSON.stringify(['innovation-fund', 'innovation-fund', 'export-support']),
     );
 
-    expect(getBookmarkedSchemeIds(storage)).toEqual(['easy-bud', 'itf']);
+    expect(getBookmarkedSchemeIds(storage)).toEqual(['innovation-fund', 'export-support']);
     expect(getBookmarkCount(storage)).toBe(2);
   });
 

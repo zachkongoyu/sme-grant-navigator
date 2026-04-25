@@ -56,11 +56,11 @@ export function ArtifactPanel({ artifact, sessionId, paid, onClose }: ArtifactPa
 
 // ── Shortlist ──────────────────────────────────────────────────────────────────
 
-function formatHKD(amount: number | null): string {
+function formatCurrency(amount: number | null, currency: string | null): string {
   if (amount === null) return 'Varies';
-  return new Intl.NumberFormat('en-HK', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'HKD',
+    currency: currency ?? 'HKD',
     maximumFractionDigits: 0,
   }).format(amount);
 }
@@ -73,7 +73,7 @@ function ShortlistContent({ items }: { items: ShortlistItem[] }) {
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium text-text-primary">{item.name}</p>
             <span className="shrink-0 font-mono text-xs text-text-tertiary">
-              {formatHKD(item.fundingCap)}
+              {formatCurrency(item.fundingCap, item.currency)}
             </span>
           </div>
           <p className="mt-1 text-sm leading-5 text-text-secondary">{item.shortDescription}</p>
@@ -154,7 +154,7 @@ function DraftContent({
             {sections.length - FREE_SECTIONS} more section{sections.length - FREE_SECTIONS !== 1 ? 's' : ''} in the full draft
           </p>
           <p className="mt-1 text-xs text-text-tertiary">
-            One-time payment — HK$299
+            One-time payment — $299
           </p>
           <button
             type="button"
