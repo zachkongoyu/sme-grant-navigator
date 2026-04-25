@@ -4,7 +4,7 @@ import { getActiveSchemes, getAllSchemes, getSchemeById } from './registry';
 
 describe('scheme registry', () => {
   it('returns the full registered scheme list', () => {
-    expect(getAllSchemes()).toHaveLength(12);
+    expect(getAllSchemes()).toHaveLength(6);
   });
 
   it('returns only active schemes', () => {

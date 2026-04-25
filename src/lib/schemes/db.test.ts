@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { easyBudScheme } from './easy-bud';
-import { mergeSchemesWithDatabaseRows, type SchemeRow } from './db';
+import { schemesFromRows, type SchemeRow } from './db';
 
-describe('mergeSchemesWithDatabaseRows', () => {
-  it('overrides display fields from the database while preserving static metadata', () => {
+describe('schemesFromRows', () => {
+  it('maps database rows to resolved schemes', () => {
     const rows: ReadonlyArray<SchemeRow> = [
       {
         id: 'db-easy-bud',
-        name: easyBudScheme.name,
+        name: 'Easy BUD',
         sponsor: 'Hong Kong Productivity Council',
         category: 'Export',
         status: 'closed',
@@ -22,17 +21,17 @@ describe('mergeSchemesWithDatabaseRows', () => {
       },
     ];
 
-    const [scheme] = mergeSchemesWithDatabaseRows(rows);
+    const [scheme] = schemesFromRows(rows);
 
     expect(scheme).toBeDefined();
-    expect(scheme?.id).toBe(easyBudScheme.id);
-    expect(scheme?.name).toBe(easyBudScheme.name);
+    expect(scheme?.id).toBe('db-easy-bud');
+    expect(scheme?.name).toBe('Easy BUD');
     expect(scheme?.shortDescription).toBe('Live description from Supabase.');
     expect(scheme?.category).toBe('Export');
     expect(scheme?.status).toBe('closed');
     expect(scheme?.fundingCap).toBe(123456);
     expect(scheme?.durationMonths).toBe(18);
-    expect(scheme?.documentChecklist).toEqual(easyBudScheme.documentChecklist);
+    expect(scheme?.guidanceMarkdown).toBe('Live guidance');
     expect(scheme?.links).toEqual([
       {
         label: 'https://example.com/easy-bud',

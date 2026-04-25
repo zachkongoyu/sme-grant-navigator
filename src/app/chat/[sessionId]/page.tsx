@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 import { ChatLayout } from '@/components/chat/ChatLayout';
 import type { Attachment } from '@/components/chat/types';
@@ -12,12 +12,20 @@ interface ChatSessionPageProps {
 
 export default function ChatSessionPage({ params }: ChatSessionPageProps) {
   const { sessionId } = use(params);
+  const [paid, setPaid] = useState(false);
 
   // Consume the one-shot pending message stored by HeroComposer before router.push.
-  // Returns undefined on direct URL access or page reload.
   const [seedMessage] = useState<
     { text: string; attachments: ReadonlyArray<Attachment> } | undefined
   >(() => consumePending(sessionId));
 
-  return <ChatLayout sessionId={sessionId} {...(seedMessage && { seedMessage })} />;
+  useEffect(() => {
+    fetch(`/api/sessions/${sessionId}`)
+      .then((r) => r.json())
+      .then((session) => setPaid(session?.paid ?? false))
+      .catch(() => {});
+  }, [sessionId]);
+
+  return <ChatLayout sessionId={sessionId} paid={paid} {...(seedMessage && { seedMessage })} />;
 }
+

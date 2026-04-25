@@ -6,6 +6,7 @@ import { Analytics } from '@vercel/analytics/next';
 
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AuthButton } from '@/components/AuthButton';
 
 import './globals.css';
 
@@ -44,6 +45,9 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
+        <div className="fixed top-4 right-4 z-50">
+          <AuthButton />
+        </div>
         {children}
         <ThemeToggle />
         <Analytics />

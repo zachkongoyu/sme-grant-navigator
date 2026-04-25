@@ -1,13 +1,18 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 
 import type { Artifact, ChecklistPayload, DraftPayload, ShortlistItem } from './types';
 
 interface ArtifactPanelProps {
   readonly artifact: Artifact | null;
+  readonly sessionId: string;
+  readonly paid: boolean;
   readonly onClose: () => void;
 }
 
-export function ArtifactPanel({ artifact, onClose }: ArtifactPanelProps) {
+export function ArtifactPanel({ artifact, sessionId, paid, onClose }: ArtifactPanelProps) {
   if (!artifact) return null;
 
   return (
@@ -34,7 +39,7 @@ export function ArtifactPanel({ artifact, onClose }: ArtifactPanelProps) {
           <ShortlistContent items={artifact.payload as ShortlistItem[]} />
         )}
         {artifact.kind === 'draft' && (
-          <DraftContent payload={artifact.payload as DraftPayload} />
+          <DraftContent payload={artifact.payload as DraftPayload} sessionId={sessionId} paid={paid} />
         )}
         {artifact.kind === 'checklist' && (
           <ChecklistContent payload={artifact.payload as ChecklistPayload} />
@@ -86,17 +91,49 @@ function ShortlistContent({ items }: { items: ShortlistItem[] }) {
 
 // ── Draft ──────────────────────────────────────────────────────────────────────
 
-function DraftContent({ payload }: { payload: DraftPayload }) {
-  // Render the markdown draft as formatted text sections.
-  // Replace with a proper markdown renderer (react-markdown) post-MVP.
+const FREE_SECTIONS = 2;
+
+function DraftContent({
+  payload,
+  sessionId,
+  paid,
+}: {
+  payload: DraftPayload;
+  sessionId: string;
+  paid: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
   const sections = payload.text.split(/\n(?=#{1,3} )/);
+  const visibleSections = paid ? sections : sections.slice(0, FREE_SECTIONS);
+  const locked = !paid && sections.length > FREE_SECTIONS;
+
+  async function handleUnlock() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (res.status === 401) {
+        window.location.href = `/auth/signin?next=/chat/${sessionId}`;
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
       <p className="rounded-md border border-warning/30 bg-warning/5 px-3 py-2 font-mono text-xs text-warning">
         AI-generated draft — review all content before submitting. Not a guarantee of approval.
       </p>
-      {sections.map((section, i) => {
+      {visibleSections.map((section, i) => {
         const lines = section.trim().split('\n');
         const heading = (lines[0] ?? '').replace(/^#{1,3} /, '');
         const body = lines.slice(1).join('\n').trim();
@@ -110,6 +147,25 @@ function DraftContent({ payload }: { payload: DraftPayload }) {
           </div>
         );
       })}
+
+      {locked && (
+        <div className="rounded-lg border border-border bg-background-elevated p-5 text-center">
+          <p className="text-sm font-medium text-text-primary">
+            {sections.length - FREE_SECTIONS} more section{sections.length - FREE_SECTIONS !== 1 ? 's' : ''} in the full draft
+          </p>
+          <p className="mt-1 text-xs text-text-tertiary">
+            One-time payment — HK$299
+          </p>
+          <button
+            type="button"
+            onClick={handleUnlock}
+            disabled={loading}
+            className="mt-4 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition hover:bg-accent/90 disabled:opacity-50"
+          >
+            {loading ? 'Redirecting…' : 'Unlock full draft'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

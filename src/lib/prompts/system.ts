@@ -17,12 +17,6 @@ export function buildSystemPrompt(schemes: ReadonlyArray<ResolvedScheme>): strin
         `- **${s.name}** (id: \`${s.id}\`, status: ${s.status}, category: ${s.category}${s.fundingCap ? `, up to HK$${s.fundingCap.toLocaleString()}` : ''})
   ${s.shortDescription}
   Sponsor: ${s.sponsor ?? 'not specified'}
-  Eligible activities: ${s.activityTypes.length > 0 ? s.activityTypes.join(', ') : 'scheme-specific ??ask for details'}
-  Required documents: ${
-    s.documentChecklist.length > 0
-      ? s.documentChecklist.map((d) => d.label).join(', ')
-      : 'scheme-specific'
-  }
   Source URL: ${s.sourceUrl ?? 'not listed'}`,
     )
     .join('\n\n');

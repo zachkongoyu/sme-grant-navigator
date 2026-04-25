@@ -17,12 +17,13 @@ interface Session {
 
 interface ChatLayoutProps {
   readonly sessionId: string;
+  readonly paid?: boolean;
   readonly initialMessages?: ReadonlyArray<ChatMessage>;
   readonly sessions?: ReadonlyArray<Session>;
   readonly seedMessage?: { text: string; attachments: ReadonlyArray<Attachment> };
 }
 
-export function ChatLayout({ sessionId, initialMessages, sessions = [], seedMessage }: ChatLayoutProps) {
+export function ChatLayout({ sessionId, paid = false, initialMessages, sessions = [], seedMessage }: ChatLayoutProps) {
   const { messages, streamingText, isStreaming, sendMessage, stop } = useChat({
     sessionId,
     initialMessages: initialMessages ?? [],
@@ -100,7 +101,7 @@ export function ChatLayout({ sessionId, initialMessages, sessions = [], seedMess
         {/* Artifact panel — split-pane on lg+ */}
         {activeArtifact && (
           <div className="hidden w-96 shrink-0 lg:block">
-            <ArtifactPanel artifact={activeArtifact} onClose={() => setActiveArtifact(null)} />
+            <ArtifactPanel artifact={activeArtifact} sessionId={sessionId} paid={paid} onClose={() => setActiveArtifact(null)} />
           </div>
         )}
 
@@ -112,7 +113,7 @@ export function ChatLayout({ sessionId, initialMessages, sessions = [], seedMess
               onClick={() => setActiveArtifact(null)}
             />
             <div className="relative w-full max-w-sm bg-surface">
-              <ArtifactPanel artifact={activeArtifact} onClose={() => setActiveArtifact(null)} />
+              <ArtifactPanel artifact={activeArtifact} sessionId={sessionId} paid={paid} onClose={() => setActiveArtifact(null)} />
             </div>
           </div>
         )}

@@ -2,8 +2,6 @@ import type { Scheme, SchemeCategory, SchemeStatus } from '@/types';
 
 import { getSupabase } from '@/lib/supabase';
 
-import { schemes as staticSchemes } from './index';
-
 const schemeCategories = [
   'BUD Fund',
   'Innovation',
@@ -48,46 +46,7 @@ function isSchemeStatus(value: string): value is SchemeStatus {
   return (schemeStatuses as ReadonlyArray<string>).includes(value);
 }
 
-function toResolvedScheme(scheme: Scheme): ResolvedScheme {
-  return {
-    ...scheme,
-    databaseId: null,
-    guidanceMarkdown: null,
-    sourceUrl: scheme.links[0]?.url ?? null,
-    sponsor: null,
-    updatedAt: null,
-  };
-}
-
-function mergeRowWithStaticScheme(row: SchemeRow, staticScheme: Scheme): ResolvedScheme {
-  const sourceLinks = row.source_url
-    ? [
-        {
-          label: row.source_url,
-          url: row.source_url,
-        },
-      ]
-    : staticScheme.links;
-
-  return {
-    ...staticScheme,
-    category:
-      row.category && isSchemeCategory(row.category) ? row.category : staticScheme.category,
-    status: row.status && isSchemeStatus(row.status) ? row.status : staticScheme.status,
-    fundingCap: row.funding_cap,
-    currency: row.currency === 'HKD' ? 'HKD' : staticScheme.currency,
-    durationMonths: row.duration_months,
-    shortDescription: row.short_description ?? staticScheme.shortDescription,
-    links: sourceLinks,
-    databaseId: row.id,
-    guidanceMarkdown: row.guidance_md,
-    sourceUrl: row.source_url,
-    sponsor: row.sponsor,
-    updatedAt: row.updated_at,
-  };
-}
-
-function createSchemeFromRow(row: SchemeRow): ResolvedScheme {
+function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
   return {
     id: row.id,
     name: row.name,
@@ -95,22 +54,9 @@ function createSchemeFromRow(row: SchemeRow): ResolvedScheme {
     category: row.category && isSchemeCategory(row.category) ? row.category : 'Innovation',
     status: row.status && isSchemeStatus(row.status) ? row.status : 'coming-soon',
     fundingCap: row.funding_cap,
-    currency: row.currency === 'HKD' ? 'HKD' : 'HKD',
+    currency: row.currency,
     durationMonths: row.duration_months,
-    eligibility: [],
-    activityTypes: [],
-    approvedMarkets: null,
-    intakeFields: [],
-    promptTemplateId: null,
-    documentChecklist: [],
-    links: row.source_url
-      ? [
-          {
-            label: row.source_url,
-            url: row.source_url,
-          },
-        ]
-      : [],
+    links: row.source_url ? [{ label: row.source_url, url: row.source_url }] : [],
     databaseId: row.id,
     guidanceMarkdown: row.guidance_md,
     sourceUrl: row.source_url,
@@ -119,20 +65,8 @@ function createSchemeFromRow(row: SchemeRow): ResolvedScheme {
   };
 }
 
-export function mergeSchemesWithDatabaseRows(
-  rows: ReadonlyArray<SchemeRow>,
-): ReadonlyArray<ResolvedScheme> {
-  const staticSchemeByName = new Map(staticSchemes.map((scheme) => [scheme.name, scheme]));
-
-  return rows.map((row) => {
-    const staticScheme = staticSchemeByName.get(row.name);
-
-    if (!staticScheme) {
-      return createSchemeFromRow(row);
-    }
-
-    return mergeRowWithStaticScheme(row, staticScheme);
-  });
+export function schemesFromRows(rows: ReadonlyArray<SchemeRow>): ReadonlyArray<ResolvedScheme> {
+  return rows.map(rowToResolvedScheme);
 }
 
 async function fetchSchemeRows(): Promise<ReadonlyArray<SchemeRow> | null> {
@@ -160,11 +94,11 @@ async function fetchSchemeRows(): Promise<ReadonlyArray<SchemeRow> | null> {
 export async function getAllSchemesFromDatabase(): Promise<ReadonlyArray<ResolvedScheme>> {
   const rows = await fetchSchemeRows();
 
-  if (!rows || rows.length === 0) {
-    return staticSchemes.map(toResolvedScheme);
+  if (!rows) {
+    return [];
   }
 
-  return mergeSchemesWithDatabaseRows(rows);
+  return schemesFromRows(rows);
 }
 
 export async function getSchemeByIdFromDatabase(
