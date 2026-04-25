@@ -1,0 +1,647 @@
+'use client';
+
+import { useRef, useState, useCallback, type ChangeEvent, type DragEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
+import { AttachmentChip } from '@/components/chat/AttachmentChip';
+
+interface DrafterProps {
+  readonly scheme: ResolvedScheme;
+}
+
+type Stage = 'compose' | 'streaming' | 'done' | 'error';
+
+/**
+ * Returns true if the model declined to draft because the request is off-topic.
+ * Keyed on the phrase the system prompt instructs it to use.
+ */
+function isRejection(text: string): boolean {
+  const t = text.trimStart().toLowerCase();
+  return t.startsWith('i can only help draft');
+}
+
+/** Extends AttachmentFile with the extracted text content (stored client-side, not in DB). */
+interface DraftFileAttachment extends AttachmentFile {
+  text: string;
+  uploading?: boolean;
+}
+
+type DraftAttachment = DraftFileAttachment | LinkAttachment;
+
+export function Drafter({ scheme }: DrafterProps) {
+  const [context, setContext] = useState('');
+  const [draft, setDraft] = useState('');
+  const [stage, setStage] = useState<Stage>('compose');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [noticeMsg, setNoticeMsg] = useState('');
+  const [attachments, setAttachments] = useState<DraftAttachment[]>([]);
+  const [linkInputVisible, setLinkInputVisible] = useState(false);
+  const [linkValue, setLinkValue] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [followUp, setFollowUp] = useState('');
+  const [history, setHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const abortRef = useRef<AbortController | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function removeAttachment(id: string) {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }
+
+  async function addFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+
+    // Add placeholder chips with uploading=true
+    const placeholders: DraftFileAttachment[] = list.map((f) => ({
+      kind: 'file',
+      id: crypto.randomUUID(),
+      name: f.name,
+      size: f.size,
+      mime: f.type,
+      text: '',
+      uploading: true,
+    }));
+    setAttachments((prev) => [...prev, ...placeholders]);
+
+    // Upload all files to /api/extract and replace placeholders with results
+    const form = new FormData();
+    list.forEach((f) => form.append('files', f));
+
+    try {
+      const res = await fetch('/api/extract', { method: 'POST', body: form });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({ error: 'Upload failed' }))) as { error: string };
+        setErrorMsg(err.error ?? 'File upload failed');
+        setAttachments((prev) => prev.filter((a) => !placeholders.some((p) => p.id === a.id)));
+        return;
+      }
+      const extracted = (await res.json()) as Array<{ id: string; name: string; size: number; mime: string; text: string }>;
+      setAttachments((prev) => {
+        const remaining = prev.filter((a) => !placeholders.some((p) => p.id === a.id));
+        const resolved: DraftFileAttachment[] = extracted.map((e) => ({
+          kind: 'file',
+          id: e.id,
+          name: e.name,
+          size: e.size,
+          mime: e.mime,
+          text: e.text,
+          uploading: false,
+        }));
+        return [...remaining, ...resolved];
+      });
+    } catch {
+      setAttachments((prev) => prev.filter((a) => !placeholders.some((p) => p.id === a.id)));
+      setErrorMsg('File upload failed');
+    }
+  }
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) void addFiles(e.target.files);
+    e.target.value = '';
+  }
+
+  function addLink() {
+    const url = linkValue.trim();
+    if (!url) return;
+    const link: LinkAttachment = { kind: 'link', id: crypto.randomUUID(), url };
+    setAttachments((prev) => [...prev, link]);
+    setLinkValue('');
+    setLinkInputVisible(false);
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData.items);
+    const imageItem = items.find((i) => i.type.startsWith('image/'));
+    if (imageItem) {
+      const file = imageItem.getAsFile();
+      if (file) { e.preventDefault(); void addFiles([file]); return; }
+    }
+    const pastedText = e.clipboardData.getData('text');
+    if (isUrl(pastedText)) {
+      e.preventDefault();
+      const link: LinkAttachment = { kind: 'link', id: crypto.randomUUID(), url: pastedText };
+      setAttachments((prev) => [...prev, link]);
+    }
+  }
+
+  function handleDragOver(e: DragEvent) { e.preventDefault(); setIsDragging(true); }
+  function handleDragLeave() { setIsDragging(false); }
+  function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files.length > 0) void addFiles(e.dataTransfer.files);
+  }
+
+  const isUploading = attachments.some((a) => a.kind === 'file' && (a as DraftFileAttachment).uploading);
+  const canGenerate = context.trim().length > 0 && !isUploading;
+
+  const generate = useCallback(async () => {
+    if (!context.trim() || isUploading) return;
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    setDraft('');
+    setStage('streaming');
+    setErrorMsg('');
+
+    const inlineAttachments = attachments
+      .filter((a): a is DraftFileAttachment => a.kind === 'file')
+      .map((a) => ({ name: a.name, text: a.text }));
+
+    const links = attachments
+      .filter((a): a is LinkAttachment => a.kind === 'link')
+      .map((a) => a.url);
+
+    try {
+      const res = await fetch(`/api/draft/${scheme.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userContext: context, inlineAttachments, links }),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const msg = await res.text().catch(() => 'Unknown error');
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullDraft = '';
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        fullDraft += chunk;
+        setDraft((prev) => prev + chunk);
+      }
+
+      if (isRejection(fullDraft)) {
+        setDraft('');
+        setNoticeMsg(fullDraft.trim());
+        setStage('compose');
+      } else {
+        setStage('done');
+        setHistory([
+          { role: 'user' as const, content: context },
+          { role: 'assistant' as const, content: fullDraft },
+        ]);
+      }
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+      setErrorMsg((err as Error)?.message ?? 'Generation failed');
+      setStage('error');
+    }
+  }, [context, attachments, scheme.id, isUploading]);
+
+  const revise = useCallback(async () => {
+    const msg = followUp.trim();
+    if (!msg) return;
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    const currentHistory = history;
+    setFollowUp('');
+    setDraft('');
+    setStage('streaming');
+
+    try {
+      const res = await fetch(`/api/draft/${scheme.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userContext: msg, history: currentHistory }),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const errMsg = await res.text().catch(() => 'Unknown error');
+        throw new Error(errMsg || `HTTP ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullDraft = '';
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        fullDraft += chunk;
+        setDraft((prev) => prev + chunk);
+      }
+
+      if (isRejection(fullDraft)) {
+        setDraft('');
+        setNoticeMsg(fullDraft.trim());
+        setStage('done');
+      } else {
+        setStage('done');
+        setHistory((prev) => [
+          ...prev,
+          { role: 'user' as const, content: msg },
+          { role: 'assistant' as const, content: fullDraft },
+        ]);
+      }
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+      setErrorMsg((err as Error)?.message ?? 'Revision failed');
+      setStage('error');
+    }
+  }, [followUp, history, scheme.id]);
+
+  const reset = useCallback(() => {
+    abortRef.current?.abort();
+    setDraft('');
+    setStage('compose');
+    setErrorMsg('');
+    setNoticeMsg('');
+    setAttachments([]);
+    setLinkInputVisible(false);
+    setLinkValue('');
+    setFollowUp('');
+    setHistory([]);
+  }, []);
+
+  const capDisplay = scheme.fundingCap
+    ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`
+    : 'Varies';
+
+  // ── Compose / error ──────────────────────────────────────────────────────
+  if (stage === 'compose' || stage === 'error') {
+    return (
+      <div
+        className={`mx-auto max-w-2xl px-4 py-12 sm:px-6 transition-opacity ${isDragging ? 'opacity-60' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Generator header */}
+        <div className="mb-8 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">
+              {scheme.category} · Up to {capDisplay}
+            </span>
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {scheme.name}
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-text-secondary">
+            Paste your company background, project goals, and budget. Thunder writes the complete application — with{' '}
+            <code className="rounded bg-surface-hover px-1 py-px text-xs text-text-primary">[TODO]</code>{' '}
+            gaps where your input is required.
+          </p>
+        </div>
+
+        {/* Input card */}
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+          {/* Drop zone / textarea */}
+          <div className="relative">
+            <textarea
+              value={context}
+              onChange={(e) => { setContext(e.target.value); setNoticeMsg(''); }}
+              onPaste={handlePaste}
+              placeholder={`Describe your company and project…\n\nE.g. Acme Ltd, 12-person HK food manufacturer. Apply for Easy BUD to fund market research in the GBA (Activity 4.1, ~HK$60K) and a Chinese e-catalogue (Activity 4.5, ~HK$90K). First-time BUD applicant.`}
+              rows={10}
+              className="w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm leading-7 text-text-primary placeholder:text-text-tertiary focus:outline-none"
+            />
+            {isDragging && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-t-2xl border-2 border-dashed border-accent bg-accent/5">
+                <span className="font-mono text-xs uppercase tracking-widest text-accent">Drop files here</span>
+              </div>
+            )}
+          </div>
+
+          {/* Attachment chips */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 border-t border-border px-5 py-3">
+              {attachments.map((a) => (
+                <span key={a.id} className="relative">
+                  <AttachmentChip item={a} onRemove={() => removeAttachment(a.id)} />
+                  {a.kind === 'file' && (a as DraftFileAttachment).uploading && (
+                    <span className="absolute -right-1 -top-1">
+                      <span className="block h-2.5 w-2.5 animate-spin rounded-full border border-accent border-t-transparent" />
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Link input row */}
+          {linkInputVisible && (
+            <div className="flex gap-2 border-t border-border px-5 py-3">
+              <input
+                autoFocus
+                type="url"
+                value={linkValue}
+                onChange={(e) => setLinkValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addLink();
+                  if (e.key === 'Escape') setLinkInputVisible(false);
+                }}
+                placeholder="https://…"
+                className="h-8 flex-1 rounded-md border border-border bg-background px-3 font-mono text-xs text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
+              />
+              <button type="button" onClick={addLink}
+                className="h-8 rounded-md border border-border px-3 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
+                Add
+              </button>
+              <button type="button" onClick={() => setLinkInputVisible(false)}
+                className="h-8 rounded-md px-3 font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors">
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* Bottom toolbar */}
+          <div className="flex items-center justify-between border-t border-border bg-background px-4 py-3">
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+                title="Attach files (.pdf, .docx, .csv…)">
+                <PaperclipIcon />
+              </button>
+              <button type="button" onClick={() => setLinkInputVisible((v) => !v)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+                title="Add a link">
+                <LinkIcon />
+              </button>
+              <span className="ml-2 font-mono text-[10px] text-text-tertiary">
+                Drop files or paste a URL
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={generate}
+              disabled={!canGenerate}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <SparkleIcon />
+              {isUploading ? 'Processing…' : 'Generate'}
+            </button>
+          </div>
+        </div>
+
+        {noticeMsg && (
+          <p className="mt-4 rounded-xl border border-warning/30 bg-warning/8 px-4 py-3 text-sm text-warning">
+            {noticeMsg}
+          </p>
+        )}
+
+        {stage === 'error' && (
+          <p className="mt-4 rounded-xl border border-danger/30 bg-danger/8 px-4 py-3 text-sm text-danger">
+            {errorMsg}
+          </p>
+        )}
+
+        <input ref={fileInputRef} type="file" multiple
+          accept=".pdf,.docx,.xlsx,.csv,.pptx,.txt,.md,image/*"
+          className="hidden" onChange={handleFileChange} />
+      </div>
+    );
+  }
+
+  // ── Streaming — neutral thinking state ──────────────────────────────────
+  if (stage === 'streaming') {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+        {/* Scheme pill */}
+        <div className="mb-8 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">
+              {scheme.name} · Evaluating brief…
+            </span>
+          </div>
+        </div>
+
+        {draft.length === 0 ? (
+          /* Skeleton while waiting for first token */
+          <div className="space-y-3 rounded-2xl border border-border bg-surface p-6">
+            {[72, 55, 88, 60, 40].map((w, i) => (
+              <div key={i} className="h-3 animate-pulse rounded-full bg-surface-hover" style={{ width: `${w}%` }} />
+            ))}
+          </div>
+        ) : (
+          /* Streamed text preview — shown as it arrives */
+          <div className="rounded-2xl border border-border bg-surface px-6 py-5 text-sm leading-7 text-text-secondary">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{draft}</ReactMarkdown>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => { abortRef.current?.abort(); setStage('compose'); setDraft(''); }}
+          className="mt-6 flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-text-tertiary transition hover:text-text-primary"
+        >
+          ← Cancel
+        </button>
+      </div>
+    );
+  }
+
+  // ── Done — two-panel document view ───────────────────────────────────────
+  return (
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr]">
+
+      {/* Left rail — source summary */}
+      <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
+        {/* Scheme badge */}
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="mb-1 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary">{scheme.category}</span>
+          </div>
+          <p className="text-sm font-semibold leading-snug text-text-primary">{scheme.name}</p>
+          <p className="mt-0.5 font-mono text-xs text-text-tertiary">Up to {capDisplay}</p>
+        </div>
+
+        {/* Your input summary */}
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-tertiary">Your input</p>
+          <p className="line-clamp-6 text-xs leading-5 text-text-secondary">{context}</p>
+          {attachments.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {attachments.map((a) => (
+                <span key={a.id} className="inline-flex max-w-[160px] items-center gap-1 truncate rounded-md border border-border px-2 py-0.5 font-mono text-[10px] text-text-tertiary">
+                  {a.kind === 'file' ? <MiniFileIcon /> : <MiniLinkIcon />}
+                  <span className="truncate">{a.kind === 'file' ? a.name : a.url}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {stage === 'done' && (
+          <div className="space-y-2">
+            <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
+              <CopyIcon />
+              Copy draft
+            </button>
+            <button type="button" onClick={reset}
+              className="flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
+              ← Start over
+            </button>
+          </div>
+        )}
+      </aside>
+
+      {/* Right — document output */}
+      <div className="min-w-0">
+        {/* Document header bar */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Draft ready
+            </span>
+            <span className="font-mono text-[10px] text-text-tertiary">
+              {new Date().toLocaleDateString('en-HK', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
+              <CopyIcon />
+              Copy
+            </button>
+            <button type="button" onClick={reset}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors">
+              ← New draft
+            </button>
+          </div>
+        </div>
+
+        {/* Streaming skeleton — shown while first tokens arrive */}
+        {draft.length === 0 && (
+          <div className="space-y-3 rounded-2xl border border-border bg-surface p-6">
+            {[80, 65, 90, 55, 75].map((w, i) => (
+              <div key={i} className="h-3 animate-pulse rounded-full bg-surface-hover" style={{ width: `${w}%` }} />
+            ))}
+          </div>
+        )}
+
+        {/* Document body */}
+        {draft.length > 0 && (
+          <article className="prose prose-sm prose-invert max-w-none rounded-2xl border border-border bg-surface px-6 py-6 prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-accent prose-code:rounded prose-code:bg-surface-hover prose-code:px-1 prose-table:text-xs">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{draft}</ReactMarkdown>
+          </article>
+        )}
+
+        {/* Mobile actions */}
+        <div className="mt-4 flex gap-3 sm:hidden">
+          <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
+            className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
+            Copy draft
+          </button>
+          <button type="button" onClick={reset}
+            className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
+            Start over
+          </button>
+        </div>
+
+        {/* Refine this draft */}
+        <div className="mt-6 rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="px-5 pt-4 pb-1">
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-text-tertiary">
+              Refine this draft
+            </p>
+            <textarea
+              value={followUp}
+              onChange={(e) => setFollowUp(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && followUp.trim()) revise();
+              }}
+              placeholder={`Ask for changes… e.g.\n"Make the executive summary shorter"\n"Add a risk mitigation section"\n"Translate the cover letter to Traditional Chinese"`}
+              rows={4}
+              className="w-full resize-none bg-transparent pb-2 text-sm leading-6 text-text-primary placeholder:text-text-tertiary focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center justify-between border-t border-border bg-background px-4 py-3">
+            <span className="font-mono text-[10px] text-text-tertiary">⌘ Enter to send</span>
+            <button
+              type="button"
+              onClick={revise}
+              disabled={!followUp.trim()}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <SparkleIcon />
+              Revise
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function isUrl(str: string): boolean {
+  try {
+    const url = new URL(str.trim());
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 1.5 9.06 5.44a2 2 0 0 0 1.5 1.5L14.5 8l-3.94 1.06a2 2 0 0 0-1.5 1.5L8 14.5l-1.06-3.94a2 2 0 0 0-1.5-1.5L1.5 8l3.94-1.06a2 2 0 0 0 1.5-1.5L8 1.5Z" />
+    </svg>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="5" width="8" height="8" rx="1.5" />
+      <path d="M3 11V3h8" />
+    </svg>
+  );
+}
+
+function PaperclipIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.5 7.5l-6.5 6.5a4 4 0 0 1-5.66-5.66L8 1.66a2.5 2.5 0 0 1 3.54 3.54L5 11.66a1 1 0 0 1-1.41-1.41L9.5 4.34" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5l-1 1" />
+      <path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5l1-1" />
+    </svg>
+  );
+}
+
+function MiniFileIcon() {
+  return (
+    <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 1H2.5A.5.5 0 0 0 2 1.5v9a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4L7 1z" />
+      <path d="M7 1v3h3" />
+    </svg>
+  );
+}
+
+function MiniLinkIcon() {
+  return (
+    <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 7a2.5 2.5 0 0 0 3.5 0l1.5-1.5A2.5 2.5 0 0 0 6.5 2L5.5 3" />
+      <path d="M7 5a2.5 2.5 0 0 0-3.5 0L2 6.5A2.5 2.5 0 0 0 5.5 10l1-1" />
+    </svg>
+  );
+}

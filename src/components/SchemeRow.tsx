@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { getFundContentBySchemeId } from '@/lib/schemes/content';
 import type { Scheme } from '@/types';
 
 interface SchemeRowProps {
@@ -42,7 +41,6 @@ function bodyAcronym(name: string): string {
 }
 
 export function SchemeRow({ index, scheme }: SchemeRowProps) {
-  const fundContent = getFundContentBySchemeId(scheme.id);
 
   return (
     <Link
@@ -57,7 +55,7 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
           <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden">
             {
               <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-text-secondary">
-                {fundContent ? bodyAcronym(fundContent.administeringBody) : 'SG'}
+                {bodyAcronym(scheme.name)}
               </span>
             }
           </span>

@@ -1,8 +1,9 @@
 export type SchemeId = string;
 
-export type SchemeStatus = 'active' | 'coming-soon' | 'closed';
+export type SchemeStatus = 'open' | 'active' | 'coming-soon' | 'closed';
 
 export type SchemeCategory =
+  | 'BUD Fund'
   | 'Trade Support'
   | 'Innovation'
   | 'Incubation'
@@ -17,13 +18,6 @@ export interface SchemeLink {
   readonly url: string;
 }
 
-export interface DocumentChecklistEntry {
-  readonly id: string;
-  readonly label: string;
-  readonly stage: 'application' | 'reimbursement';
-  readonly note?: string;
-}
-
 export interface Scheme {
   readonly id: SchemeId;
   readonly name: string;
@@ -34,12 +28,5 @@ export interface Scheme {
   readonly currency: string | null;
   readonly durationMonths: number | null;
   readonly links: ReadonlyArray<SchemeLink>;
-  readonly documentChecklist?: ReadonlyArray<DocumentChecklistEntry>;
-}
-
-export interface DraftSection {
-  readonly id: string;
-  readonly title: string;
-  readonly content: string;
-  readonly isFree: boolean;
+  readonly draftable: boolean;
 }

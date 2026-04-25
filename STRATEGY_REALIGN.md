@@ -6,83 +6,96 @@
 
 ## Strategic shift
 
-We are moving from a **HK$299-at-launch paid wedge** to a **free-first audience-building wedge**. The site goes open to the world. Easy BUD is the only scheme with a working drafter at launch. Monetization moves from the draft itself to PDF export (or stays free in v1). All other schemes appear as discovery/matching content but have no drafter yet.
+We are moving from a **HK$299-at-launch paid wedge** to a **free-first audience-building wedge**. The site goes open to the world. Easy BUD is the only thing the product does at launch. Monetization moves from the draft itself to PDF export (or stays free in v1). All other schemes appear as discovery content but have no drafter yet.
 
-Do **not** expand scope. Do **not** try to ship a complete HK funding directory. Cut, don't add.
+**The bigger shift:** the v1 product is **not a chat app**. It is a **standalone asset-generator** — same UX pattern as Midjourney, v0, Lovable, ChatGPT Canvas. One composer, one artifact (the draft), a refinement rail for follow-ups. No conversation panel, no Discover/Qualify dialogue, no matcher. The user describes their company once, the agent produces a complete Easy BUD draft, the user iterates on the artifact. The conversational matcher and any chat-style endpoints are **hidden** at launch — code stays in the repo, routes return 404 or redirect.
 
-## Product surface separation (architecture)
+Do **not** expand scope. Do **not** try to ship a complete HK funding directory. Do **not** ship the matcher. Cut, don't add.
 
-Two distinct surfaces with two distinct jobs. They share the scheme registry but nothing else:
+## Product surface — single surface, asset-generator pattern
 
-1. **In-house agent (`/chat`)** — end-to-end **company-to-grant matching**. Discover, Qualify, recommend schemes. The agent's job is to take a fuzzy company description and return *which schemes are worth pursuing and why*. It is **not** a drafter. It does not specialise in any single scheme. It can talk about Easy BUD, BUD General, ITF, HKSTP, CreateSmart all the same way (using whatever data the scheme record carries).
-2. **Per-scheme drafter (new — `src/app/draft/[schemeId]/...` + `src/lib/drafters/[schemeId]/...`)** — a scheme-specific drafting flow. This is where Easy BUD-specific intake, prompt template, eligibility checks, activity-type validation, and PDF export live. v1 ships only the Easy BUD drafter. Other schemes route to a "drafter coming soon" stub.
+One surface. One job. The drafter.
 
-The agent at `/chat` can hand off to a drafter once a user picks a scheme that has one. The drafter can also be entered directly from `/funds/[schemeId]` (skip-the-matching path for users who already know what they want).
+- **`/draft` (new — the entire product at launch)** — composer + artifact + refinement rail. User lands, types/pastes their company context, hits generate, gets a streamed Easy BUD draft as an artifact. Refinement happens by editing the intake or by issuing follow-ups against the artifact ("make section 3 more concrete," "shorten the executive summary"). It looks and feels like v0/Lovable, not like ChatGPT.
+- **`/funds/[schemeId]` (existing)** — public scheme detail pages rendered from corpus markdown. Top-of-funnel SEO. Easy BUD's page has a "Draft this" CTA that launches `/draft`. Other schemes' pages show "Drafter coming soon" + waitlist.
+- **`/reimbursement` (new)** — standalone explainer page (cross-cutting concept; see section 7).
+
+Hidden at v1:
+- `/chat`, `/chat/[sessionId]` — return 404 or redirect to `/draft`.
+- `/api/chat/*` — keep code, gate behind a feature flag (`ENABLE_CHAT=false` in production env). The matcher is a post-launch feature; we don't delete it but we don't expose it.
+- REST API and MCP — coming-soon waitlist pages, endpoints return 503 (see section 1a).
+
+**Why a single surface:** asset generators win on first-impression clarity. "Type your company → get a draft" is a 5-second pitch. Adding a matcher in the same launch dilutes the message and doubles the surface area we have to make good in 16 days. The matcher is a great post-launch chapter once the drafter is loved.
 
 ---
 
 ## What to change
 
-### 1. Landing page — position the agent as a matcher, drafter as a separate surface
+### 1. Landing page — composer is the product, not a directory
 
 - File: `src/app/page.tsx`
-- Replace tagline `"Fund applications, done by an agent."` with copy that distinguishes the two surfaces. Suggested H1: `"Find the right HK grant. Then draft it."`
-- Subline: `"Thunder matches your company to the schemes you qualify for. Easy BUD drafts available now — more schemes coming."`
-- `metadata.title` and `metadata.description` (lines 9–14): rewrite to target `"Hong Kong SME grants 2026"` and `"Easy BUD 2026 application"` SEO. Title under 60 chars, description under 155.
-- The four access-mode cards stay but with revised tags:
-  - **In-house agent** — keep enabled, retag to `"Find your scheme"` (not "Get a draft"). The agent is matcher-first.
-  - **REST API** — keep the card, badge it `"Coming soon"`. Link target stays `/rest-api` (see #1a).
-  - **MCP server** — keep the card, badge it `"Coming soon"`. Link target stays `/mcp` (see #1a).
-  - **Browse manually** — keep enabled.
-- Add a small link above the fold: `"How does BUD reimbursement work?"` linking to `/reimbursement` (see #7).
+- Replace tagline `"Fund applications, done by an agent."` with copy that frames the drafter as a generator. Suggested H1: `"Generate your Easy BUD application."` Subline: `"Describe your company. Get a complete HK$150,000 Easy BUD draft in under a minute. Free."`
+- The hero **is** the composer. A textarea + "Generate draft" button, prominent above the fold. Submitting it routes into `/draft` with the input pre-filled (or `/draft` directly hosts the composer and the homepage is `/draft` styled differently — implementer's call). Treat the composer as the single primary CTA on the page.
+- Drop the four-card "access modes" grid. It frames Thunder as a directory of surfaces; we want it framed as a tool. If the cards must stay for now, replace them with: (a) "Draft your Easy BUD" — primary, links to composer. (b) "Browse HK schemes" — secondary, links to `/funds`. (c) "How reimbursement works" — tertiary, links to `/reimbursement`. No "In-house agent" card. No "REST API" card. No "MCP server" card on the landing — those move to a footer "Developers" link.
+- `metadata.title` and `metadata.description`: rewrite to target `"Easy BUD 2026 application"` and `"HK SME grant draft"` SEO. Title under 60 chars, description under 155.
+- Below the composer, a thin row of social proof / scheme detail teasers: "Built on the April 23 HKPC enhancement" + link to `/funds/easy-bud` + link to `/reimbursement`.
 
-### 1a. API and MCP routes — keep code, hide endpoints
+### 1a. API, MCP, and chat routes — keep code, hide endpoints
 
-- Files: `src/app/api/...` (REST API), `src/app/mcp/...` (MCP server route), and any related lib code.
-- **Do not delete the implementation files.** The platform thesis is real for week-12+; we want the code to keep compiling.
+- Files: `src/app/api/...` (REST API), `src/app/mcp/...` (MCP server route), `src/app/chat/...`, `src/app/api/chat/...`, and any related lib code.
+- **Do not delete the implementation files.** The matcher and the platform thesis are real for week-12+; we want the code to keep compiling and tests to keep running.
+- `src/app/chat/page.tsx` and `src/app/chat/[sessionId]/page.tsx` — make them return `notFound()` (404) or redirect to `/draft`. Add a `// HIDDEN AT LAUNCH — see STRATEGY_REALIGN.md` comment at the top so the next person doesn't accidentally re-expose them.
+- `src/app/api/chat/route.ts` — gate behind a server-side feature flag. Read `process.env.ENABLE_CHAT`. Default `false` in production. Return `404` when disabled. Same for `/api/sessions/*` and any other chat-supporting endpoints (uploads stay live if the drafter uses them; otherwise gate them too).
 - For each public-facing route under `src/app/rest-api/page.tsx` and `src/app/mcp/page.tsx`: render a "Coming soon" page describing what the endpoint will do, with an email-capture waitlist. No live functionality.
-- For each internal API endpoint (e.g. routes that would be called by external clients): return `503 Service Unavailable` with a JSON body `{ "status": "coming_soon", "available": "post-launch" }`. Do not 404 — that loses the discoverability for crawlers and waitlist signups.
-- `src/app/api/chat/route.ts` and `src/app/api/sessions/...` and `src/app/api/uploads/route.ts` stay live — they power the in-house agent.
+- For external-facing API endpoints (those that would be called by third parties): return `503 Service Unavailable` with a JSON body `{ "status": "coming_soon", "available": "post-launch" }`. Do not 404 — that loses crawler discoverability and waitlist signups.
 
-### 2. Agent system prompt — keep general, do NOT bias to Easy BUD
+### 2. System prompt — drafter only, no Discover/Qualify
 
 - File: `src/lib/prompts/system.ts`
-- The agent stays general. Its job is matching, not drafting. Do **not** hard-bias to Easy BUD.
-- Keep the current Discover → Qualify loop. **Remove "Draft" from the agent's responsibilities.** The agent recommends schemes and qualifies the user; when the user picks a scheme, the UI hands them off to the per-scheme drafter at `/draft/[schemeId]`.
-- Update the system prompt's three-phase description from "Discover → Qualify → Draft" to "Discover → Qualify → Hand off." Explicit instruction: "When the user is ready to draft, present a button/link to the drafter for their chosen scheme. Do not produce the draft yourself."
-- Add a 3-month BUD cooldown question to the qualification phase for any BUD-track scheme (Easy BUD, BUD General, E-commerce Easy).
-- Add: when activity descriptions imply outsourcing in the target market (relevant for Easy BUD), flag inline.
-- The artifact panel that currently shows draft sections in chat should be repurposed for shortlists, eligibility readouts, and checklists only — not drafts.
+- The current prompt is a Discover → Qualify → Draft conversational agent. Rewrite as a **drafter-only** asset generator.
+- Identity: "You are Thunder, a drafting agent for Hong Kong government grant applications. Your sole output is a complete, well-structured draft of the application identified in the user's request, ready for human review."
+- Behaviour: produce the draft on the first turn. Do not ask clarifying questions unless the input is so sparse that drafting would be guesswork (no company name, no products, no markets). When information is missing, **fill the gaps with `[TODO: <what's needed>]` markers inside the draft** rather than stopping to ask.
+- Cooldown / eligibility / activity-type rules live in the scheme corpus, not the system prompt. The drafter reads `scheme.corpus` JIT (see section 9) and respects it.
+- Refinement turns: when the user issues a follow-up ("shorten section 3," "the company name is X"), edit the existing artifact rather than starting over. The route handler should pass the prior draft as part of the context.
+- Remove all language about "Discover," "Qualify," shortlists, recommendations, comparing schemes. That's the matcher's job, and the matcher is hidden.
 
-### 3. Easy BUD scheme content — make it best-in-class
+### 3. Schemes are facets + corpus + JIT LLM reasoning — NOT structured eligibility/activity fields
 
-- File: `src/lib/schemes/easy-bud.ts`
-- This must be the single deepest scheme file in the registry. Pull verbatim from `PRD.md` (Easy BUD Scheme Mechanics section + Appendix) and `hk_funding_schemes.md`.
-- Required fields: `documentChecklist` (categorized as "needed now" vs "needed for reimbursement claim"), `eligibility` (employee count ≤ 100, non-listed, HK-registered, substantive HK ops, 3-month cooldown, HK$800K concurrent cap, HK$7M cumulative cap), `activityTypes` (all 10 from PRD section 4.1–4.10 with caps and notes).
-- Add `whatKillsApplications` array — the bullet list from PRD ("Vague scope," "Activities run from target market," etc.).
+**Architecture clarification:** Supabase is now the source of truth for scheme data. Each scheme record carries:
 
-### 4. Cut placeholder schemes from the static fallback
+- **Structured facets** (the small set of values needed for filtering, badges, and stat cards): `id`, `name`, `sponsor`, `status`, `category`, `funding_cap`, `currency`, `duration_months`, `source_url`, `short_description`, `links[]`, optionally `draftable` boolean and `compared_to[]` ids.
+- **Unstructured corpus** (one or more markdown columns): the full guidance content for the scheme — eligibility rules, activity types, document checklists, what kills applications, caps, cooldowns, official form structure, examples. Curated as prose, not schema.
 
-- File: `src/lib/schemes/index.ts`
-- The current static fallback contains generic placeholder schemes ("Innovation Grant", "Startup Incubator Programme", "Digital Transformation Subsidy") that are NOT real HK schemes. This is embarrassing if the DB ever fails over.
-- Replace the entire array with the six real HK schemes (Easy BUD deep, the others as stubs with `status: 'coming-soon'`). Or delete the fallback entirely and let the DB be the only source — fail loudly if unreachable.
+**Do NOT** introduce structured fields like `eligibleActivities[]`, `whatKillsApplications[]`, `documentChecklist`, `eligibility`, `cooldownRule`, `caps`, `activityTypes`. They're a maintenance liability and they constrain what the LLM can reason about. Instead, write the equivalent information as markdown sections inside the corpus and let the LLM (drafter, public detail page) read it just-in-time.
+
+**Why this matters:**
+- New scheme = new corpus markdown. No code changes, no schema migration, no field-mapping decisions.
+- The same corpus serves two consumers at launch: the drafter (prompt context) and the public scheme detail page (rendered as markdown). Post-launch the matcher becomes a third consumer — same corpus, no work to add it.
+- The corpus IS the moat. Curating high-quality, comprehensive, well-structured prose per scheme is the actual work — not designing TypeScript types.
+
+### 4. Static TS files in `src/lib/schemes/` — treat as legacy / minimal fallback
+
+- The DB is now source of truth (verify the schema against `supabase/migrations/001_initial_schema.sql`). The static files (`easy-bud.ts`, `bud-general.ts`, etc.) and `src/lib/schemes/index.ts` are no longer where content lives.
+- Action: keep the files only as a thin fallback for DB outages. The fallback should mirror the DB schema (facets + corpus markdown), not the old structured fields. If maintaining a fallback is more work than it's worth, delete the static array entirely and have `getAllSchemesFromDatabase` throw loudly when the DB is unreachable — better to error than to serve placeholder "Innovation Grant" data.
+- All scheme content work for the next two weeks happens **in the database**, via Supabase dashboard or a migration script — not in TypeScript files.
 
 ### 5. Defer non-Easy-BUD schemes from launch
 
 - Files: `src/lib/schemes/bud-general.ts`, `bud-ecommerce-easy.ts`, `itf.ts`, `hkstp.ts`, `createsmart.ts`
 - Do **not** spend time filling these in for May 11. Set `status: 'coming-soon'` on each.
-- In the scheme browser (`/funds`), render `coming-soon` schemes with a visible badge and a disabled "Start draft" button. Replace with `"Notify me when ready"` email capture.
+- In the scheme browser (`/funds`), render `coming-soon` schemes with a visible badge and a disabled "Generate draft" button. Replace with `"Notify me when ready"` email capture.
 
-### 6. SEO depth lives on the dynamic scheme detail page, NOT in hardcoded routes
+### 6. SEO depth lives on the dynamic scheme detail page rendering the corpus markdown
 
-**Architectural correction**: schemes are data. The dynamic route `src/app/funds/[schemeId]/page.tsx` already renders any scheme by id. Do **not** create hardcoded `/easy-bud-guide` or `/easy-bud-vs-general` routes — that would special-case the scheme registry and break the schemes-as-data invariant.
+**Architectural correction**: schemes are facets + corpus. The dynamic route `src/app/funds/[schemeId]/page.tsx` already renders any scheme by id. Do **not** create hardcoded `/easy-bud-guide` or `/easy-bud-vs-general` routes — that would special-case the registry. Do **not** introduce a structured long-form content shape (no `whatItIs`, `eligibleActivities`, etc. fields).
 
-Instead, do the SEO work by deepening the **scheme record** and the **generic detail renderer**:
+Instead:
 
-- File: `src/lib/schemes/easy-bud.ts` and `src/lib/schemes/content.ts` — extend the scheme content shape so it can carry long-form sections: `whatItIs`, `whoQualifies`, `eligibleActivities[]` (with caps), `whatKillsApplications[]`, `documentChecklist` (now/later), `cooldownRule`, `caps` (concurrent + cumulative), `comparedTo` (array of `{ schemeId, differences[] }` for cross-scheme comparison rendering).
-- File: `src/app/funds/[schemeId]/page.tsx` — render whichever long-form sections the scheme record provides. Schemes with rich content (Easy BUD) automatically get a deep page; schemes with thin content stay thin. The generic renderer should already JSON-LD `Article` / `GovernmentService` schema.org markup for SEO.
-- File: `src/app/funds/[schemeId]/page.tsx` — `generateMetadata` already exists. Make the title and description pull from the rich scheme content (e.g. `${scheme.name}: Eligibility, Activities, and How to Apply (2026)`) so the SEO target lives at `/funds/easy-bud` natively.
-- For "Easy BUD vs General" comparisons: render a dynamic comparison block on the scheme detail page when `scheme.comparedTo` is populated. Optionally add a thin `src/app/funds/[schemeId]/vs/[otherId]/page.tsx` route later if you want comparison-pair SEO slugs — but only after Easy BUD's own page is shipping.
+- The scheme record's `corpus` (or whatever the column ends up being named — e.g. `guidance_md`) carries everything: what it is, who qualifies, eligible activities with caps, what kills applications, document checklist, cooldown rule, concurrent + cumulative caps, comparison notes against other schemes.
+- File: `src/app/funds/[schemeId]/page.tsx` — render the corpus markdown to HTML. Schemes with rich corpus (Easy BUD) automatically get a deep page; schemes with thin corpus stay thin. Add JSON-LD `Article` / `GovernmentService` schema.org markup for SEO.
+- File: `src/app/funds/[schemeId]/page.tsx` — `generateMetadata` already exists. Title and description pull from the structured facets (`name`, `short_description`) so SEO targets like `/funds/easy-bud` work natively. Optionally extract H1/first-paragraph from the corpus for richer descriptions.
+- Add a primary CTA on the Easy BUD page (and only on draftable schemes): a button that launches the drafter at `/draft` pre-loaded with the scheme context.
+- For "Easy BUD vs General" — write the comparison as a markdown section *inside* Easy BUD's corpus (and/or BUD General's corpus). The renderer just shows it. No new field, no new route.
 
 ### 7. The reimbursement explainer — stays standalone
 
@@ -93,31 +106,46 @@ Instead, do the SEO work by deepening the **scheme record** and the **generic de
 - Visual: simple flow diagram (project starts → enterprise pays → project ends → audit → claim → reimbursement received).
 - Link to it from each BUD-track scheme detail page automatically — add a `relatedConcepts` array on the scheme record that the renderer uses.
 
-### 9. Drafter — one generic flow, scheme-as-data
+### 9. Drafter UX — composer + artifact + refinement rail
 
-Per-scheme drafting is **just prompt assembly**. The scheme record already carries the eligibility rules, activity types, document checklist, what-kills-applications, caps, and form structure. The drafter is one generic function that injects the scheme record + the user's context into a prompt template and streams the result. No per-scheme module, no per-scheme intake.ts / prompt.ts / validate.ts.
+The drafter is the **whole product** at v1. Build it as an asset generator, not a chatbot.
 
-**New lib (single file, generic):**
+**Layout (suggested, single page at `/draft`):**
+- Left rail (or top, on mobile): the **intake composer**. A single big textarea pre-labeled "Tell us about your company and what you want funded" + a small structured strip below it (company name, employee count, target market, planned activities, budget, timeline) — these populate the prompt but the user can leave any of them blank. A primary "Generate draft" button. After the first generation, this rail becomes the place where the user edits inputs and re-generates.
+- Right pane (or below, on mobile): the **artifact** — the streamed draft, rendered as structured markdown with the application's section headings (Executive Summary, Project Description, Activities, Budget, Timeline, etc.). Streams in section by section. A small toolbar on top: copy, download PDF (gated, see §10), regenerate.
+- Below the artifact: the **refinement rail** — a single follow-up textbox, "Refine this draft." Submitting issues a refinement turn against the existing artifact. No threaded conversation, no chat bubbles, no avatars. The artifact updates in place; old versions are accessible via a small history dropdown if implementer wants (nice-to-have, not launch-blocking).
+
+**What this is NOT:**
+- Not a chat panel with an agent persona.
+- Not a multi-step Discover → Qualify → Draft wizard.
+- Not a form-per-question intake. The composer is one big freeform field with optional structured hints.
+
+**Reuse from existing chat code:** the streaming infrastructure (OpenRouter SSE, message parsing, artifact panel) is already in `src/components/ArtifactPanel.tsx` and the chat route. Copy/lift it into a `/draft` UI rather than rebuilding from scratch. Strip out the conversation list, the bubble chrome, and any "Discover/Qualify" UI affordances.
+
+**Engine — one generic flow, corpus-as-context.** Per-scheme drafting is **just prompt assembly**. The scheme record's corpus carries every rule the LLM needs. The drafter is one generic function:
+
 ```
-src/lib/drafter.ts           # buildDraftPrompt(scheme, userContext) + generateDraft(schemeId, userContext)
+src/lib/drafter.ts           # buildDraftPrompt(scheme, userContext, priorDraft?) + generateDraft(schemeId, userContext, priorDraft?)
 ```
 
-That's it. No `src/lib/drafters/easy-bud/` folder. No drafter registry. No DrafterModule interface.
+`buildDraftPrompt` reads `scheme.name`, `scheme.short_description`, and `scheme.corpus`, then composes a prompt that says: "Here is the scheme guidance. Here is the user context. [If priorDraft: here is the current draft and the refinement instruction.] Produce an application draft that respects every rule in the guidance. Use [TODO: ...] markers wherever the user context is insufficient." That's the whole engine.
 
 **New routes:**
-- `src/app/draft/[schemeId]/page.tsx` — reads the scheme record, renders an intake area, calls `generateDraft` and streams the result.
-- `src/app/api/draft/[schemeId]/route.ts` — server endpoint that wraps `generateDraft` for streaming.
+- `src/app/draft/page.tsx` — the v1 surface. Defaults to Easy BUD because it's the only draftable scheme. Renders the composer + artifact + refinement rail.
+- `src/app/draft/[schemeId]/page.tsx` — same UI, scheme bound. Easy BUD lives at `/draft/easy-bud`. Other schemes render "Drafter for {scheme.name} is coming soon" + waitlist email capture.
+- `src/app/api/draft/[schemeId]/route.ts` — server endpoint that wraps `generateDraft` for streaming. Accepts `userContext` and optional `priorDraft` + `refinementInstruction`.
 
-**Whether a scheme is "draftable" is a content question, not an engineering question.**
-- Add a `draftable` boolean (or compute it: a scheme is draftable iff its record has the required rich-content fields — `eligibleActivities`, `documentChecklist`, `whatKillsApplications`, official form structure if available — populated above a quality threshold).
-- Easy BUD is the only draftable scheme at v1 because it's the only scheme record filled in deeply enough. Adding ITF later is a content task — populate the scheme record, set `draftable: true`. No code change.
-- `/draft/[schemeId]` for a non-draftable scheme renders "Drafter for {scheme.name} is coming soon" with email capture.
+**Whether a scheme is draftable is a content question.**
+- Either store a `draftable` boolean on the scheme record, or derive it from corpus length / quality threshold.
+- Easy BUD is the only draftable scheme at v1 because its corpus is the only one filled in deeply enough. Adding ITF later = write ITF corpus, flip `draftable: true`. No code change.
 
-**Intake.** The user context fed into the prompt comes from the chat session (handed off from `/chat`) or from a small generic intake form on `/draft/[schemeId]/page.tsx` that asks for the universal fields (company name, employee count, target market, planned activities, budget, timeline). Anything scheme-specific the prompt needs is read from the scheme record itself; the user doesn't fill different forms for different schemes unless that becomes necessary later.
+**Eligibility judgement is JIT.** Let the LLM read the corpus and reason against the user context. Do not write code that validates "employee_count <= 100" or "duration_months <= 12" — let the LLM check the user's context against the corpus and call out violations inline (e.g. "[NOTE: this proposed budget exceeds the HK$150,000 cap]").
 
-**No paywall on the rendered draft.** Gate only the PDF export (see #10).
+**Risks to mitigate:**
+- *Vague inputs produce vague drafts.* Mitigation: the system prompt instructs the model to fill gaps with `[TODO: <what's needed>]` markers, and the UI surfaces a count of TODOs at the top of the artifact ("12 items need your input") so the user can't miss them.
+- *Refinement turns balloon token cost.* Mitigation: refinement passes only the current draft + the user's refinement instruction back to the model, not the full conversation history. Cap iterations soft (no hard limit at v1; instrument and watch).
 
-**Entry points:** from `/chat` after qualification (with handoff carrying the conversation context), or directly from `/funds/easy-bud` for users skipping the matching step.
+**No paywall on the rendered draft.** Gate only the PDF export (see §10).
 
 ### 10. PDF export with email gate — the only monetization surface in v1
 
@@ -129,9 +157,9 @@ That's it. No `src/lib/drafters/easy-bud/` folder. No drafter registry. No Draft
 
 ### 11. PDPO compliance — minimum viable
 
-- New file: `src/app/privacy/page.tsx` — privacy notice covering: what data collected, retention period (suggest 90 days for chat sessions, indefinite for accounts), deletion-on-request flow, no sale/sharing, contact email.
+- New file: `src/app/privacy/page.tsx` — privacy notice covering: what data collected, retention period (suggest 90 days for draft sessions, indefinite for accounts), deletion-on-request flow, no sale/sharing, contact email.
 - Add a footer link to `/privacy` on every page (likely `src/app/layout.tsx`).
-- Add a one-line consent at the chat composer: `"By submitting you agree to our privacy notice"` with link.
+- Add a one-line consent at the drafter composer: `"By generating you agree to our privacy notice"` with link.
 
 ### 12. ToS for liability
 
@@ -142,50 +170,78 @@ That's it. No `src/lib/drafters/easy-bud/` folder. No drafter registry. No Draft
 
 ### 13. Update PRD and MVP_TODO to reflect the shift
 
-- File: `PRD.md` — add a header note: `"Strategy revised 2026-04-25: free-first launch, Easy BUD only, monetization moved to PDF export. Original HK$299 freemium gate plan deferred."` Don't delete the original sections; mark them as superseded.
-- File: `MVP_TODO.md` — re-order: scheme content (Easy BUD only) → landing rewrite → 3 SEO pages → PDF export with email gate → privacy/ToS → ship. Drop auth, drop other scheme content, drop Stripe full integration.
-- File: `README.md` — update the tagline (currently `"Conversational agent for SMEs..."`) to match the new landing copy.
+- File: `PRD.md` — add a header note: `"Strategy revised 2026-04-25: free-first launch, Easy BUD-only asset-generator, conversational matcher hidden, monetization moved to PDF export. Original HK$299 freemium gate plan deferred."` Don't delete the original sections; mark them as superseded. Also fix two data errors: Easy BUD cap is **HK$150,000** (per 2026-27 Budget enhancement), and EMF consolidates into BUD on **June 30, 2026** (not July).
+- File: `MVP_TODO.md` — re-order: scheme content (Easy BUD only) → drafter UX build → landing rewrite → scheme detail page rendering → reimbursement page → PDF export with email gate → privacy/ToS → ship. Drop auth, drop other scheme content, drop Stripe full integration, drop chat surface work.
+- File: `README.md` — update the tagline (currently `"Conversational agent for SMEs..."`) to match the new asset-generator framing.
 
 ---
 
 ## What NOT to do
 
+- Do **not** ship the conversational matcher (`/chat`) at launch. Hide it. Code stays.
 - Do **not** add ITF, HKSTP, CreateSmart, BUD General, or E-commerce Easy content beyond status stubs.
 - Do **not** build the four-surface platform (Thunder Filings, Firms, API). Brief sequences these to weeks 4–8 post-launch.
 - Do **not** add full Stripe subscription billing. PDF export checkout only, if at all.
 - Do **not** add Traditional Chinese support.
 - Do **not** add multi-scheme eligibility scoring.
 - Do **not** invest in MCP server or REST API surfaces for v1.
+- Do **not** rebuild the streaming/artifact infrastructure from scratch. Lift it from the existing chat code.
 
 ---
 
 ## Order of operations (suggested)
 
-1. Extend the scheme content schema (`src/lib/schemes/content.ts`) to carry long-form fields (`whatItIs`, `eligibleActivities`, `whatKillsApplications`, `documentChecklist`, `cooldownRule`, `caps`, `comparedTo`, `relatedConcepts`).
-2. Fill `easy-bud.ts` deeply against the new schema.
-3. Replace placeholder schemes in `src/lib/schemes/index.ts` with real HK schemes (Easy BUD deep, others as `coming-soon` stubs).
-4. Update `src/app/funds/[schemeId]/page.tsx` to render the new long-form fields and richer `generateMetadata`.
-5. Update `src/lib/prompts/system.ts`: agent stays general matcher, drop "Draft" phase, add "Hand off" phase, add cooldown question for BUD-track schemes.
-6. Build the generic drafter: `src/lib/drafter.ts` (`buildDraftPrompt` + `generateDraft`) and the routes `src/app/draft/[schemeId]/page.tsx` + `src/app/api/draft/[schemeId]/route.ts`. One implementation, scheme-parameterised. Add a `draftable` check that returns false for any scheme without the required rich-content fields.
-7. Iterate the Easy BUD scheme record + the generic prompt template until Easy BUD drafts are good. The "Easy BUD drafter" is not a thing you build; it's the result of (rich Easy BUD record) × (generic drafter).
-8. Rewrite `src/app/page.tsx` landing copy and tag REST API / MCP cards as "Coming soon."
-9. Make `src/app/rest-api/page.tsx` and `src/app/mcp/page.tsx` render coming-soon pages with waitlist capture; gate any external-facing API endpoints with `503` + JSON body.
-10. Build `/reimbursement` page.
-11. Remove any draft-rendering from `ArtifactPanel.tsx`; repurpose for shortlists / eligibility / checklists only.
-12. PDF export endpoint with email gate at `src/app/api/draft/[schemeId]/pdf/route.ts`.
-13. `/privacy` and `/terms` pages + layout footer.
-14. Update `PRD.md`, `MVP_TODO.md`, `README.md` to reflect the surface separation and new strategy.
-15. Status badges + waitlist email capture on coming-soon scheme cards in the scheme browser.
+1. Inspect the current Supabase schema (`supabase/migrations/001_initial_schema.sql`) and `src/lib/schemes/db.ts`. Confirm the scheme record carries a corpus column (markdown). If not, add one via migration. Drop or ignore any structured eligibility/activities/checklist columns — those become corpus content.
+2. Curate Easy BUD corpus deeply in the DB (Supabase dashboard or migration). Pull from `PRD.md` Easy BUD Scheme Mechanics + Appendix and the April 23 HKPC materials. Update the funding cap to **HK$150,000** (2026-27 Budget enhancement, not HK$100K). Note the EMF consolidation date is **June 30, 2026** (not July).
+3. Add stub corpus content for BUD General and BUD E-commerce Easy — enough for the public detail page to render. No drafter for these in v1.
+4. Mark ITF, HKSTP, CreateSmart, EMF as `coming-soon` or remove them depending on whether they belong in the launch directory (see "Scheme focus" section below).
+5. Update `src/app/funds/[schemeId]/page.tsx` to render the corpus markdown + JSON-LD schema.org markup. Add a primary "Generate draft" CTA on draftable schemes (Easy BUD only at v1).
+6. Hide the matcher: make `src/app/chat/*` return 404 / redirect to `/draft`; gate `src/app/api/chat/*` and `src/app/api/sessions/*` behind `ENABLE_CHAT` env flag (default false in production). Keep all source files in place with a hidden-at-launch comment header.
+7. Rewrite `src/lib/prompts/system.ts` as a drafter-only system prompt. Drop Discover/Qualify language. Add the `[TODO: ...]` gap-marker behaviour.
+8. Build the generic drafter engine: `src/lib/drafter.ts` (`buildDraftPrompt(scheme, userContext, priorDraft?)` + `generateDraft(schemeId, userContext, priorDraft?)`). Reads `scheme.corpus` from the DB; LLM does the reasoning JIT.
+9. Build the asset-generator UI: `src/app/draft/page.tsx` (defaults to Easy BUD) + `src/app/draft/[schemeId]/page.tsx`. Composer on left, artifact on right, refinement rail below. Lift streaming/artifact rendering from the existing chat code.
+10. Build the streaming endpoint `src/app/api/draft/[schemeId]/route.ts`.
+11. Iterate Easy BUD corpus + generic prompt template until Easy BUD drafts are reliably good. The corpus is the lever — when drafts go wrong, fix the corpus, not the code.
+12. Rewrite `src/app/page.tsx` landing copy: composer is the hero, scheme directory and reimbursement explainer are secondary links. Drop the four-card access grid (or replace with three simple links). Tag any remaining REST API / MCP cards as "Coming soon."
+13. Make `src/app/rest-api/page.tsx` and `src/app/mcp/page.tsx` render coming-soon pages with waitlist capture. Gate any external-facing API endpoints with `503` + JSON body.
+14. Build `/reimbursement` page.
+15. PDF export endpoint with email gate at `src/app/api/draft/[schemeId]/pdf/route.ts`.
+16. `/privacy` and `/terms` pages + layout footer.
+17. Update `PRD.md` (HK$150K cap, June 30 EMF date, single-surface architecture, hidden matcher, new strategy), `MVP_TODO.md`, `README.md`.
+18. Status badges + waitlist email capture on coming-soon scheme cards in the scheme browser.
+
+## Scheme focus for May 11
+
+Based on web search confirmation (April 25, 2026):
+
+**Tier 1 — drafter ready, corpus deep:**
+- Easy BUD (HK$150,000 cap per 2026-27 Budget; one application every 3 months; April 23 enhancement live)
+
+**Tier 2 — directory only, scheme detail page renders, no drafter:**
+- BUD General (HK$800K cap, 24 months, can engage external service providers)
+- BUD E-commerce Easy (HK$800K cap, e-commerce specific)
+
+**Tier 3 — corpus stub only, no SEO investment:**
+- ITF Enterprise Support Scheme (HK$10M, 1:1 match, R&D-heavy)
+
+**Drop from launch entirely:**
+- TVP — closed Dec 31, 2024. Don't list as active anywhere.
+- EMF — folding into BUD on June 30, 2026. Don't build drafting; redirect to BUD.
+- HKSTP / Cyberport incubation — admissions process, not grant application. Different category. Remove from registry or move to a separate "incubators" section with a clear "this is not a grant application" caveat.
+- CreateSmart — niche to creative industries, low volume. Skip.
 
 ---
 
 ## Acceptance check
 
 When done, a user landing on the homepage cold should:
-1. See a headline that frames Thunder as a matcher, with Easy BUD called out as the first available drafter.
-2. Be able to read the Easy BUD scheme detail page (`/funds/easy-bud`) and the reimbursement explainer (`/reimbursement`) without signing up.
-3. Be able to chat with the in-house agent for free and receive a recommendation of which schemes to pursue. The agent never produces a full draft itself — it hands off.
-4. Be able to enter the Easy BUD drafter (`/draft/easy-bud`) directly or via the agent's hand-off button, complete intake, and receive a complete Easy BUD draft for free.
-5. Only be asked for an email to download the PDF.
-6. See "Coming soon" badges on REST API, MCP, and every scheme that is not Easy BUD.
-7. See clear privacy and terms links in the footer.
+1. See a headline + composer that frames Thunder as a "type your company → get an Easy BUD draft" generator. No chat persona, no matcher CTA.
+2. Be able to enter the Easy BUD drafter directly from the homepage composer or via the `/funds/easy-bud` "Generate draft" CTA.
+3. Receive a complete, streamed Easy BUD draft as an artifact, with `[TODO: ...]` markers for missing inputs and a TODO count surfaced at the top.
+4. Be able to refine the draft via a single follow-up box (no threaded chat).
+5. Be able to read the Easy BUD scheme detail page (`/funds/easy-bud`) and the reimbursement explainer (`/reimbursement`) without signing up.
+6. Only be asked for an email to download the PDF.
+7. See "Coming soon" badges on every scheme that is not Easy BUD.
+8. Hit a 404 (or redirect to `/draft`) on `/chat` and `/chat/*`.
+9. Hit a 503 with `{"status":"coming_soon"}` on REST API endpoints; see waitlist pages at `/rest-api` and `/mcp`.
+10. See clear privacy and terms links in the footer.

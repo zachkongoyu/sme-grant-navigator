@@ -1,4 +1,4 @@
-﻿import { type NextRequest } from 'next/server';
+﻿import { type NextRequest, NextResponse } from 'next/server';
 
 import type { LlmMessage } from '@/lib/llm';
 import { streamChat } from '@/lib/llm';
@@ -10,6 +10,8 @@ import {
 import { getSupabase } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/server';
 import type { ShortlistItem } from '@/components/chat/types';
+
+const CHAT_ENABLED = process.env.ENABLE_CHAT === 'true';
 
 const encoder = new TextEncoder();
 const MAX_ATTACHMENT_CHARS = 20_000;
@@ -94,6 +96,8 @@ function selectArtifacts(
 }
 
 export async function POST(request: NextRequest) {
+  if (!CHAT_ENABLED) return NextResponse.json(null, { status: 404 });
+
   const body = (await request.json()) as {
     sessionId: string;
     message: { text: string; links: string[]; attachmentIds: string[] };
@@ -220,17 +224,8 @@ export async function POST(request: NextRequest) {
             .map((id) => schemes.find((scheme) => scheme.id === id))
             .filter((s): s is NonNullable<typeof s> => s !== undefined);
 
-          const applicationDocs = mentionedSchemes.flatMap((s) =>
-            (s.documentChecklist ?? [])
-              .filter((d) => d.stage === 'application')
-              .map((d) => ({ id: d.id, label: d.label, note: d.note })),
-          );
-
-          const reimbursementDocs = mentionedSchemes.flatMap((s) =>
-            (s.documentChecklist ?? [])
-              .filter((d) => d.stage === 'reimbursement')
-              .map((d) => ({ id: d.id, label: d.label, note: d.note })),
-          );
+          const applicationDocs: { id: string; label: string; note?: string }[] = [];
+          const reimbursementDocs: { id: string; label: string; note?: string }[] = [];
 
           controller.enqueue(
             sse({

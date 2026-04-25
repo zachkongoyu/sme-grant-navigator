@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { CopyFundContext } from '@/components/CopyFundContext';
 import { FundDetailActions } from '@/components/FundDetailActions';
 import type { Scheme } from '@/types';
-import { getFundContentBySchemeId } from '@/lib/schemes/content';
+import { loadCorpus } from '@/lib/schemes/corpus';
 import {
   getAllSchemesFromDatabase,
   getSchemeByIdFromDatabase,
@@ -27,7 +29,7 @@ function formatFundingCap(fundingCap: number | null, currency: string | null) {
 }
 
 function statusStyle(status: Scheme['status']) {
-  if (status === 'active') return 'border-success/40 bg-success/10 text-success';
+  if (status === 'open' || status === 'active') return 'border-success/40 bg-success/10 text-success';
   if (status === 'coming-soon') return 'border-warning/40 text-warning';
   return 'border-border text-text-tertiary';
 }
@@ -42,7 +44,7 @@ export async function generateMetadata({ params }: FundDetailPageProps): Promise
   const scheme = await getSchemeByIdFromDatabase(schemeId);
   if (!scheme) return { title: 'Fund Not Found | Thunder' };
   return {
-    title: `${scheme.name} | Thunder`,
+    title: `${scheme.name} | Easy BUD 2026 Application — Thunder`,
     description: scheme.shortDescription,
   };
 }
@@ -50,9 +52,10 @@ export async function generateMetadata({ params }: FundDetailPageProps): Promise
 export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const { schemeId } = await params;
   const scheme = await getSchemeByIdFromDatabase(schemeId);
-  const fundContent = getFundContentBySchemeId(schemeId);
 
   if (!scheme) notFound();
+
+  const corpus = await loadCorpus(schemeId);
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
@@ -61,7 +64,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
           <Link
-            href="/#schemes"
+            href="/funds"
             className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
@@ -70,11 +73,12 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
             All schemes
           </Link>
 
-          {/* Agent-ready badge */}
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            Agent-ready
-          </span>
+          {scheme.status === 'open' && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Open
+            </span>
+          )}
         </div>
       </div>
 
@@ -106,121 +110,88 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
               {scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} mo`}
             </dd>
           </div>
-          {fundContent && (
-            <div className="col-span-2 bg-surface px-5 py-4 sm:col-span-1">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Administered by</dt>
-              <dd className="mt-1.5 text-sm leading-5 text-text-primary">{fundContent.administeringBody}</dd>
-            </div>
-          )}
+          <div className="col-span-2 bg-surface px-5 py-4 sm:col-span-1">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Sponsor</dt>
+            <dd className="mt-1.5 text-sm leading-5 text-text-primary">{scheme.sponsor ?? 'See official portal'}</dd>
+          </div>
         </dl>
 
-        {/* ── Content ── */}
+        {/* ── Draft CTA ── */}
+        {scheme.draftable ? (
+          <div className="mt-8 rounded-xl border border-accent/25 bg-accent/5 p-5">
+            <p className="text-sm font-medium text-text-primary">Ready to apply? Generate a complete draft in under a minute.</p>
+            <p className="mt-1 text-xs text-text-secondary">Describe your company — Thunder fills in the rest with <code>[TODO]</code> markers where it needs your input.</p>
+            <Link
+              href={`/draft/${schemeId}`}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-background transition hover:opacity-90"
+            >
+              Generate draft
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-8 rounded-xl border border-border bg-surface p-5">
+            <p className="text-sm font-medium text-text-primary">Drafter coming soon for {scheme.name}</p>
+            <p className="mt-1 text-xs text-text-secondary">
+              Get notified when the {scheme.name} drafter launches.{' '}
+              <a href="mailto:hello@thunderhk.ai?subject=Notify+me" className="text-accent underline underline-offset-4">
+                Notify me
+              </a>
+            </p>
+          </div>
+        )}
+
+        {/* ── Corpus / content ── */}
         <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
 
-          {/* Fund details */}
-          <div className="space-y-8">
-            {fundContent ? (
-              <>
-                <section>
-                  <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Objective</h2>
-                  <p className="mt-3 text-sm leading-6 text-text-secondary">{fundContent.objective}</p>
-                </section>
-
-                <section>
-                  <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Who can apply</h2>
-                  <ul className="mt-3 space-y-2">
-                    {fundContent.targetRecipients.map((r) => (
-                      <li key={r} className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary">
-                        <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-accent/60" />
-                        {r}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                {fundContent.notes && fundContent.notes.length > 0 && (
-                  <section>
-                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Notes</h2>
-                    <ul className="mt-3 space-y-2">
-                      {fundContent.notes.map((note) => (
-                        <li key={note} className="flex items-start gap-2.5 text-sm leading-6 text-text-secondary">
-                          <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-text-tertiary/60" />
-                          {note}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-
-                {(fundContent.contact.tel || fundContent.contact.email || fundContent.contact.website) && (
-                  <section>
-                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Contact</h2>
-                    <ul className="mt-3 space-y-1 text-sm leading-6 text-text-secondary">
-                      {fundContent.contact.tel && <li>Tel: {fundContent.contact.tel}</li>}
-                      {fundContent.contact.email && <li>Email: {fundContent.contact.email}</li>}
-                      {fundContent.contact.website && (
-                        <li>
-                          <a href={fundContent.contact.website} target="_blank" rel="noreferrer"
-                            className="text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
-                            {fundContent.contact.website}
-                          </a>
-                        </li>
-                      )}
-                    </ul>
-                  </section>
-                )}
-
-                {scheme.links.length > 0 && (
-                  <section>
-                    <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Official references</h2>
-                    <ul className="mt-3 space-y-1.5">
-                      {scheme.links.map((link) => (
-                        <li key={link.url}>
-                          <a href={link.url} target="_blank" rel="noreferrer"
-                            className="text-sm text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
-                            {link.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-              </>
+          <div>
+            {corpus ? (
+              <article className="prose prose-sm prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-accent prose-table:text-xs">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{corpus}</ReactMarkdown>
+              </article>
             ) : (
               <p className="text-sm leading-6 text-text-secondary">
-                Detailed content for this scheme is being expanded.
+                Detailed guidance for this scheme is being prepared. Check back soon or visit the{' '}
+                {scheme.links[0] ? (
+                  <a href={scheme.links[0].url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
+                    official portal
+                  </a>
+                ) : 'official portal'}.
               </p>
             )}
           </div>
 
           {/* Actions sidebar */}
-          <aside className="space-y-3 lg:pt-0">
-
-            {/* Agent callout */}
+          <aside className="space-y-3">
             <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">For your agent</p>
-              <p className="mt-1.5 text-sm font-medium text-text-primary">Give your agent everything it needs</p>
+              <p className="mt-1.5 text-sm font-medium text-text-primary">Copy scheme context</p>
               <p className="mt-1 text-xs leading-5 text-text-secondary">
-                Paste into Claude, GPT, Cursor, or any chat to get scheme-specific answers instantly.
+                Paste into Claude, GPT, or any chat to get scheme-specific answers instantly.
               </p>
               <div className="mt-3">
-                <CopyFundContext scheme={scheme} fundContent={fundContent ?? null} />
+                <CopyFundContext scheme={scheme} corpus={corpus} />
               </div>
             </div>
 
-            {/* Ask Thunder */}
-            <Link
-              href="/chat"
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4 shrink-0" aria-hidden="true">
-                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                <path d="M20 3v4M22 5h-4" />
-              </svg>
-              Ask Thunder
-            </Link>
+            {scheme.links.length > 0 && (
+              <div className="rounded-xl border border-border bg-surface p-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Official portal</p>
+                <ul className="mt-2 space-y-1.5">
+                  {scheme.links.map((link) => (
+                    <li key={link.url}>
+                      <a href={link.url} target="_blank" rel="noreferrer"
+                        className="text-sm text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* Save */}
             <FundDetailActions schemeId={scheme.id} />
           </aside>
         </div>
@@ -228,3 +199,4 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
     </main>
   );
 }
+

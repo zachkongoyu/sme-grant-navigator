@@ -1,8 +1,10 @@
 import type { Scheme, SchemeCategory, SchemeStatus } from '@/types';
 
+import { hasCorpus } from '@/lib/schemes/corpus';
 import { getSupabase } from '@/lib/supabase';
 
 const schemeCategories = [
+  'BUD Fund',
   'Trade Support',
   'Innovation',
   'Incubation',
@@ -13,10 +15,11 @@ const schemeCategories = [
   'Sustainability',
 ] as const satisfies ReadonlyArray<SchemeCategory>;
 
-const schemeStatuses = ['active', 'coming-soon', 'closed'] as const satisfies ReadonlyArray<SchemeStatus>;
+const schemeStatuses = ['open', 'active', 'coming-soon', 'closed'] as const satisfies ReadonlyArray<SchemeStatus>;
 
 export interface SchemeRow {
   readonly id: string;
+  readonly slug: string | null;
   readonly name: string;
   readonly sponsor: string | null;
   readonly category: string | null;
@@ -47,16 +50,19 @@ function isSchemeStatus(value: string): value is SchemeStatus {
 }
 
 function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
+  const slug = row.slug ?? row.id;
+  const status = row.status && isSchemeStatus(row.status) ? row.status : 'coming-soon';
   return {
-    id: row.id,
+    id: slug,
     name: row.name,
     shortDescription: row.short_description ?? 'Funding scheme details are being expanded.',
     category: row.category && isSchemeCategory(row.category) ? row.category : 'Innovation',
-    status: row.status && isSchemeStatus(row.status) ? row.status : 'coming-soon',
+    status,
     fundingCap: row.funding_cap,
     currency: row.currency,
     durationMonths: row.duration_months,
     links: row.source_url ? [{ label: 'Official programme page', url: row.source_url }] : [],
+    draftable: status === 'open' && hasCorpus(slug),
     databaseId: row.id,
     guidanceMarkdown: row.guidance_md,
     sourceUrl: row.source_url,
@@ -75,7 +81,7 @@ async function fetchSchemeRows(): Promise<ReadonlyArray<SchemeRow> | null> {
     const { data, error } = await supabase
       .from('schemes')
       .select(
-        'id, name, sponsor, category, status, funding_cap, currency, duration_months, short_description, guidance_md, source_url, updated_at',
+        'id, slug, name, sponsor, category, status, funding_cap, currency, duration_months, short_description, guidance_md, source_url, updated_at',
       )
       .order('name');
 

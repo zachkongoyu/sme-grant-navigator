@@ -1,9 +1,13 @@
-import { type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/server';
 
+const CHAT_ENABLED = process.env.ENABLE_CHAT === 'true';
+
 export async function GET() {
+  if (!CHAT_ENABLED) return NextResponse.json(null, { status: 404 });
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -30,6 +34,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!CHAT_ENABLED) return NextResponse.json(null, { status: 404 });
   const body = (await request.json()) as { id: string; title?: string };
   const { id, title } = body;
 

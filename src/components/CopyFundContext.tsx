@@ -2,21 +2,20 @@
 
 import { useState } from 'react';
 
-import type { FundContent } from '@/lib/schemes/content';
 import type { Scheme } from '@/types';
 
 interface CopyFundContextProps {
   readonly scheme: Scheme;
-  readonly fundContent: FundContent | null;
+  readonly corpus: string | null;
 }
 
-function buildContext(scheme: Scheme, fundContent: FundContent | null): string {
+function buildContext(scheme: Scheme, corpus: string | null): string {
   const cap =
     scheme.fundingCap === null
       ? 'Varies'
-      : new Intl.NumberFormat('en-US', {
+      : new Intl.NumberFormat('en-HK', {
           style: 'currency',
-          currency: 'USD',
+          currency: scheme.currency ?? 'HKD',
           maximumFractionDigits: 0,
         }).format(scheme.fundingCap);
 
@@ -35,28 +34,8 @@ function buildContext(scheme: Scheme, fundContent: FundContent | null): string {
     scheme.shortDescription,
   ];
 
-  if (fundContent) {
-    lines.push('', '### Objective', fundContent.objective);
-
-    if (fundContent.targetRecipients.length > 0) {
-      lines.push('', '### Who Can Apply');
-      for (const r of fundContent.targetRecipients) lines.push(`- ${r}`);
-    }
-
-    lines.push('', `**Administered by:** ${fundContent.administeringBody}`);
-
-    if (fundContent.notes && fundContent.notes.length > 0) {
-      lines.push('', '### Notes');
-      for (const n of fundContent.notes) lines.push(`- ${n}`);
-    }
-
-    const { tel, email, website } = fundContent.contact;
-    if (tel || email || website) {
-      lines.push('', '### Contact');
-      if (tel) lines.push(`- Tel: ${tel}`);
-      if (email) lines.push(`- Email: ${email}`);
-      if (website) lines.push(`- Website: ${website}`);
-    }
+  if (corpus) {
+    lines.push('', '---', '', corpus);
   }
 
   if (scheme.links.length > 0) {
@@ -67,16 +46,19 @@ function buildContext(scheme: Scheme, fundContent: FundContent | null): string {
   return lines.join('\n');
 }
 
-export function CopyFundContext({ scheme, fundContent }: CopyFundContextProps) {
+export function CopyFundContext({ scheme, corpus }: CopyFundContextProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(buildContext(scheme, fundContent));
+    await navigator.clipboard.writeText(buildContext(scheme, corpus));
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
 
-  const preview = `## Grant Scheme: ${scheme.name}\n**Status:** ${scheme.status.replace('-', ' ')} · **Max Funding:** ${scheme.fundingCap === null ? 'Varies' : `${scheme.currency ?? '$'}${(scheme.fundingCap / 1000000).toFixed(1)}M`}\n...`;
+  const capDisplay = scheme.fundingCap === null
+    ? 'Varies'
+    : `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`;
+  const preview = `## Grant Scheme: ${scheme.name}\n**Status:** ${scheme.status.replace('-', ' ')} · **Max Funding:** ${capDisplay}\n...`;
 
   return (
     <div className="space-y-3">

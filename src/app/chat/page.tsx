@@ -1,20 +1,6 @@
-'use client';
-
-import { Suspense, useState } from 'react';
-
-import { PageLoadingIndicator } from '@/components/PageLoadingIndicator';
-import { ChatLayout } from '@/components/chat/ChatLayout';
-
-function ChatPageInner() {
-  const [sessionId] = useState(() => crypto.randomUUID());
-
-  return <ChatLayout sessionId={sessionId} />;
-}
+// HIDDEN AT LAUNCH — see STRATEGY_REALIGN.md
+import { redirect } from 'next/navigation';
 
 export default function ChatPage() {
-  return (
-    <Suspense fallback={<PageLoadingIndicator variant="inline" label="Opening chat..." />}>
-      <ChatPageInner />
-    </Suspense>
-  );
+  redirect('/draft');
 }
