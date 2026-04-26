@@ -74,7 +74,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const corpus = await loadCorpus(schemeId);
 
   return (
-    <div className="flex h-screen flex-col bg-background text-text-primary overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
       {/* ── Body: sidebar + content, full height ── */}
       <SchemesSidebar schemes={allSchemes} activeId={schemeId}>
         <div className="mx-auto max-w-2xl px-6 py-12">
