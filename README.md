@@ -26,6 +26,19 @@ cp .env.example .env.local   # fill in SUPABASE_URL, SUPABASE_ANON_KEY, OPENROUT
 npm run dev
 ```
 
+## Auth setup
+
+Google sign-in and magic links both depend on the public app URL being correct in two places:
+
+1. Set `NEXT_PUBLIC_APP_URL` to your real deployment URL in Vercel.
+2. In Supabase Dashboard → Authentication → URL Configuration:
+     - Set `Site URL` to your production app URL, for example `https://your-app.vercel.app`.
+     - Add these redirect URLs:
+         - `http://localhost:3000/auth/callback`
+         - `https://your-production-domain/auth/callback`
+
+If Supabase `Site URL` still points at localhost, OAuth providers can send users back to `http://localhost:3000/?code=...` after login.
+
 ## Project structure
 
 ```

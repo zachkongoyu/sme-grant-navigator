@@ -5,9 +5,28 @@ import { useState } from 'react';
 import { DraftBackButton } from '@/components/DraftBackButton';
 import { createClient } from '@/utils/supabase/client';
 
+function getAuthCallbackUrl() {
+  if (typeof window === 'undefined') {
+    return new URL('/auth/callback', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000');
+  }
+
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const baseUrl = configuredOrigin && configuredOrigin.length > 0
+    ? configuredOrigin
+    : window.location.origin;
+
+  return new URL('/auth/callback', baseUrl);
+}
+
 function getNext() {
   if (typeof window === 'undefined') return '/';
   return new URLSearchParams(window.location.search).get('next') ?? '/';
+}
+
+function buildAuthRedirectUrl() {
+  const callbackUrl = getAuthCallbackUrl();
+  callbackUrl.searchParams.set('next', getNext());
+  return callbackUrl.toString();
 }
 
 export default function SignInPage() {
@@ -26,7 +45,7 @@ export default function SignInPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNext())}`,
+        emailRedirectTo: buildAuthRedirectUrl(),
       },
     });
 
@@ -41,13 +60,20 @@ export default function SignInPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
+    setError(null);
+
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(getNext())}`,
+        redirectTo: buildAuthRedirectUrl(),
       },
     });
+
+    if (error) {
+      setError(error.message);
+      setGoogleLoading(false);
+    }
   }
 
   return (
