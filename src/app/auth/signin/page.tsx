@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
 import { createClient } from '@/utils/supabase/client';
 
 function getAuthCallbackUrl() {

@@ -3,13 +3,8 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
 import { filterSchemes, groupSchemesByCategory } from '@/lib/schemes/filter';
-import {
-  getSchemeStatusBadgeStyle,
-  getSchemeStatusDotColor,
-  getSchemeStatusText,
-} from '@/lib/schemes/presentation';
 import type { Scheme } from '@/types';
 
 interface SchemesSidebarProps {
@@ -85,32 +80,18 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
                   <Link
                     key={scheme.id}
                     href={`/funds/${scheme.id}`}
-                    className="group flex items-start gap-2.5 rounded-lg mx-2 px-2.5 py-2 transition"
+                    className="group block rounded-lg mx-2 px-2.5 py-2 transition"
                     style={isActive ? { backgroundColor: 'var(--surface)' } : undefined}
                   >
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: getSchemeStatusDotColor(scheme.status) }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="truncate text-xs leading-5"
-                        style={{
-                          color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                          fontWeight: isActive ? 600 : 400,
-                        }}
-                      >
-                        {scheme.name}
-                      </p>
-                      {!isActive && (
-                        <p
-                          className="text-[10px] leading-4"
-                          style={{ color: getSchemeStatusBadgeStyle(scheme.status).color }}
-                        >
-                          {getSchemeStatusText(scheme.status)}
-                        </p>
-                      )}
-                    </div>
+                    <p
+                      className="truncate text-xs leading-5"
+                      style={{
+                        color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      {scheme.name}
+                    </p>
                   </Link>
                 );
               })}

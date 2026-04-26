@@ -85,11 +85,10 @@ export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
         </div>
 
         <div className="mt-5 overflow-hidden border-y border-border bg-transparent">
-          <div className="hidden border-b border-border px-3 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-text-tertiary md:grid md:grid-cols-[60px_minmax(0,1fr)_150px_140px]">
+          <div className="hidden border-b border-border px-3 py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-text-tertiary md:grid md:grid-cols-[60px_minmax(0,1fr)_150px]">
             <div>#</div>
             <div>Funding Schemes</div>
             <div>Funding Cap</div>
-            <div>Status</div>
           </div>
 
           {filteredSchemes.map((scheme, index) => (

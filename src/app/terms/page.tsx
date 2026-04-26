@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
 
 export const metadata: Metadata = {
   title: 'Terms of Use | Thunder',

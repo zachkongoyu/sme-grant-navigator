@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
+import { StatusChip } from '@/components/StatusChip';
 
 export const metadata: Metadata = {
   title: 'MCP Server | Thunder',
@@ -15,10 +15,10 @@ export default function McpPage() {
       <div className="absolute top-6 left-6">
         <BackNavigation fallbackHref="/" />
       </div>
-      <span className="font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: 'var(--warning)' }}>Soon</span>
+      <StatusChip variant="soon" />
       <h1 className="mt-3 text-2xl font-semibold tracking-tight">MCP Server</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">
-        Connect Claude, Cursor, or any MCP-compatible agent directly to Thunder's workflows, scheme context, and drafting infrastructure — launching after the first product surface ships.
+        Connect Claude, Cursor, or any MCP-compatible agent directly to Thunder&apos;s workflows, scheme context, and drafting infrastructure — launching after the first product surface ships.
       </p>
       <a
         href="mailto:hello@thunderhk.ai?subject=MCP+server+waitlist"

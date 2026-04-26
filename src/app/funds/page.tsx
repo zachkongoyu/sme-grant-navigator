@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { getAllSchemes } from '@/lib/schemes/repository';
 import {
   formatFundingAmount,
-  getSchemeStatusBadgeStyle,
-  getSchemeStatusText,
 } from '@/lib/schemes/presentation';
 
 export const metadata: Metadata = {
@@ -78,18 +76,17 @@ export default async function FundsPage() {
         {/* ── Scheme list ── */}
         <div className="mt-8 divide-y divide-border overflow-hidden rounded-xl border border-border">
           {/* Header */}
-          <div className="hidden bg-surface px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary md:grid md:grid-cols-[minmax(0,1fr)_160px_120px_100px]">
+          <div className="hidden bg-surface px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary md:grid md:grid-cols-[minmax(0,1fr)_160px_120px]">
             <div>Scheme</div>
             <div>Category</div>
             <div>Max funding</div>
-            <div>Status</div>
           </div>
 
           {schemes.map((scheme) => (
             <Link
               key={scheme.id}
               href={`/funds/${scheme.id}`}
-              className="group flex flex-col gap-1 px-5 py-4 transition hover:bg-surface md:grid md:grid-cols-[minmax(0,1fr)_160px_120px_100px] md:items-center"
+              className="group flex flex-col gap-1 px-5 py-4 transition hover:bg-surface md:grid md:grid-cols-[minmax(0,1fr)_160px_120px] md:items-center"
             >
               <div>
                 <p className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">{scheme.name}</p>
@@ -97,14 +94,6 @@ export default async function FundsPage() {
               </div>
               <div className="font-mono text-xs text-text-tertiary">{scheme.category}</div>
               <div className="font-mono text-sm text-text-primary">{formatFundingAmount(scheme.fundingCap, scheme.currency)}</div>
-              <div>
-                <span
-                  className="inline-flex rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]"
-                  style={getSchemeStatusBadgeStyle(scheme.status)}
-                >
-                  {getSchemeStatusText(scheme.status)}
-                </span>
-              </div>
             </Link>
           ))}
         </div>

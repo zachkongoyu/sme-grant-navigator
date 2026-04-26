@@ -8,13 +8,13 @@ import remarkGfm from 'remark-gfm';
 import { CopyFundContext } from '@/components/CopyFundContext';
 import { FundDetailActions } from '@/components/FundDetailActions';
 import { SchemesSidebar } from '@/components/SchemesSidebar';
+import { StatusChip } from '@/components/StatusChip';
 import {
   getAllSchemes,
   getSchemeDocument,
 } from '@/lib/schemes/repository';
 import {
   formatFundingAmount,
-  getSchemeStatusBadgeStyle,
 } from '@/lib/schemes/presentation';
 
 interface FundDetailPageProps {
@@ -57,18 +57,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
 
           {/* ── Hero ── */}
           <div className="border-b border-border pb-8">
-            <div className="flex items-center gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.category}</p>
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
-                style={getSchemeStatusBadgeStyle(scheme.status)}
-              >
-                {(scheme.status === 'open' || scheme.status === 'active') && (
-                  <span className="h-1 w-1 animate-pulse rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-                )}
-                {scheme.status.replace('-', ' ')}
-              </span>
-            </div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.category}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] leading-tight">{scheme.name}</h1>
             <p className="mt-4 text-base leading-7 text-text-secondary max-w-xl">{scheme.shortDescription}</p>
 
@@ -122,10 +111,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
                     </a>
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em]"
-                  style={{ borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)', color: 'var(--warning)' }}>
-                  Soon
-                </span>
+                <StatusChip variant="soon" />
               </div>
             )}
           </div>

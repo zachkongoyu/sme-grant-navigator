@@ -14,7 +14,8 @@ import {
 } from '@/lib/api/draft-client';
 import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
+import { StatusChip } from '@/components/StatusChip';
 
 interface DrafterProps {
   readonly scheme: ResolvedScheme;
@@ -287,11 +288,14 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
           </div>
         )}
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
+          <div className="mb-3 flex items-center justify-center gap-2">
+            <StatusChip variant="beta" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">
               {scheme.category} · Up to {capDisplay}
             </span>
+            </div>
           </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {scheme.name}
@@ -426,11 +430,14 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         {/* Scheme pill */}
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
+          <div className="mb-3 flex items-center justify-center gap-2">
+            <StatusChip variant="beta" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">
               {scheme.name} · Evaluating brief…
             </span>
+            </div>
           </div>
         </div>
 
@@ -559,6 +566,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
         {/* Document header bar */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <StatusChip variant="beta" compact />
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-success">
               <span className="h-1.5 w-1.5 rounded-full bg-success" />
               Draft ready

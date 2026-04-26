@@ -2,11 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 
 import type { Scheme } from '@/types';
-import {
-  formatFundingAmount,
-  getSchemeStatusBadgeStyle,
-  getSchemeStatusText,
-} from '@/lib/schemes/presentation';
+import { formatFundingAmount } from '@/lib/schemes/presentation';
 
 interface SchemeRowProps {
   readonly index: number;
@@ -27,7 +23,7 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
   return (
     <Link
       href={`/funds/${scheme.id}`}
-      className="grid border-b border-border transition hover:bg-surface-hover md:grid-cols-[60px_minmax(0,1fr)_150px_140px]"
+      className="grid border-b border-border transition hover:bg-surface-hover md:grid-cols-[60px_minmax(0,1fr)_150px]"
     >
       <div className="hidden px-3 py-4 font-mono text-xs text-text-tertiary md:block">
         {String(index + 1).padStart(2, '0')}
@@ -49,14 +45,6 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
       </div>
       <div className="hidden px-3 py-4 font-mono text-sm text-text-primary md:block">
         {formatFundingAmount(scheme.fundingCap, scheme.currency)}
-      </div>
-      <div className="px-3 py-4">
-        <span
-          className="inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]"
-          style={getSchemeStatusBadgeStyle(scheme.status)}
-        >
-          {getSchemeStatusText(scheme.status)}
-        </span>
       </div>
     </Link>
   );

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
+import { StatusChip } from '@/components/StatusChip';
 
 export const metadata: Metadata = {
   title: 'REST API | Thunder',
@@ -15,7 +16,7 @@ export default function RestApiPage() {
       <div className="absolute top-6 left-6">
         <BackNavigation fallbackHref="/" />
       </div>
-      <span className="font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: 'var(--warning)' }}>Soon</span>
+      <StatusChip variant="soon" />
       <h1 className="mt-3 text-2xl font-semibold tracking-tight">REST API</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">
         Programmatic access to Thunder workflows, scheme data, and drafting infrastructure — launching after the first product surface ships.

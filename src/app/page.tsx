@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { StatusChip } from '@/components/StatusChip';
 import { getAllSchemes } from '@/lib/schemes/repository';
 
 export const metadata: Metadata = {
@@ -32,13 +33,7 @@ export default async function HomePage() {
                       Trending
                     </span>
                   </span>
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
-                    style={{ borderColor: 'color-mix(in srgb, var(--success) 30%, transparent)', backgroundColor: 'color-mix(in srgb, var(--success) 8%, transparent)', color: 'var(--success)' }}
-                  >
-                    <span className="h-1 w-1 rounded-full animate-pulse" style={{ backgroundColor: 'var(--success)' }} />
-                    Live
-                  </span>
+                  <StatusChip variant="live" compact />
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
                     {featuredScheme.category}
                   </span>
@@ -142,7 +137,7 @@ export default async function HomePage() {
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 
-            {/* Drafter — LIVE */}
+            {/* Drafter */}
             <Link href="/draft" className="group rounded-xl border bg-surface p-5 transition" style={{ borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)' }}>
               <div className="flex items-start justify-between">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
@@ -150,10 +145,7 @@ export default async function HomePage() {
                     <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
                   </svg>
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]" style={{ borderColor: 'color-mix(in srgb, var(--success) 30%, transparent)', backgroundColor: 'color-mix(in srgb, var(--success) 8%, transparent)', color: 'var(--success)' }}>
-                  <span className="h-1 w-1 animate-pulse rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-                  Live
-                </span>
+                <StatusChip variant="beta" compact />
               </div>
               <p className="mt-3 text-sm font-medium text-text-primary">Drafter</p>
               <p className="mt-1 text-xs leading-5 text-text-secondary">Pick a fund, then let Thunder draft the application with the right scheme already loaded.</p>
@@ -167,7 +159,7 @@ export default async function HomePage() {
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-tertiary">Soon</span>
+                <StatusChip variant="soon" compact />
               </div>
               <p className="mt-3 text-sm font-medium text-text-primary">In-house agent</p>
               <p className="mt-1 text-xs leading-5 text-text-secondary">Chat with Thunder. Describe your business, get matched schemes and a draft application.</p>
@@ -182,7 +174,7 @@ export default async function HomePage() {
                     <polyline points="8 6 2 12 8 18" />
                   </svg>
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-tertiary">Soon</span>
+                <StatusChip variant="soon" compact />
               </div>
               <p className="mt-3 text-sm font-medium text-text-primary">REST API</p>
               <p className="mt-1 text-xs leading-5 text-text-secondary">Query scheme data, eligibility rules, and funding caps programmatically from your own stack.</p>
@@ -197,10 +189,10 @@ export default async function HomePage() {
                     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
                   </svg>
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-text-tertiary">Soon</span>
+                <StatusChip variant="soon" compact />
               </div>
               <p className="mt-3 text-sm font-medium text-text-primary">MCP server</p>
-              <p className="mt-1 text-xs leading-5 text-text-secondary">Connect Claude, Cursor, or any MCP-compatible agent directly to Thunder's scheme database.</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Connect Claude, Cursor, or any MCP-compatible agent directly to Thunder&apos;s scheme database.</p>
             </div>
           </div>
         </section>

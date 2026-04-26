@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { BackNavigation } from '@/components/navigation';
 import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
+import { StatusChip } from '@/components/StatusChip';
 import { getAllSchemes } from '@/lib/schemes/repository';
 
 export const metadata: Metadata = {
@@ -29,7 +30,10 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
     return (
       <main className="min-h-screen bg-background px-4 py-16 text-text-primary sm:px-6">
         <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-surface p-6 text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-text-tertiary">AI Drafter</p>
+          <div className="flex items-center justify-center gap-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-text-tertiary">AI Drafter</p>
+            <StatusChip variant="beta" compact />
+          </div>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">No draftable schemes yet</h1>
           <p className="mt-3 text-sm leading-6 text-text-secondary">
             Thunder does not have a live drafter for any fund yet.
@@ -41,7 +45,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
 
   const combobox = (
     <SchemeCombobox
-      schemes={schemes.map((s) => ({ id: s.id, name: s.name, category: s.category, draftable: s.draftable }))}
+      schemes={schemes.map((s) => ({ id: s.id, name: s.name, category: s.category }))}
       selectedId={selectedScheme.id}
     />
   );
@@ -61,10 +65,13 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface p-6 text-center sm:p-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
+              <div className="flex items-center justify-center gap-2">
+                <StatusChip variant="beta" compact />
+                <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-warning">
                   Coming soon
                 </span>
+                </div>
               </div>
 
               <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">

@@ -10,7 +10,6 @@ interface SchemeOption {
   id: string;
   name: string;
   category: string;
-  draftable: boolean;
 }
 
 interface SchemeComboboxProps {
@@ -118,22 +117,6 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3.5 w-3.5 shrink-0 text-text-tertiary">
             <path d="M4 6l4 4 4-4" />
           </svg>
-          <span
-            className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
-            style={selected?.draftable
-              ? {
-                  borderColor: 'color-mix(in srgb, var(--success) 30%, transparent)',
-                  backgroundColor: 'color-mix(in srgb, var(--success) 8%, transparent)',
-                  color: 'var(--success)',
-                }
-              : {
-                  borderColor: 'color-mix(in srgb, var(--warning) 30%, transparent)',
-                  backgroundColor: 'color-mix(in srgb, var(--warning) 8%, transparent)',
-                  color: 'var(--warning)',
-                }}
-          >
-            {selected?.draftable ? 'Live' : 'Soon'}
-          </span>
         </div>
       </button>
 
@@ -187,7 +170,7 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
                   aria-selected={isCurrent}
                   onPointerDown={() => pickScheme(scheme.id)}
                   onPointerEnter={() => setActiveIndex(i)}
-                  className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 transition"
+                  className="flex cursor-pointer items-center px-4 py-3 transition"
                   style={isActive ? { backgroundColor: 'color-mix(in srgb, var(--accent) 6%, transparent)' } : undefined}
                 >
                   <div className="min-w-0">
@@ -198,21 +181,6 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
                       {scheme.category}
                     </p>
                   </div>
-                  <span
-                    className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
-                    style={scheme.draftable
-                      ? {
-                          borderColor: 'color-mix(in srgb, var(--success) 30%, transparent)',
-                          backgroundColor: 'color-mix(in srgb, var(--success) 8%, transparent)',
-                          color: 'var(--success)',
-                        }
-                      : {
-                          borderColor: 'color-mix(in srgb, var(--warning) 30%, transparent)',
-                          color: 'var(--warning)',
-                        }}
-                  >
-                    {scheme.draftable ? 'Live' : 'Soon'}
-                  </span>
                 </li>
               );
             })}
