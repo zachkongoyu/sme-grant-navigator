@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { streamChat, type LlmMessage } from '@/lib/llm';
+import {
+  LlmHttpError,
+  openChatStream,
+  type LlmMessage,
+  validateLlmConfiguration,
+} from '@/lib/llm';
 import { loadCorpus } from '@/lib/schemes/corpus';
 import { getSchemeByIdFromDatabase } from '@/lib/schemes/db';
 import { buildDrafterSystemPrompt } from '@/lib/prompts/system';
@@ -23,6 +28,22 @@ interface DraftRequestBody {
   inlineAttachments?: InlineAttachment[];
   links?: string[];
   history?: ReadonlyArray<{ role: 'user' | 'assistant'; content: string }>;
+}
+
+function toDraftErrorMessage(error: unknown): string {
+  if (error instanceof LlmHttpError && error.status === 403) {
+    return 'Thunder cannot generate a draft for this scheme right now. Please try again later.';
+  }
+
+  return 'Thunder could not generate a draft right now. Please try again later.';
+}
+
+function toDraftErrorStatus(error: unknown): number {
+  if (error instanceof LlmHttpError) {
+    return error.status;
+  }
+
+  return 500;
 }
 
 /**
@@ -130,20 +151,69 @@ export async function POST(
     { role: 'user', content: userContent },
   ];
 
+  try {
+    validateLlmConfiguration();
+  } catch (error) {
+    return NextResponse.json({ error: toDraftErrorMessage(error) }, { status: 500 });
+  }
+
+  let upstreamReader: ReadableStreamDefaultReader<Uint8Array>;
+  try {
+    upstreamReader = await openChatStream(messages, undefined, request.signal);
+  } catch (error) {
+    return NextResponse.json(
+      { error: toDraftErrorMessage(error) },
+      { status: toDraftErrorStatus(error) },
+    );
+  }
+
   const stream = new ReadableStream({
     async start(controller) {
-      const signal = request.signal;
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let isClosed = false;
+
       try {
-        for await (const token of streamChat(messages, undefined, signal)) {
-          controller.enqueue(encoder.encode(token));
+        while (true) {
+          const { done, value } = await upstreamReader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') {
+              controller.close();
+              isClosed = true;
+              return;
+            }
+
+            try {
+              const chunk = JSON.parse(data) as {
+                choices: [{ delta: { content?: string } }];
+              };
+              const token = chunk.choices[0]?.delta?.content;
+              if (token) {
+                controller.enqueue(encoder.encode(token));
+              }
+            } catch {
+              // Ignore individual chunk parse errors; move to the next line.
+            }
+          }
         }
       } catch (err) {
         if ((err as Error)?.name !== 'AbortError') {
-          controller.error(err);
-          return;
+          console.error('Draft stream error:', err);
+          controller.enqueue(encoder.encode(toDraftErrorMessage(err)));
         }
       } finally {
-        controller.close();
+        upstreamReader.releaseLock();
+        if (!isClosed) {
+          controller.close();
+        }
       }
     },
   });

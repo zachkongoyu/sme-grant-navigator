@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { DraftBackButton } from '@/components/DraftBackButton';
 import { Drafter } from '@/components/Drafter';
@@ -74,12 +75,12 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
               </p>
 
               <div className="mt-6 flex justify-center">
-                <a
+                <Link
                   href={`/funds/${selectedScheme.id}`}
                   className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
                 >
                   View scheme details
-                </a>
+                </Link>
               </div>
             </div>
           </div>

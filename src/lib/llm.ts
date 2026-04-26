@@ -11,6 +11,16 @@ export interface LlmMessage {
   content: string;
 }
 
+export class LlmHttpError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'LlmHttpError';
+    this.status = status;
+  }
+}
+
 function getHeaders(): Record<string, string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -28,8 +38,36 @@ function getHeaders(): Record<string, string> {
   };
 }
 
+export function validateLlmConfiguration(): void {
+  getHeaders();
+}
+
 function defaultModel(): string {
   return process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-4';
+}
+
+export async function openChatStream(
+  messages: LlmMessage[],
+  model = defaultModel(),
+  signal?: AbortSignal | null,
+): Promise<ReadableStreamDefaultReader<Uint8Array>> {
+  const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ model, messages, stream: true }),
+    signal: signal ?? null,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new LlmHttpError(response.status, `OpenRouter ${response.status}: ${text}`);
+  }
+
+  if (!response.body) {
+    throw new Error('OpenRouter returned no response body');
+  }
+
+  return response.body.getReader();
 }
 
 /**
@@ -41,21 +79,7 @@ export async function* streamChat(
   model = defaultModel(),
   signal?: AbortSignal | null,
 ): AsyncGenerator<string> {
-  const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify({ model, messages, stream: true }),
-    signal: signal ?? null,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`OpenRouter ${response.status}: ${text}`);
-  }
-
-  if (!response.body) throw new Error('OpenRouter returned no response body');
-
-  const reader = response.body.getReader();
+  const reader = await openChatStream(messages, model, signal);
   const decoder = new TextDecoder();
   let buffer = '';
 

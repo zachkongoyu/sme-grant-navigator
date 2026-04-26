@@ -1,8 +1,9 @@
 'use client';
 
 import { useDeferredValue, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+import { DraftBackButton } from '@/components/DraftBackButton';
 import type { Scheme } from '@/types';
 
 interface SchemesSidebarProps {
@@ -33,7 +34,6 @@ function SidebarIcon() {
 }
 
 export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(true);
   const [search, setSearch] = useState('');
   const deferred = useDeferredValue(search);
@@ -67,16 +67,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
       >
         {/* Top: back nav */}
         <div className="flex items-center justify-between px-4 py-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 text-xs text-text-tertiary transition hover:text-text-primary"
-          >
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
-              <path d="M10 13L5 8l5-5" />
-            </svg>
-            Back
-          </button>
+          <DraftBackButton fallbackHref="/funds" />
           <button
             type="button"
             onClick={() => setOpen(false)}

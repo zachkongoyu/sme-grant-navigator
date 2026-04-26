@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: FundDetailPageProps): Promise
   const scheme = await getSchemeByIdFromDatabase(schemeId);
   if (!scheme) return { title: 'Fund Not Found | Thunder' };
   return {
-    title: `${scheme.name} | Easy BUD 2026 Application — Thunder`,
+    title: `${scheme.name} | Thunder`,
     description: scheme.shortDescription,
   };
 }

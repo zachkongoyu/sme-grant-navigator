@@ -12,7 +12,7 @@
 
 ## What the MVP is
 
-Thunder is an Easy BUD grant application drafting agent. Users describe their company, the agent qualifies them against Easy BUD criteria, and produces a complete, ready-to-review draft — for free. The only gate is an email address to download the PDF.
+Thunder is an AI grant drafting platform. For the current MVP, users describe their company, the agent qualifies them against Easy BUD criteria, and produces a complete, ready-to-review draft — for free. The only gate is an email address to download the PDF.
 
 ---
 

@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { getAllSchemesFromDatabase } from '@/lib/schemes/db';
 
 export const metadata: Metadata = {
-  title: 'Thunder | HK Grant Application Generator',
+  title: 'Thunder | AI Grant Drafting Platform',
   description:
-    'Thunder drafts complete Hong Kong government grant applications — Easy BUD, BUD General, TVP and more. Describe your company, get a submission-ready draft in under a minute.',
+    'Thunder turns company context into grant-ready drafts. It launches with Easy BUD in Hong Kong and expands into broader grant workflows from there.',
 };
 
 export default async function HomePage() {
@@ -54,7 +54,7 @@ export default async function HomePage() {
                     </p>
                   </div>
                   {featuredScheme.fundingCap && (
-                    <div className="shrink-0 rounded-xl border border-border bg-background px-4 py-3 text-center min-w-[100px]">
+                    <div className="min-w-25 shrink-0 rounded-xl border border-border bg-background px-4 py-3 text-center">
                       <p className="font-mono text-[9px] uppercase tracking-widest text-text-tertiary">Max grant</p>
                       <p className="mt-0.5 text-xl font-semibold tracking-tight text-text-primary">
                         HK${(featuredScheme.fundingCap / 1000).toFixed(0)}K
@@ -92,7 +92,7 @@ export default async function HomePage() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3 shrink-0" aria-hidden="true">
                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
               </svg>
-              AI-drafted HK grant applications
+              AI grant drafting platform
             </div>
 
             <h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
@@ -100,7 +100,7 @@ export default async function HomePage() {
               <span className="text-text-secondary">drafted by AI.</span>
             </h1>
             <p className="mt-4 max-w-md text-base leading-7 text-text-secondary">
-              Tell Thunder about your business and get a grant application draft in under a minute.
+              Tell Thunder about your business and get a grant-ready draft in under a minute. Easy BUD in Hong Kong is the first step, not the limit.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-[0.14em]">

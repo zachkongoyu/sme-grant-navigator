@@ -10,7 +10,7 @@ export function PageLoadingIndicator({
   if (variant === 'scrim') {
     return (
       <div
-        className="pointer-events-none fixed inset-0 z-50 bg-background/38 backdrop-blur-[1.5px]"
+        className="fixed inset-0 z-50 bg-background/38 backdrop-blur-[1.5px]"
         role="status"
         aria-live="polite"
         aria-label={label}

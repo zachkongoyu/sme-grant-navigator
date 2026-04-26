@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'REST API | Thunder',
   description:
-    'Programmatic access to grant scheme data via the Thunder REST API — coming soon.',
+    'Programmatic access to Thunder workflows and grant data — coming soon.',
 };
 
 export default function RestApiPage() {
@@ -13,7 +13,7 @@ export default function RestApiPage() {
       <span className="font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: 'var(--warning)' }}>Soon</span>
       <h1 className="mt-3 text-2xl font-semibold tracking-tight">REST API</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">
-        Programmatic access to scheme data, eligibility rules, and the drafter — launching after the Easy BUD drafter ships.
+        Programmatic access to Thunder workflows, scheme data, and drafting infrastructure — launching after the first product surface ships.
       </p>
       <a
         href="mailto:hello@thunderhk.ai?subject=REST+API+waitlist"

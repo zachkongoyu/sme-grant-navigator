@@ -4,11 +4,11 @@ import { useRef, useState, useCallback, type ChangeEvent, type DragEvent, type R
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 import type { ResolvedScheme } from '@/lib/schemes/db';
 import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
+import { DraftBackButton } from '@/components/DraftBackButton';
 
 interface DrafterProps {
   readonly scheme: ResolvedScheme;
@@ -35,8 +35,20 @@ interface DraftFileAttachment extends AttachmentFile {
 
 type DraftAttachment = DraftFileAttachment | LinkAttachment;
 
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: string };
+    if (typeof data.error === 'string' && data.error.trim().length > 0) {
+      return data.error;
+    }
+  } catch {
+    // Fall back to a plain generic message below.
+  }
+
+  return 'Thunder could not generate a draft right now. Please try again later.';
+}
+
 export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
-  const router = useRouter();
   const [context, setContext] = useState('');
   const [draft, setDraft] = useState('');
   const [stage, setStage] = useState<Stage>('compose');
@@ -174,8 +186,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       });
 
       if (!res.ok || !res.body) {
-        const msg = await res.text().catch(() => 'Unknown error');
-        throw new Error(msg || `HTTP ${res.status}`);
+        throw new Error(await readErrorMessage(res));
       }
 
       const reader = res.body.getReader();
@@ -229,8 +240,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       });
 
       if (!res.ok || !res.body) {
-        const errMsg = await res.text().catch(() => 'Unknown error');
-        throw new Error(errMsg || `HTTP ${res.status}`);
+        throw new Error(await readErrorMessage(res));
       }
 
       const reader = res.body.getReader();
@@ -312,15 +322,6 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`
     : 'Varies';
 
-  function handleBack() {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push(backHref);
-  }
-
   // ── Compose / error ──────────────────────────────────────────────────────
   if (stage === 'compose' || stage === 'error') {
     return (
@@ -331,19 +332,9 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
         onDrop={handleDrop}
       >
         {/* Back nav */}
-        <button
-          type="button"
-          onClick={handleBack}
-          className="absolute top-6 left-6 inline-flex cursor-pointer items-center gap-1.5 font-mono text-xs transition-colors"
-          style={{ color: 'var(--text-secondary)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
-        >
-          <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M10 3L5 8l5 5" />
-          </svg>
-          Back
-        </button>
+        <div className="absolute top-6 left-6">
+          <DraftBackButton fallbackHref={backHref} />
+        </div>
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         {headerControls && (
           <div className="mb-6 flex justify-center">

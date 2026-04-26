@@ -4,8 +4,8 @@ const nextConfig = {
   serverExternalPackages: ['@react-pdf/renderer'],
   async redirects() {
     return [
-      { source: '/apply', destination: '/chat', permanent: true },
-      { source: '/match', destination: '/chat', permanent: true },
+      { source: '/apply', destination: '/draft', permanent: true },
+      { source: '/match', destination: '/draft', permanent: true },
     ];
   },
 };

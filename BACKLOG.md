@@ -1,7 +1,7 @@
 # Backlog — Post-Drafter Launch Items
 
 > Drafter (Phases 1–7 of STRATEGY_REALIGN.md) is complete and working.
-> The items below are the remaining planned phases. None are blocking the Easy BUD drafter from being used.
+> The items below are the remaining planned phases. None are blocking Thunder's first live drafting surface from being used.
 
 ---
 

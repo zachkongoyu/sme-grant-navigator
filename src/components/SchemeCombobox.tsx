@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
+
+import { PageLoadingIndicator } from '@/components/PageLoadingIndicator';
 
 interface SchemeOption {
   id: string;
@@ -20,6 +23,7 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [pendingSchemeId, setPendingSchemeId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,8 +37,7 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
       )
     : schemes;
 
-  // Reset active index when filter changes
-  useEffect(() => { setActiveIndex(0); }, [query]);
+  const isNavigating = pendingSchemeId !== null && pendingSchemeId !== selectedId;
 
   // Scroll active item into view
   useEffect(() => {
@@ -56,9 +59,19 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
   }, []);
 
   function pickScheme(id: string) {
-    setOpen(false);
-    setQuery('');
-    router.push(`/draft?scheme=${id}`);
+    if (id === selectedId) {
+      setOpen(false);
+      setQuery('');
+      return;
+    }
+
+    flushSync(() => {
+      setOpen(false);
+      setQuery('');
+      setPendingSchemeId(id);
+    });
+
+    router.replace(`/draft?scheme=${id}`);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -80,12 +93,19 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-sm">
+    <div ref={containerRef} className="relative w-full max-w-sm" aria-busy={isNavigating}>
+      {isNavigating && <PageLoadingIndicator variant="scrim" label="Switching scheme..." />}
+
       {/* Trigger / search input */}
       <button
         type="button"
-        onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
-        className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-left transition hover:border-accent"
+        onClick={() => {
+          setOpen(true);
+          setActiveIndex(0);
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}
+        className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-left transition hover:border-accent disabled:cursor-wait disabled:opacity-70"
+        disabled={isNavigating}
         hidden={open}
       >
         <div className="flex items-center gap-3">
@@ -129,14 +149,19 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setActiveIndex(0);
+              }}
               onKeyDown={handleKeyDown}
               placeholder="Search schemes…"
+              disabled={isNavigating}
               className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
             />
             <button
               type="button"
               onClick={() => { setOpen(false); setQuery(''); }}
+              disabled={isNavigating}
               className="shrink-0 font-mono text-[10px] text-text-tertiary transition hover:text-text-primary"
             >
               Esc

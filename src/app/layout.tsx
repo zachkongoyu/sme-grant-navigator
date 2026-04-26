@@ -13,8 +13,21 @@ import { AuthButton } from '@/components/AuthButton';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Thunder | Easy BUD Application Generator',
-  description: 'AI-generated Easy BUD application drafts for Hong Kong SMEs.',
+  metadataBase: new URL('https://www.thunderhk.ai'),
+  title: 'Thunder | AI Grant Drafting Platform',
+  description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+  openGraph: {
+    title: 'Thunder | AI Grant Drafting Platform',
+    description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+    siteName: 'Thunder',
+    type: 'website',
+    locale: 'en_HK',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Thunder | AI Grant Drafting Platform',
+    description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+  },
 };
 
 export default function RootLayout({
@@ -38,7 +51,7 @@ export default function RootLayout({
 })();`}</Script>
       </head>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} min-h-screen bg-background text-text-primary antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} flex min-h-screen flex-col bg-background text-text-primary antialiased`}
       >
         <Suspense fallback={null}>
           <NavigationProgress />
@@ -46,7 +59,9 @@ export default function RootLayout({
         <div className="fixed top-4 right-4 z-50">
           <AuthButton />
         </div>
-        {children}
+        <div className="flex-1">
+          {children}
+        </div>
 
         {/* ── Footer ── */}
         <footer className="border-t border-border py-8">
