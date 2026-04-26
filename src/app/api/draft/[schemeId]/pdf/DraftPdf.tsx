@@ -64,7 +64,7 @@ interface DraftPdfProps {
   generatedAt: string;
 }
 
-export function DraftPdf({ schemeName, draftMarkdown, generatedAt }: DraftPdfProps) {
+export function createDraftPdf({ schemeName, draftMarkdown, generatedAt }: DraftPdfProps) {
   return (
     <Document title={`${schemeName} — Draft Application`}>
       <Page size="A4" style={styles.page}>

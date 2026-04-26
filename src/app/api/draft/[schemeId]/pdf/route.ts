@@ -1,9 +1,8 @@
-import { createElement } from 'react';
 import { type NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 
 import { getSchemeByIdFromDatabase } from '@/lib/schemes/db';
-import { DraftPdf } from './DraftPdf';
+import { createDraftPdf } from './DraftPdf';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,15 +46,16 @@ export async function POST(
   });
 
   const buffer = await renderToBuffer(
-    createElement(DraftPdf, { schemeName: scheme.name, draftMarkdown, generatedAt }),
+    createDraftPdf({ schemeName: scheme.name, draftMarkdown, generatedAt }),
   );
+  const pdfBytes = new Uint8Array(buffer);
 
-  return new NextResponse(buffer, {
+  return new NextResponse(pdfBytes, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${schemeId}-draft.pdf"`,
-      'Content-Length': String(buffer.byteLength),
+      'Content-Length': String(pdfBytes.byteLength),
     },
   });
 }
