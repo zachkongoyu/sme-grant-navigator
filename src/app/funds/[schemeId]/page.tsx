@@ -8,12 +8,14 @@ import remarkGfm from 'remark-gfm';
 import { CopyFundContext } from '@/components/CopyFundContext';
 import { FundDetailActions } from '@/components/FundDetailActions';
 import { SchemesSidebar } from '@/components/SchemesSidebar';
-import type { Scheme } from '@/types';
-import { loadCorpus } from '@/lib/schemes/corpus';
 import {
-  getAllSchemesFromDatabase,
-  getSchemeByIdFromDatabase,
-} from '@/lib/schemes/db';
+  getAllSchemes,
+  getSchemeDocument,
+} from '@/lib/schemes/repository';
+import {
+  formatFundingAmount,
+  getSchemeStatusBadgeStyle,
+} from '@/lib/schemes/presentation';
 
 interface FundDetailPageProps {
   readonly params: Promise<{
@@ -21,57 +23,31 @@ interface FundDetailPageProps {
   }>;
 }
 
-function formatFundingCap(fundingCap: number | null, currency: string | null) {
-  if (fundingCap === null) return 'Varies';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency ?? 'HKD',
-    maximumFractionDigits: 0,
-  }).format(fundingCap);
-}
-
-function statusBadgeStyle(status: Scheme['status']): React.CSSProperties {
-  if (status === 'open' || status === 'active') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
-      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
-      color: 'var(--success)',
-    };
-  }
-  if (status === 'coming-soon') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
-      color: 'var(--warning)',
-    };
-  }
-  return { borderColor: 'var(--border)', color: 'var(--text-tertiary)' };
-}
-
 export async function generateStaticParams() {
-  const schemes = await getAllSchemesFromDatabase();
+  const schemes = await getAllSchemes();
   return schemes.map((scheme) => ({ schemeId: scheme.id }));
 }
 
 export async function generateMetadata({ params }: FundDetailPageProps): Promise<Metadata> {
   const { schemeId } = await params;
-  const scheme = await getSchemeByIdFromDatabase(schemeId);
-  if (!scheme) return { title: 'Fund Not Found | Thunder' };
+  const document = await getSchemeDocument(schemeId);
+  if (!document) return { title: 'Fund Not Found | Thunder' };
   return {
-    title: `${scheme.name} | Thunder`,
-    description: scheme.shortDescription,
+    title: `${document.scheme.name} | Thunder`,
+    description: document.scheme.shortDescription,
   };
 }
 
 export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const { schemeId } = await params;
-  const [scheme, allSchemes] = await Promise.all([
-    getSchemeByIdFromDatabase(schemeId),
-    getAllSchemesFromDatabase(),
+  const [document, allSchemes] = await Promise.all([
+    getSchemeDocument(schemeId),
+    getAllSchemes(),
   ]);
 
-  if (!scheme) notFound();
+  if (!document) notFound();
 
-  const corpus = await loadCorpus(schemeId);
+  const { scheme, corpus } = document;
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
@@ -85,7 +61,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
               <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.category}</p>
               <span
                 className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
-                style={statusBadgeStyle(scheme.status)}
+                style={getSchemeStatusBadgeStyle(scheme.status)}
               >
                 {(scheme.status === 'open' || scheme.status === 'active') && (
                   <span className="h-1 w-1 animate-pulse rounded-full" style={{ backgroundColor: 'var(--success)' }} />
@@ -100,7 +76,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
             <div className="mt-6 flex flex-wrap gap-6">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</p>
-                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{formatFundingCap(scheme.fundingCap, scheme.currency)}</p>
+                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{formatFundingAmount(scheme.fundingCap, scheme.currency)}</p>
               </div>
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</p>

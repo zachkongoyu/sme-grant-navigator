@@ -6,9 +6,15 @@ import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 
 import type { ResolvedScheme } from '@/lib/schemes/db';
+import {
+  downloadDraftPdf,
+  readDraftEventStream,
+  streamDraftGeneration,
+  uploadDraftAttachments,
+} from '@/lib/api/draft-client';
 import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
-import { DraftBackButton } from '@/components/DraftBackButton';
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
 
 interface DrafterProps {
   readonly scheme: ResolvedScheme;
@@ -34,19 +40,6 @@ interface DraftFileAttachment extends AttachmentFile {
 }
 
 type DraftAttachment = DraftFileAttachment | LinkAttachment;
-
-async function readErrorMessage(response: Response): Promise<string> {
-  try {
-    const data = (await response.json()) as { error?: string };
-    if (typeof data.error === 'string' && data.error.trim().length > 0) {
-      return data.error;
-    }
-  } catch {
-    // Fall back to a plain generic message below.
-  }
-
-  return 'Thunder could not generate a draft right now. Please try again later.';
-}
 
 export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
   const [context, setContext] = useState('');
@@ -88,18 +81,8 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     setAttachments((prev) => [...prev, ...placeholders]);
 
     // Upload all files to /api/extract and replace placeholders with results
-    const form = new FormData();
-    list.forEach((f) => form.append('files', f));
-
     try {
-      const res = await fetch('/api/extract', { method: 'POST', body: form });
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({ error: 'Upload failed' }))) as { error: string };
-        setErrorMsg(err.error ?? 'File upload failed');
-        setAttachments((prev) => prev.filter((a) => !placeholders.some((p) => p.id === a.id)));
-        return;
-      }
-      const extracted = (await res.json()) as Array<{ id: string; name: string; size: number; mime: string; text: string }>;
+      const extracted = await uploadDraftAttachments(list);
       setAttachments((prev) => {
         const remaining = prev.filter((a) => !placeholders.some((p) => p.id === a.id));
         const resolved: DraftFileAttachment[] = extracted.map((e) => ({
@@ -113,9 +96,9 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
         }));
         return [...remaining, ...resolved];
       });
-    } catch {
+    } catch (error) {
       setAttachments((prev) => prev.filter((a) => !placeholders.some((p) => p.id === a.id)));
-      setErrorMsg('File upload failed');
+      setErrorMsg((error as Error).message || 'File upload failed');
     }
   }
 
@@ -178,28 +161,14 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       .map((a) => a.url);
 
     try {
-      const res = await fetch(`/api/draft/${scheme.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userContext: context, inlineAttachments, links }),
-        signal: ctrl.signal,
-      });
-
-      if (!res.ok || !res.body) {
-        throw new Error(await readErrorMessage(res));
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullDraft = '';
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        fullDraft += chunk;
+      const reader = await streamDraftGeneration(
+        scheme.id,
+        { userContext: context, inlineAttachments, links },
+        ctrl.signal,
+      );
+      const fullDraft = await readDraftEventStream(reader, (chunk) => {
         setDraft((prev) => prev + chunk);
-      }
+      });
 
       if (isRejection(fullDraft)) {
         setDraft('');
@@ -232,28 +201,14 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     setStage('streaming');
 
     try {
-      const res = await fetch(`/api/draft/${scheme.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userContext: msg, history: currentHistory }),
-        signal: ctrl.signal,
-      });
-
-      if (!res.ok || !res.body) {
-        throw new Error(await readErrorMessage(res));
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullDraft = '';
-
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        fullDraft += chunk;
+      const reader = await streamDraftGeneration(
+        scheme.id,
+        { userContext: msg, history: currentHistory },
+        ctrl.signal,
+      );
+      const fullDraft = await readDraftEventStream(reader, (chunk) => {
         setDraft((prev) => prev + chunk);
-      }
+      });
 
       if (isRejection(fullDraft)) {
         setDraft('');
@@ -292,17 +247,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     setPdfLoading(true);
     setPdfError('');
     try {
-      const res = await fetch(`/api/draft/${scheme.id}/pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draftMarkdown: draft, email: pdfEmail }),
-      });
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({ error: 'Export failed' }))) as { error: string };
-        setPdfError(err.error ?? 'PDF export failed');
-        return;
-      }
-      const blob = await res.blob();
+      const blob = await downloadDraftPdf(scheme.id, draft, pdfEmail);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -311,8 +256,8 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       URL.revokeObjectURL(url);
       setShowPdfModal(false);
       setPdfEmail('');
-    } catch {
-      setPdfError('PDF export failed. Please try again.');
+    } catch (error) {
+      setPdfError((error as Error).message || 'PDF export failed. Please try again.');
     } finally {
       setPdfLoading(false);
     }
@@ -333,7 +278,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       >
         {/* Back nav */}
         <div className="absolute top-6 left-6">
-          <DraftBackButton fallbackHref={backHref} />
+          <BackNavigation fallbackHref={backHref} />
         </div>
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         {headerControls && (
@@ -508,7 +453,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
           onClick={() => { abortRef.current?.abort(); setStage('compose'); setDraft(''); }}
           className="mt-6 flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-text-tertiary transition hover:text-text-primary"
         >
-          ← Cancel
+          Cancel generation
         </button>
       </div>
     );
@@ -546,7 +491,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
                   ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }
                   : { backgroundColor: 'var(--border)', color: 'var(--text-tertiary)' }}
               >
-                {pdfLoading ? 'Generating…' : 'Download'}
+                {pdfLoading ? 'Generating…' : 'Download PDF'}
               </button>
               <button
                 type="button"
@@ -580,7 +525,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
           {attachments.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
               {attachments.map((a) => (
-                <span key={a.id} className="inline-flex max-w-[160px] items-center gap-1 truncate rounded-md border border-border px-2 py-0.5 font-mono text-[10px] text-text-tertiary">
+                <span key={a.id} className="inline-flex max-w-40 items-center gap-1 truncate rounded-md border border-border px-2 py-0.5 font-mono text-[10px] text-text-tertiary">
                   {a.kind === 'file' ? <MiniFileIcon /> : <MiniLinkIcon />}
                   <span className="truncate">{a.kind === 'file' ? a.name : a.url}</span>
                 </span>
@@ -603,7 +548,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
             </button>
             <button type="button" onClick={reset}
               className="flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
-              ← Start over
+              Reset draft
             </button>
           </div>
         )}
@@ -627,16 +572,16 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
             <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
               <CopyIcon />
-              Copy
+              Copy draft
             </button>
             <button type="button" onClick={() => { setPdfError(''); setShowPdfModal(true); }}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
               <DownloadIcon />
-              PDF
+              Download PDF
             </button>
             <button type="button" onClick={reset}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors">
-              ← New draft
+              Reset draft
             </button>
           </div>
         </div>
@@ -665,7 +610,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
           </button>
           <button type="button" onClick={reset}
             className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
-            Start over
+            Reset draft
           </button>
         </div>
 
@@ -696,7 +641,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
               style={followUp.trim() ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' } : { backgroundColor: 'var(--border)', color: 'var(--text-tertiary)' }}
             >
               <SparkleIcon />
-              Revise
+              Revise draft
             </button>
           </div>
         </div>

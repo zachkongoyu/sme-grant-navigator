@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export function DraftBackButton({ fallbackHref }: { readonly fallbackHref: string }) {
+import { Button } from '@/components/ui/button';
+
+export function BackNavigation({ fallbackHref }: { readonly fallbackHref: string }) {
   const router = useRouter();
 
   function handleClick() {
@@ -22,17 +24,19 @@ export function DraftBackButton({ fallbackHref }: { readonly fallbackHref: strin
         backgroundColor: 'color-mix(in srgb, var(--background-elevated) 82%, transparent)',
       }}
     >
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={handleClick}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-text-secondary transition duration-200 hover:-translate-y-px hover:text-text-primary"
+        className="cursor-pointer rounded-full px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-text-secondary transition duration-200 hover:-translate-y-px hover:text-text-primary"
         style={{ backgroundColor: 'color-mix(in srgb, var(--surface) 88%, transparent)' }}
       >
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
           <path d="M10 13L5 8l5-5" />
         </svg>
         Back
-      </button>
+      </Button>
       <Link
         href="/"
         aria-label="Home"

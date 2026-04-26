@@ -1,22 +1,24 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import {
-  LlmHttpError,
-  openChatStream,
+  getLlmErrorStatus,
   type LlmMessage,
+  streamText,
   validateLlmConfiguration,
 } from '@/lib/llm';
-import { loadCorpus } from '@/lib/schemes/corpus';
-import { getSchemeByIdFromDatabase } from '@/lib/schemes/db';
+import { getSchemeDocument } from '@/lib/schemes/repository';
 import { buildDrafterSystemPrompt } from '@/lib/prompts/system';
+import {
+  createDoneEvent,
+  createTokenEvent,
+  encodeSseEvent,
+} from '@/lib/stream-events';
 
 const MAX_CONTEXT_CHARS = 20_000;
 const MAX_ATTACHMENT_CHARS = 30_000;
 const MAX_LINK_RESPONSE_BYTES = 50_000;
 const LINK_FETCH_TIMEOUT_MS = 5_000;
 const MAX_LINKS = 5;
-
-const encoder = new TextEncoder();
 
 interface InlineAttachment {
   name: string;
@@ -31,19 +33,11 @@ interface DraftRequestBody {
 }
 
 function toDraftErrorMessage(error: unknown): string {
-  if (error instanceof LlmHttpError && error.status === 403) {
+  if (getLlmErrorStatus(error) === 403) {
     return 'Thunder cannot generate a draft for this scheme right now. Please try again later.';
   }
 
   return 'Thunder could not generate a draft right now. Please try again later.';
-}
-
-function toDraftErrorStatus(error: unknown): number {
-  if (error instanceof LlmHttpError) {
-    return error.status;
-  }
-
-  return 500;
 }
 
 /**
@@ -103,8 +97,10 @@ export async function POST(
 ) {
   const { schemeId } = await params;
 
-  const scheme = await getSchemeByIdFromDatabase(schemeId);
-  if (!scheme) return NextResponse.json({ error: 'Scheme not found' }, { status: 404 });
+  const document = await getSchemeDocument(schemeId);
+  if (!document) return NextResponse.json({ error: 'Scheme not found' }, { status: 404 });
+
+  const { scheme, corpus } = document;
 
   const body = (await request.json()) as DraftRequestBody;
   const { userContext, inlineAttachments = [], links = [], history = [] } = body;
@@ -142,7 +138,6 @@ export async function POST(
     ? `${safeContext}\n\n<attachments>\n${attachmentContext}\n</attachments>`
     : safeContext;
 
-  const corpus = await loadCorpus(schemeId);
   const systemPrompt = buildDrafterSystemPrompt(scheme, corpus);
 
   const messages: LlmMessage[] = [
@@ -157,70 +152,42 @@ export async function POST(
     return NextResponse.json({ error: toDraftErrorMessage(error) }, { status: 500 });
   }
 
-  let upstreamReader: ReadableStreamDefaultReader<Uint8Array>;
-  try {
-    upstreamReader = await openChatStream(messages, undefined, request.signal);
-  } catch (error) {
-    return NextResponse.json(
-      { error: toDraftErrorMessage(error) },
-      { status: toDraftErrorStatus(error) },
-    );
-  }
-
   const stream = new ReadableStream({
     async start(controller) {
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let isClosed = false;
+        let shouldClose = false;
 
       try {
-        while (true) {
-          const { done, value } = await upstreamReader.read();
-          if (done) break;
+        for await (const token of streamText(messages, undefined, request.signal)) {
+          controller.enqueue(encodeSseEvent(createTokenEvent(token)));
+        }
+        controller.enqueue(encodeSseEvent(createDoneEvent()));
+          shouldClose = true;
+      } catch (err) {
+          if ((err as Error)?.name === 'AbortError') {
+            shouldClose = true;
+            return;
+        }
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() ?? '';
-
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') {
-              controller.close();
-              isClosed = true;
-              return;
-            }
-
+          console.error('Draft stream error:', err);
+          controller.error(new Error(toDraftErrorMessage(err)));
+          return;
+      } finally {
+          if (shouldClose) {
             try {
-              const chunk = JSON.parse(data) as {
-                choices: [{ delta: { content?: string } }];
-              };
-              const token = chunk.choices[0]?.delta?.content;
-              if (token) {
-                controller.enqueue(encoder.encode(token));
-              }
+              controller.close();
             } catch {
-              // Ignore individual chunk parse errors; move to the next line.
+              // The stream may already be closed or canceled by the client.
             }
           }
-        }
-      } catch (err) {
-        if ((err as Error)?.name !== 'AbortError') {
-          console.error('Draft stream error:', err);
-          controller.enqueue(encoder.encode(toDraftErrorMessage(err)));
-        }
-      } finally {
-        upstreamReader.releaseLock();
-        if (!isClosed) {
-          controller.close();
-        }
       }
     },
   });
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
       'Transfer-Encoding': 'chunked',
       'X-Content-Type-Options': 'nosniff',
     },

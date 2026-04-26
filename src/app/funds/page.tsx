@@ -2,41 +2,20 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { getAllSchemesFromDatabase } from '@/lib/schemes/db';
+import { getAllSchemes } from '@/lib/schemes/repository';
+import {
+  formatFundingAmount,
+  getSchemeStatusBadgeStyle,
+  getSchemeStatusText,
+} from '@/lib/schemes/presentation';
 
 export const metadata: Metadata = {
   title: 'Scheme Catalogue | Thunder',
   description: 'All funding schemes in the catalogue. Browse manually, or let the agent do it for you.',
 };
 
-function formatFundingCap(fundingCap: number | null): string {
-  if (fundingCap === null) return 'Varies';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(fundingCap);
-}
-
-function statusStyle(status: string): React.CSSProperties {
-  if (status === 'open' || status === 'active') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
-      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
-      color: 'var(--success)',
-    };
-  }
-  if (status === 'coming-soon') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
-      color: 'var(--warning)',
-    };
-  }
-  return { borderColor: 'var(--border)', color: 'var(--text-tertiary)' };
-}
-
 export default async function FundsPage() {
-  const schemes = await getAllSchemesFromDatabase();
+  const schemes = await getAllSchemes();
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
@@ -117,13 +96,13 @@ export default async function FundsPage() {
                 <p className="mt-0.5 text-xs text-text-tertiary line-clamp-1">{scheme.shortDescription}</p>
               </div>
               <div className="font-mono text-xs text-text-tertiary">{scheme.category}</div>
-              <div className="font-mono text-sm text-text-primary">{formatFundingCap(scheme.fundingCap)}</div>
+              <div className="font-mono text-sm text-text-primary">{formatFundingAmount(scheme.fundingCap, scheme.currency)}</div>
               <div>
                 <span
                   className="inline-flex rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]"
-                  style={statusStyle(scheme.status)}
+                  style={getSchemeStatusBadgeStyle(scheme.status)}
                 >
-                  {scheme.status === 'coming-soon' ? 'Soon' : scheme.status.replace('-', ' ')}
+                  {getSchemeStatusText(scheme.status)}
                 </span>
               </div>
             </Link>

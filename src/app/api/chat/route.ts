@@ -10,15 +10,16 @@ import {
 import { getSupabase } from '@/lib/supabase';
 import { createClient } from '@/utils/supabase/server';
 import type { ShortlistItem } from '@/components/chat/types';
+import {
+  createArtifactEvent,
+  createDoneEvent,
+  createTokenEvent,
+  encodeSseEvent,
+} from '@/lib/stream-events';
 
 const CHAT_ENABLED = process.env.ENABLE_CHAT === 'true';
 
-const encoder = new TextEncoder();
 const MAX_ATTACHMENT_CHARS = 20_000;
-
-function sse(data: unknown): Uint8Array {
-  return encoder.encode(`data: ${JSON.stringify(data)}\n\n`);
-}
 
 function deriveTitle(text: string): string {
   return text.slice(0, 60).trim() + (text.length > 60 ? '\u2026' : '');
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
         // Phase 1 — stream tokens to the client
         for await (const token of streamChat(llmMessages, undefined, abortController.signal)) {
           fullText += token;
-          controller.enqueue(sse({ type: 'token', value: token }));
+          controller.enqueue(encodeSseEvent(createTokenEvent(token)));
         }
 
         // Phase 2 — emit artifact cards
@@ -192,29 +193,23 @@ export async function POST(request: NextRequest) {
         if (shortlist) {
           const schemeIds = extractMentionedSchemeIds(fullText, schemes);
           controller.enqueue(
-            sse({
-              type: 'artifact',
-              value: {
+            encodeSseEvent(createArtifactEvent({
                 id: `shortlist-${sessionId}-${Date.now()}`,
                 kind: 'shortlist',
                 title: 'Matching Schemes',
                 payload: buildShortlistPayload(schemeIds, schemes),
-              },
-            }),
+              })),
           );
         }
 
         if (draft) {
           controller.enqueue(
-            sse({
-              type: 'artifact',
-              value: {
+            encodeSseEvent(createArtifactEvent({
                 id: `draft-${sessionId}-${Date.now()}`,
                 kind: 'draft',
                 title: 'Application Draft',
                 payload: { text: fullText },
-              },
-            }),
+              })),
           );
         }
 
@@ -228,9 +223,7 @@ export async function POST(request: NextRequest) {
           const reimbursementDocs: { id: string; label: string; note?: string }[] = [];
 
           controller.enqueue(
-            sse({
-              type: 'artifact',
-              value: {
+            encodeSseEvent(createArtifactEvent({
                 id: `checklist-${sessionId}-${Date.now()}`,
                 kind: 'checklist',
                 title: 'Required Documents',
@@ -240,8 +233,7 @@ export async function POST(request: NextRequest) {
                     : [{ id: 'generic', label: 'Confirm required documents with the administering body' }],
                   later: reimbursementDocs,
                 },
-              },
-            }),
+              })),
           );
         }
 
@@ -263,7 +255,7 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         console.error('Chat stream error:', err);
       } finally {
-        controller.enqueue(sse({ type: 'done' }));
+        controller.enqueue(encodeSseEvent(createDoneEvent()));
         controller.close();
       }
     },

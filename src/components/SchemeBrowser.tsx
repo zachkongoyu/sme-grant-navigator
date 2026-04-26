@@ -3,6 +3,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import type { Scheme, SchemeCategory } from '@/types';
+import { filterSchemes } from '@/lib/schemes/filter';
 
 import {
   SchemeCategorySidebar,
@@ -37,19 +38,7 @@ export function SchemeBrowser({ schemes }: SchemeBrowserProps) {
   }, [schemes]);
 
   const filteredSchemes = useMemo(() => {
-    const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
-
-    return schemes.filter((scheme) => {
-      const matchesCategory =
-        selectedCategory === 'All' || scheme.category === selectedCategory;
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        scheme.name.toLowerCase().includes(normalizedSearch) ||
-          scheme.shortDescription.toLowerCase().includes(normalizedSearch) ||
-          scheme.category.toLowerCase().includes(normalizedSearch);
-
-      return matchesCategory && matchesSearch;
-    });
+    return filterSchemes(schemes, deferredSearchTerm, selectedCategory);
   }, [deferredSearchTerm, schemes, selectedCategory]);
 
   return (

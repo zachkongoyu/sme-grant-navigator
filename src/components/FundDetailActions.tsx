@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { fetchBookmarks, updateBookmark } from '@/lib/api/bookmarks-client';
 import { createClient } from '@/utils/supabase/client';
 
 interface FundDetailActionsProps {
@@ -22,9 +23,8 @@ export function FundDetailActions({ schemeId }: FundDetailActionsProps) {
       setUserId(uid);
 
       if (uid) {
-        fetch('/api/bookmarks')
-          .then((r) => r.json())
-          .then((ids: string[]) => setIsBookmarked(ids.includes(schemeId)))
+        fetchBookmarks()
+          .then((ids) => setIsBookmarked(ids.includes(schemeId)))
           .catch(() => {});
       }
     });
@@ -36,11 +36,7 @@ export function FundDetailActions({ schemeId }: FundDetailActionsProps) {
     const next = !isBookmarked;
     setIsBookmarked(next);
 
-    await fetch('/api/bookmarks', {
-      method: next ? 'POST' : 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ schemeId }),
-    });
+    await updateBookmark(schemeId, next);
   }
 
   // Still loading auth state — render nothing to avoid layout shift

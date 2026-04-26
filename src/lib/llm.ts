@@ -21,6 +21,10 @@ export class LlmHttpError extends Error {
   }
 }
 
+export function getLlmErrorStatus(error: unknown): number | null {
+  return error instanceof LlmHttpError ? error.status : null;
+}
+
 function getHeaders(): Record<string, string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -46,7 +50,7 @@ function defaultModel(): string {
   return process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-4';
 }
 
-export async function openChatStream(
+async function openChatStream(
   messages: LlmMessage[],
   model = defaultModel(),
   signal?: AbortSignal | null,
@@ -107,6 +111,14 @@ export async function* streamChat(
       }
     }
   }
+}
+
+export async function* streamText(
+  messages: LlmMessage[],
+  model = defaultModel(),
+  signal?: AbortSignal | null,
+): AsyncGenerator<string> {
+  yield* streamChat(messages, model, signal);
 }
 
 /**

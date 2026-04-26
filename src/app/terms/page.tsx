@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
 
 export const metadata: Metadata = {
   title: 'Terms of Use | Thunder',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <Link href="/" className="font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent">← Home</Link>
+      <BackNavigation fallbackHref="/" />
       <h1 className="mt-6 text-2xl font-semibold tracking-tight">Terms of Use</h1>
       <p className="mt-2 font-mono text-xs text-text-tertiary">Last updated: May 2025</p>
 

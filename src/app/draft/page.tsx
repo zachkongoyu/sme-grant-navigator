@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { DraftBackButton } from '@/components/DraftBackButton';
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
 import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
-import { getAllSchemesFromDatabase } from '@/lib/schemes/db';
+import { getAllSchemes } from '@/lib/schemes/repository';
 
 export const metadata: Metadata = {
   title: 'Drafter | Thunder',
@@ -16,7 +16,7 @@ interface DraftPageProps {
 }
 
 export default async function DraftPage({ searchParams }: DraftPageProps) {
-  const schemes = await getAllSchemesFromDatabase();
+  const schemes = await getAllSchemes();
   const draftableSchemes = schemes.filter((scheme) => scheme.draftable);
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;
@@ -53,7 +53,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
       ) : (
         <div className="relative px-4 py-16 sm:px-6">
           <div className="absolute top-6 left-6">
-            <DraftBackButton fallbackHref="/funds" />
+            <BackNavigation fallbackHref="/funds" />
           </div>
           <div className="mx-auto max-w-3xl">
             <div className="mb-8 flex justify-center">

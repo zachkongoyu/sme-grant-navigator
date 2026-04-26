@@ -3,25 +3,19 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { DraftBackButton } from '@/components/DraftBackButton';
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+import { filterSchemes, groupSchemesByCategory } from '@/lib/schemes/filter';
+import {
+  getSchemeStatusBadgeStyle,
+  getSchemeStatusDotColor,
+  getSchemeStatusText,
+} from '@/lib/schemes/presentation';
 import type { Scheme } from '@/types';
 
 interface SchemesSidebarProps {
   readonly schemes: ReadonlyArray<Scheme>;
   readonly activeId: string;
   readonly children: React.ReactNode;
-}
-
-function statusDot(status: Scheme['status']) {
-  if (status === 'open' || status === 'active') return 'var(--success)';
-  if (status === 'coming-soon') return 'var(--warning)';
-  return 'var(--border-strong)';
-}
-
-function statusLabel(status: Scheme['status']) {
-  if (status === 'open' || status === 'active') return { label: 'Open', color: 'var(--success)' };
-  if (status === 'coming-soon') return { label: 'Soon', color: 'var(--warning)' };
-  return { label: status, color: 'var(--text-tertiary)' };
 }
 
 function SidebarIcon() {
@@ -38,24 +32,8 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
   const [search, setSearch] = useState('');
   const deferred = useDeferredValue(search);
 
-  const filtered = useMemo(() => {
-    const q = deferred.trim().toLowerCase();
-    if (!q) return schemes;
-    return schemes.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q),
-    );
-  }, [schemes, deferred]);
-
-  // Group schemes by category
-  const grouped = useMemo(() => {
-    const map = new Map<string, Scheme[]>();
-    for (const s of filtered) {
-      const arr = map.get(s.category) ?? [];
-      arr.push(s);
-      map.set(s.category, arr);
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
-  }, [filtered]);
+  const filtered = useMemo(() => filterSchemes(schemes, deferred), [schemes, deferred]);
+  const grouped = useMemo(() => groupSchemesByCategory(filtered), [filtered]);
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -67,7 +45,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
       >
         {/* Top: back nav */}
         <div className="flex items-center justify-between px-4 py-4">
-          <DraftBackButton fallbackHref="/funds" />
+          <BackNavigation fallbackHref="/funds" />
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -103,7 +81,6 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
               </p>
               {items.map((scheme) => {
                 const isActive = scheme.id === activeId;
-                const { label, color } = statusLabel(scheme.status);
                 return (
                   <Link
                     key={scheme.id}
@@ -113,7 +90,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
                   >
                     <span
                       className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: statusDot(scheme.status) }}
+                      style={{ backgroundColor: getSchemeStatusDotColor(scheme.status) }}
                     />
                     <div className="flex-1 min-w-0">
                       <p
@@ -126,8 +103,11 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
                         {scheme.name}
                       </p>
                       {!isActive && (
-                        <p className="text-[10px] leading-4" style={{ color }}>
-                          {label}
+                        <p
+                          className="text-[10px] leading-4"
+                          style={{ color: getSchemeStatusBadgeStyle(scheme.status).color }}
+                        >
+                          {getSchemeStatusText(scheme.status)}
                         </p>
                       )}
                     </div>

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+import { createStripeCheckout } from '@/lib/api/payments-client';
+import { formatFundingAmount } from '@/lib/schemes/presentation';
 import type { Artifact, ChecklistPayload, DraftPayload, ShortlistItem } from './types';
 
 interface ArtifactPanelProps {
@@ -56,15 +58,6 @@ export function ArtifactPanel({ artifact, sessionId, paid, onClose }: ArtifactPa
 
 // ── Shortlist ──────────────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number | null, currency: string | null): string {
-  if (amount === null) return 'Varies';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency ?? 'HKD',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function ShortlistContent({ items }: { items: ShortlistItem[] }) {
   return (
     <ul className="space-y-3">
@@ -73,7 +66,7 @@ function ShortlistContent({ items }: { items: ShortlistItem[] }) {
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium text-text-primary">{item.name}</p>
             <span className="shrink-0 font-mono text-xs text-text-tertiary">
-              {formatCurrency(item.fundingCap, item.currency)}
+              {formatFundingAmount(item.fundingCap, item.currency)}
             </span>
           </div>
           <p className="mt-1 text-sm leading-5 text-text-secondary">{item.shortDescription}</p>
@@ -110,18 +103,13 @@ function DraftContent({
   async function handleUnlock() {
     setLoading(true);
     try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
-      });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (res.status === 401) {
+      const { url, status } = await createStripeCheckout(sessionId);
+      if (status === 401) {
         window.location.href = `/auth/signin?next=/chat/${sessionId}`;
         return;
       }
-      if (data.url) {
-        window.location.href = data.url;
+      if (url) {
+        window.location.href = url;
       }
     } finally {
       setLoading(false);

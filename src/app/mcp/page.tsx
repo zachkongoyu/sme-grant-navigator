@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
+
 export const metadata: Metadata = {
   title: 'MCP Server | Thunder',
   description:
@@ -10,6 +12,9 @@ export const metadata: Metadata = {
 export default function McpPage() {
   return (
     <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+      <div className="absolute top-6 left-6">
+        <BackNavigation fallbackHref="/" />
+      </div>
       <span className="font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: 'var(--warning)' }}>Soon</span>
       <h1 className="mt-3 text-2xl font-semibold tracking-tight">MCP Server</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">
@@ -21,9 +26,6 @@ export default function McpPage() {
       >
         Join the waitlist
       </a>
-      <Link href="/" className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent">
-        ← Home
-      </Link>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 
-import { getSchemeByIdFromDatabase } from '@/lib/schemes/db';
+import { getSchemeById } from '@/lib/schemes/repository';
 import { createDraftPdf } from './DraftPdf';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,7 +34,7 @@ export async function POST(
     return NextResponse.json({ error: 'draftMarkdown is required' }, { status: 400 });
   }
 
-  const scheme = await getSchemeByIdFromDatabase(schemeId);
+  const scheme = await getSchemeById(schemeId);
   if (!scheme) {
     return NextResponse.json({ error: 'Scheme not found' }, { status: 404 });
   }

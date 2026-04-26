@@ -2,42 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 
 import type { Scheme } from '@/types';
+import {
+  formatFundingAmount,
+  getSchemeStatusBadgeStyle,
+  getSchemeStatusText,
+} from '@/lib/schemes/presentation';
 
 interface SchemeRowProps {
   readonly index: number;
   readonly scheme: Scheme;
-}
-
-function formatFundingCap(fundingCap: number | null) {
-  if (fundingCap === null) {
-    return 'Varies';
-  }
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(fundingCap);
-}
-
-function statusStyle(status: Scheme['status']): React.CSSProperties {
-  if (status === 'open' || status === 'active') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
-      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
-      color: 'var(--success)',
-    };
-  }
-  if (status === 'coming-soon') {
-    return {
-      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
-      color: 'var(--warning)',
-    };
-  }
-  return {
-    borderColor: 'var(--border)',
-    color: 'var(--text-tertiary)',
-  };
 }
 
 function bodyAcronym(name: string): string {
@@ -75,14 +48,14 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
         </div>
       </div>
       <div className="hidden px-3 py-4 font-mono text-sm text-text-primary md:block">
-        {formatFundingCap(scheme.fundingCap)}
+        {formatFundingAmount(scheme.fundingCap, scheme.currency)}
       </div>
       <div className="px-3 py-4">
         <span
           className="inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]"
-          style={statusStyle(scheme.status)}
+          style={getSchemeStatusBadgeStyle(scheme.status)}
         >
-          {scheme.status === 'coming-soon' ? 'Soon' : scheme.status.replace('-', ' ')}
+          {getSchemeStatusText(scheme.status)}
         </span>
       </div>
     </Link>

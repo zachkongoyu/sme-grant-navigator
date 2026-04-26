@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { DraftBackButton } from '@/components/DraftBackButton';
+import { BackNavigation } from '@/components/navigation/BackNavigation/index';
 import { createClient } from '@/utils/supabase/client';
 
 function getAuthCallbackUrl() {
@@ -79,7 +79,7 @@ export default function SignInPage() {
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
       <div className="absolute top-6 left-6">
-        <DraftBackButton fallbackHref="/" />
+        <BackNavigation fallbackHref="/" />
       </div>
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-2xl font-semibold text-text-primary">Sign in / Sign up</h1>
