@@ -1,10 +1,12 @@
 # MVP Remaining Work
 
 **Launch target:** May 11, 2026
-**Status as of:** April 25, 2026 (revised)
+**Status as of:** April 26, 2026
 **LLM provider:** OpenRouter
 
 > **Strategy revised 2026-04-25:** Free-first, Easy BUD only. Auth and Stripe full billing deferred. PDF export gated behind email capture only. See `STRATEGY_REALIGN.md` for full rationale.
+
+> **Progress as of April 26, 2026:** Phases 1–8 of STRATEGY_REALIGN complete. Drafter live at `/draft/easy-bud`, streaming markdown artifact with `[TODO]` markers, refinement loop, privacy consent, and PDF export with email gate. Supporting pages (`/reimbursement`, `/privacy`, `/terms`, footer) live. Docs (PRD, README) updated.
 
 ---
 

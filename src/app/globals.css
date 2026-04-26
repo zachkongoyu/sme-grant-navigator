@@ -138,3 +138,66 @@ a {
     animation: none;
   }
 }
+
+/* ── Metallic rainbow border glow ── */
+/* Wrap the target element. Add an inner child with bg-surface + overflow-hidden + slightly smaller border-radius. */
+.badge-rainbow {
+  position: relative;
+  padding: 1.5px;
+  isolation: isolate;
+  background: transparent;
+}
+
+.badge-rainbow::before {
+  /* crisp rainbow strip filling the 2px padding gap */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--rainbow-angle, 0deg),
+    #ff6ec7,
+    #ffe259,
+    #a18cd1,
+    #fbc2eb,
+    #c2e9fb,
+    #a1c4fd,
+    #84fab0,
+    #ff6ec7
+  );
+  animation: rainbow-spin 4s linear infinite;
+  z-index: -1;
+}
+
+.badge-rainbow::after {
+  /* soft outward glow */
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--rainbow-angle, 0deg),
+    #ff6ec7,
+    #ffe259,
+    #a18cd1,
+    #fbc2eb,
+    #c2e9fb,
+    #a1c4fd,
+    #84fab0,
+    #ff6ec7
+  );
+  animation: rainbow-spin 4s linear infinite;
+  z-index: -1;
+  filter: blur(10px);
+  opacity: 0.45;
+}
+
+@keyframes rainbow-spin {
+  to { --rainbow-angle: 360deg; }
+}
+
+@property --rainbow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}

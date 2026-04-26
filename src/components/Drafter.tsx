@@ -1,8 +1,10 @@
 'use client';
 
-import { useRef, useState, useCallback, type ChangeEvent, type DragEvent } from 'react';
+import { useRef, useState, useCallback, type ChangeEvent, type DragEvent, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import type { ResolvedScheme } from '@/lib/schemes/db';
 import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
@@ -10,6 +12,8 @@ import { AttachmentChip } from '@/components/chat/AttachmentChip';
 
 interface DrafterProps {
   readonly scheme: ResolvedScheme;
+  readonly backHref: string;
+  readonly headerControls?: ReactNode;
 }
 
 type Stage = 'compose' | 'streaming' | 'done' | 'error';
@@ -31,7 +35,8 @@ interface DraftFileAttachment extends AttachmentFile {
 
 type DraftAttachment = DraftFileAttachment | LinkAttachment;
 
-export function Drafter({ scheme }: DrafterProps) {
+export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
+  const router = useRouter();
   const [context, setContext] = useState('');
   const [draft, setDraft] = useState('');
   const [stage, setStage] = useState<Stage>('compose');
@@ -43,6 +48,10 @@ export function Drafter({ scheme }: DrafterProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [followUp, setFollowUp] = useState('');
   const [history, setHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfEmail, setPdfEmail] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState('');
   const abortRef = useRef<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -268,20 +277,79 @@ export function Drafter({ scheme }: DrafterProps) {
     setHistory([]);
   }, []);
 
+  const downloadPdf = useCallback(async () => {
+    if (!isValidEmail(pdfEmail)) return;
+    setPdfLoading(true);
+    setPdfError('');
+    try {
+      const res = await fetch(`/api/draft/${scheme.id}/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draftMarkdown: draft, email: pdfEmail }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({ error: 'Export failed' }))) as { error: string };
+        setPdfError(err.error ?? 'PDF export failed');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${scheme.id}-draft.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setShowPdfModal(false);
+      setPdfEmail('');
+    } catch {
+      setPdfError('PDF export failed. Please try again.');
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [pdfEmail, draft, scheme.id]);
+
   const capDisplay = scheme.fundingCap
     ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`
     : 'Varies';
+
+  function handleBack() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push(backHref);
+  }
 
   // ── Compose / error ──────────────────────────────────────────────────────
   if (stage === 'compose' || stage === 'error') {
     return (
       <div
-        className={`mx-auto max-w-2xl px-4 py-12 sm:px-6 transition-opacity ${isDragging ? 'opacity-60' : ''}`}
+        className={`relative min-h-screen transition-opacity ${isDragging ? 'opacity-60' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Generator header */}
+        {/* Back nav */}
+        <button
+          type="button"
+          onClick={handleBack}
+          className="absolute top-6 left-6 inline-flex cursor-pointer items-center gap-1.5 font-mono text-xs transition-colors"
+          style={{ color: 'var(--text-secondary)' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
+        >
+          <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M10 3L5 8l5 5" />
+          </svg>
+          Back
+        </button>
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+        {headerControls && (
+          <div className="mb-6 flex justify-center">
+            {headerControls}
+          </div>
+        )}
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -382,13 +450,19 @@ export function Drafter({ scheme }: DrafterProps) {
               type="button"
               onClick={generate}
               disabled={!canGenerate}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed"
+              style={canGenerate ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' } : { backgroundColor: 'var(--border)', color: 'var(--text-tertiary)' }}
             >
               <SparkleIcon />
               {isUploading ? 'Processing…' : 'Generate'}
             </button>
           </div>
         </div>
+
+        <p className="mt-2 text-center font-mono text-[10px] text-text-tertiary">
+          By generating you agree to our{' '}
+          <Link href="/privacy" className="underline hover:text-text-secondary transition-colors">privacy notice</Link>
+        </p>
 
         {noticeMsg && (
           <p className="mt-4 rounded-xl border border-warning/30 bg-warning/8 px-4 py-3 text-sm text-warning">
@@ -406,13 +480,14 @@ export function Drafter({ scheme }: DrafterProps) {
           accept=".pdf,.docx,.xlsx,.csv,.pptx,.txt,.md,image/*"
           className="hidden" onChange={handleFileChange} />
       </div>
+    </div>
     );
   }
 
   // ── Streaming — neutral thinking state ──────────────────────────────────
   if (stage === 'streaming') {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         {/* Scheme pill */}
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
@@ -450,7 +525,50 @@ export function Drafter({ scheme }: DrafterProps) {
 
   // ── Done — two-panel document view ───────────────────────────────────────
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr]">
+    <>
+      {showPdfModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl">
+            <h2 className="mb-1 text-sm font-semibold text-text-primary">Download PDF</h2>
+            <p className="mb-4 text-xs text-text-secondary">
+              Enter your email — we&apos;ll use it to send you updates about your application.
+            </p>
+            <input
+              type="email"
+              value={pdfEmail}
+              onChange={(e) => setPdfEmail(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && isValidEmail(pdfEmail)) void downloadPdf(); }}
+              placeholder="you@company.com"
+              autoFocus
+              className="mb-3 h-9 w-full rounded-lg border border-border bg-surface px-3 font-mono text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
+            />
+            {pdfError && (
+              <p className="mb-3 rounded-lg border border-danger/30 bg-danger/8 px-3 py-2 text-xs text-danger">{pdfError}</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => void downloadPdf()}
+                disabled={!isValidEmail(pdfEmail) || pdfLoading}
+                className="flex-1 rounded-xl py-2 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed"
+                style={isValidEmail(pdfEmail) && !pdfLoading
+                  ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }
+                  : { backgroundColor: 'var(--border)', color: 'var(--text-tertiary)' }}
+              >
+                {pdfLoading ? 'Generating…' : 'Download'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowPdfModal(false); setPdfError(''); }}
+                className="rounded-xl border border-border px-4 py-2 text-sm text-text-secondary transition hover:text-text-primary"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr]">
 
       {/* Left rail — source summary */}
       <aside className="space-y-4 lg:sticky lg:top-16 lg:self-start">
@@ -487,6 +605,11 @@ export function Drafter({ scheme }: DrafterProps) {
               <CopyIcon />
               Copy draft
             </button>
+            <button type="button" onClick={() => { setPdfError(''); setShowPdfModal(true); }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
+              <DownloadIcon />
+              Download PDF
+            </button>
             <button type="button" onClick={reset}
               className="flex w-full items-center justify-center rounded-xl py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
               ← Start over
@@ -514,6 +637,11 @@ export function Drafter({ scheme }: DrafterProps) {
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
               <CopyIcon />
               Copy
+            </button>
+            <button type="button" onClick={() => { setPdfError(''); setShowPdfModal(true); }}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
+              <DownloadIcon />
+              PDF
             </button>
             <button type="button" onClick={reset}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors">
@@ -573,7 +701,8 @@ export function Drafter({ scheme }: DrafterProps) {
               type="button"
               onClick={revise}
               disabled={!followUp.trim()}
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed"
+              style={followUp.trim() ? { backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' } : { backgroundColor: 'var(--border)', color: 'var(--text-tertiary)' }}
             >
               <SparkleIcon />
               Revise
@@ -582,6 +711,7 @@ export function Drafter({ scheme }: DrafterProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -592,6 +722,10 @@ function isUrl(str: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function SparkleIcon() {
@@ -607,6 +741,15 @@ function CopyIcon() {
     <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="5" y="5" width="8" height="8" rx="1.5" />
       <path d="M3 11V3h8" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 2v8M5 7l3 3 3-3" />
+      <path d="M2 12v1.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V12" />
     </svg>
   );
 }

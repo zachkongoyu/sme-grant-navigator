@@ -20,7 +20,7 @@ Understanding the scheme is prerequisite to building the product correctly. Thes
 
 | Track | Cap per project | Concurrent cap* | Cumulative cap | Duration | Processing |
 |---|---|---|---|---|---|
-| Easy BUD | HK$100,000 | HK$800,000 | HK$7,000,000 (max 70 projects) | 12 months, no extensions | ~30 working days |
+| Easy BUD | HK$150,000 | HK$800,000 | HK$7,000,000 (max 70 projects) | 12 months, no extensions | ~30 working days |
 | General Application | HK$800,000 | HK$800,000 | HK$7,000,000 | 24 months | ~60+ working days |
 | E-commerce Easy | HK$800,000 | HK$800,000 | HK$7,000,000 | 24 months | ~60+ working days |
 
@@ -58,7 +58,7 @@ All activities must directly relate to developing the applicant's business in ta
 
 ## Problem Statement
 
-Hong Kong's 340,000+ registered SMEs have access to meaningful government grants — particularly the BUD Fund — but the application process is a practical barrier. Forms take 20–40 hours to complete properly, and traditional consultants charge HK$5,000–30,000+ per application with opaque, success-fee structures that make them inaccessible to early-stage or budget-constrained businesses. HKPC's free advisory service (SME ReachOut) doesn't scale: it offers guidance but not a draft, and slots are limited. The result is that many SMEs with fundable projects simply abandon applications. With Easy BUD launching April 23, 2026 — a simplified HK$100,000 track with 30-day processing — there is a narrow category-creation window for an AI-powered drafting tool, and no such tool currently exists in the market.
+Hong Kong's 340,000+ registered SMEs have access to meaningful government grants — particularly the BUD Fund — but the application process is a practical barrier. Forms take 20–40 hours to complete properly, and traditional consultants charge HK$5,000–30,000+ per application with opaque, success-fee structures that make them inaccessible to early-stage or budget-constrained businesses. HKPC's free advisory service (SME ReachOut) doesn't scale: it offers guidance but not a draft, and slots are limited. The result is that many SMEs with fundable projects simply abandon applications. With Easy BUD launching April 23, 2026 — a simplified HK$150,000 track with 30-day processing — there is a narrow category-creation window for an AI-powered drafting tool, and no such tool currently exists in the market.
 
 ---
 
@@ -79,7 +79,7 @@ Hong Kong's 340,000+ registered SMEs have access to meaningful government grants
 ## Non-Goals
 
 - **TVP (Technology Voucher Programme)**: Closed to new applications December 31, 2024. Not in scope.
-- **EMF (Enterprise Marketing Fund)**: Consolidating into BUD in July 2026; not a separate scheme to support.
+- **EMF (Enterprise Marketing Fund)**: Consolidating into BUD by June 30, 2026; not a separate scheme to support.
 - **Full submission automation**: The tool generates a *draft for human review*, not a system that submits to the government portal directly. Liability concerns and the government's own submission process make this out of scope for v1 (and likely v2).
 - **Multi-language support (Traditional Chinese)**: Important for the full TAM but deferred to post-launch. v1 ships in English only to reduce content scope.
 - **Accountant-reviewed tier at launch**: The HK$1,499 partner-accountant review upsell requires accountant partnerships to be operational. Outreach begins Week 3; this tier targets post-launch.
@@ -285,7 +285,7 @@ Reimbursement claim documents (informational only — not needed at application 
 
 | Parameter | Value |
 |---|---|
-| Funding ceiling per project | HK$100,000 |
+| Funding ceiling per project | HK$150,000 |
 | Government : Enterprise matching ratio | 1 : 3 (25% government, 75% enterprise in cash) |
 | Audit fee cap (counts toward ceiling) | HK$5,000 |
 | Project duration | 12 months max, no extensions |
@@ -314,7 +314,7 @@ Both must be accepted by the Programme Management Committee before any payment i
 | Aspect | Easy BUD | General Application |
 |---|---|---|
 | Type | Type (ii) only (self-implemented specific measures) | Type (i) or Type (ii) |
-| Funding ceiling | HK$100,000 | HK$800,000 |
+| Funding ceiling | HK$150,000 | HK$800,000 |
 | Duration | 12 months, no extensions | 24 months |
 | Initial payment | None (reimbursement only) | 20% upfront option available |
 | Implementation | HK entity only, must be self-run | Can engage external service providers |

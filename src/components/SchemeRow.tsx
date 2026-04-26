@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 
 import type { Scheme } from '@/types';
@@ -19,16 +20,24 @@ function formatFundingCap(fundingCap: number | null) {
   }).format(fundingCap);
 }
 
-function statusClasses(status: Scheme['status']) {
-  if (status === 'active') {
-    return 'border-success/40 bg-success/10 text-success';
+function statusStyle(status: Scheme['status']): React.CSSProperties {
+  if (status === 'open' || status === 'active') {
+    return {
+      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
+      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
+      color: 'var(--success)',
+    };
   }
-
   if (status === 'coming-soon') {
-    return 'border-warning/40 text-warning';
+    return {
+      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
+      color: 'var(--warning)',
+    };
   }
-
-  return 'border-border text-text-tertiary';
+  return {
+    borderColor: 'var(--border)',
+    color: 'var(--text-tertiary)',
+  };
 }
 
 function bodyAcronym(name: string): string {
@@ -70,11 +79,10 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
       </div>
       <div className="px-3 py-4">
         <span
-          className={`inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] ${statusClasses(
-            scheme.status,
-          )}`}
+          className="inline-flex rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em]"
+          style={statusStyle(scheme.status)}
         >
-          {scheme.status.replace('-', ' ')}
+          {scheme.status === 'coming-soon' ? 'Soon' : scheme.status.replace('-', ' ')}
         </span>
       </div>
     </Link>

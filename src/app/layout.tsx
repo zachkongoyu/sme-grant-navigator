@@ -50,7 +50,7 @@ export default function RootLayout({
 
         {/* ── Footer ── */}
         <footer className="border-t border-border py-8">
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 sm:px-6">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
               Thunder © {new Date().getFullYear()}
             </p>

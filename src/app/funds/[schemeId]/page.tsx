@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -6,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 
 import { CopyFundContext } from '@/components/CopyFundContext';
 import { FundDetailActions } from '@/components/FundDetailActions';
+import { SchemesSidebar } from '@/components/SchemesSidebar';
 import type { Scheme } from '@/types';
 import { loadCorpus } from '@/lib/schemes/corpus';
 import {
@@ -28,10 +30,21 @@ function formatFundingCap(fundingCap: number | null, currency: string | null) {
   }).format(fundingCap);
 }
 
-function statusStyle(status: Scheme['status']) {
-  if (status === 'open' || status === 'active') return 'border-success/40 bg-success/10 text-success';
-  if (status === 'coming-soon') return 'border-warning/40 text-warning';
-  return 'border-border text-text-tertiary';
+function statusBadgeStyle(status: Scheme['status']): React.CSSProperties {
+  if (status === 'open' || status === 'active') {
+    return {
+      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
+      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
+      color: 'var(--success)',
+    };
+  }
+  if (status === 'coming-soon') {
+    return {
+      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
+      color: 'var(--warning)',
+    };
+  }
+  return { borderColor: 'var(--border)', color: 'var(--text-tertiary)' };
 }
 
 export async function generateStaticParams() {
@@ -51,140 +64,129 @@ export async function generateMetadata({ params }: FundDetailPageProps): Promise
 
 export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const { schemeId } = await params;
-  const scheme = await getSchemeByIdFromDatabase(schemeId);
+  const [scheme, allSchemes] = await Promise.all([
+    getSchemeByIdFromDatabase(schemeId),
+    getAllSchemesFromDatabase(),
+  ]);
 
   if (!scheme) notFound();
 
   const corpus = await loadCorpus(schemeId);
 
   return (
-    <main className="min-h-screen bg-background text-text-primary">
+    <div className="flex h-screen flex-col bg-background text-text-primary overflow-hidden">
+      {/* ── Body: sidebar + content, full height ── */}
+      <SchemesSidebar schemes={allSchemes} activeId={schemeId}>
+        <div className="mx-auto max-w-2xl px-6 py-12">
 
-      {/* ── Top bar ── */}
-      <div className="border-b border-border">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link
-            href="/funds"
-            className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
-          >
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
-              <path d="M10 13L5 8l5-5" />
-            </svg>
-            All schemes
-          </Link>
-
-          {scheme.status === 'open' && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-success">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              Open
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-
-        {/* ── Hero ── */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.18em] ${statusStyle(scheme.status)}`}>
+          {/* ── Hero ── */}
+          <div className="border-b border-border pb-8">
+            <div className="flex items-center gap-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.category}</p>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em]"
+                style={statusBadgeStyle(scheme.status)}
+              >
+                {(scheme.status === 'open' || scheme.status === 'active') && (
+                  <span className="h-1 w-1 animate-pulse rounded-full" style={{ backgroundColor: 'var(--success)' }} />
+                )}
                 {scheme.status.replace('-', ' ')}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{scheme.category}</span>
             </div>
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">{scheme.name}</h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-text-secondary">{scheme.shortDescription}</p>
-          </div>
-        </div>
+            <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] leading-tight">{scheme.name}</h1>
+            <p className="mt-4 text-base leading-7 text-text-secondary max-w-xl">{scheme.shortDescription}</p>
 
-        {/* ── Key stats ── */}
-        <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3">
-          <div className="bg-surface px-5 py-4">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</dt>
-            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">{formatFundingCap(scheme.fundingCap, scheme.currency)}</dd>
+            {/* ── Key stats inline ── */}
+            <div className="mt-6 flex flex-wrap gap-6">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</p>
+                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{formatFundingCap(scheme.fundingCap, scheme.currency)}</p>
+              </div>
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</p>
+                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">
+                  {scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} mo`}
+                </p>
+              </div>
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Sponsor</p>
+                <p className="mt-1 text-sm text-text-primary">{scheme.sponsor ?? '—'}</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-surface px-5 py-4">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</dt>
-            <dd className="mt-1.5 font-mono text-2xl font-medium text-text-primary">
-              {scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} mo`}
-            </dd>
-          </div>
-          <div className="col-span-2 bg-surface px-5 py-4 sm:col-span-1">
-            <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Sponsor</dt>
-            <dd className="mt-1.5 text-sm leading-5 text-text-primary">{scheme.sponsor ?? 'See official portal'}</dd>
-          </div>
-        </dl>
 
-        {/* ── Draft CTA ── */}
-        {scheme.draftable ? (
-          <div className="mt-8 rounded-xl border border-accent/25 bg-accent/5 p-5">
-            <p className="text-sm font-medium text-text-primary">Ready to apply? Generate a complete draft in under a minute.</p>
-            <p className="mt-1 text-xs text-text-secondary">Describe your company — Thunder fills in the rest with <code>[TODO]</code> markers where it needs your input.</p>
-            <Link
-              href={`/draft/${schemeId}`}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-background transition hover:opacity-90"
-            >
-              Generate draft
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" />
-              </svg>
-            </Link>
-          </div>
-        ) : (
-          <div className="mt-8 rounded-xl border border-border bg-surface p-5">
-            <p className="text-sm font-medium text-text-primary">Drafter coming soon for {scheme.name}</p>
-            <p className="mt-1 text-xs text-text-secondary">
-              Get notified when the {scheme.name} drafter launches.{' '}
-              <a href="mailto:hello@thunderhk.ai?subject=Notify+me" className="text-accent underline underline-offset-4">
-                Notify me
-              </a>
-            </p>
-          </div>
-        )}
-
-        {/* ── Corpus / content ── */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
-
-          <div>
-            {corpus ? (
-              <article className="prose prose-sm prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-accent prose-table:text-xs">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{corpus}</ReactMarkdown>
-              </article>
+          {/* ── Draft CTA ── */}
+          <div className="py-8 border-b border-border">
+            {scheme.draftable ? (
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="text-sm font-semibold text-text-primary">Generate a draft application</p>
+                  <p className="mt-1 text-xs leading-5 text-text-secondary max-w-sm">
+                    Describe your company. Thunder writes the draft and marks gaps with <code className="rounded bg-surface px-1 py-0.5 font-mono text-[10px]">[TODO]</code>.
+                  </p>
+                </div>
+                <Link
+                  href={`/draft?scheme=${schemeId}`}
+                  className="shrink-0 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90"
+                  style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true">
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                  </svg>
+                  Draft application
+                </Link>
+              </div>
             ) : (
-              <p className="text-sm leading-6 text-text-secondary">
-                Detailed guidance for this scheme is being prepared. Check back soon or visit the{' '}
-                {scheme.links[0] ? (
-                  <a href={scheme.links[0].url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
-                    official portal
-                  </a>
-                ) : 'official portal'}.
-              </p>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-text-primary">AI drafter — soon</p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    <a href="mailto:hello@thunderhk.ai?subject=Notify+me" className="underline underline-offset-4" style={{ color: 'var(--accent)' }}>
+                      Notify me when it launches →
+                    </a>
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em]"
+                  style={{ borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)', color: 'var(--warning)' }}>
+                  Soon
+                </span>
+              </div>
             )}
           </div>
 
-          {/* Actions sidebar */}
-          <aside className="space-y-3">
-            <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">For your agent</p>
+          {/* ── Right-rail: actions + links ── */}
+          <div className="py-8 border-b border-border grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Copy context */}
+            <div className="rounded-xl border p-4" style={{
+              borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)',
+              backgroundColor: 'color-mix(in srgb, var(--accent) 4%, transparent)',
+            }}>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--accent)' }}>For your agent</p>
               <p className="mt-1.5 text-sm font-medium text-text-primary">Copy scheme context</p>
-              <p className="mt-1 text-xs leading-5 text-text-secondary">
-                Paste into Claude, GPT, or any chat to get scheme-specific answers instantly.
-              </p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Paste into Claude or GPT for scheme-specific answers.</p>
               <div className="mt-3">
                 <CopyFundContext scheme={scheme} corpus={corpus} />
               </div>
             </div>
 
+            {/* Official links */}
             {scheme.links.length > 0 && (
               <div className="rounded-xl border border-border bg-surface p-4">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Official portal</p>
-                <ul className="mt-2 space-y-1.5">
+                <ul className="mt-3 space-y-2">
                   {scheme.links.map((link) => (
                     <li key={link.url}>
-                      <a href={link.url} target="_blank" rel="noreferrer"
-                        className="text-sm text-accent underline decoration-accent/40 underline-offset-4 transition hover:decoration-accent">
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1.5 text-sm underline underline-offset-4 transition"
+                        style={{ color: 'var(--accent)' }}
+                      >
                         {link.label}
+                        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-2.5 w-2.5 shrink-0 opacity-60">
+                          <path d="M2 10L10 2M5 2h5v5" />
+                        </svg>
                       </a>
                     </li>
                   ))}
@@ -193,10 +195,36 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
             )}
 
             <FundDetailActions schemeId={scheme.id} />
-          </aside>
+          </div>
+
+          {/* ── Corpus / guidance ── */}
+          {corpus ? (
+            <article className="mt-8 prose prose-sm prose-invert max-w-none
+              prose-headings:font-semibold prose-headings:tracking-tight
+              prose-h2:text-lg prose-h2:mt-8 prose-h2:mb-3
+              prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2
+              prose-p:text-text-secondary prose-p:leading-7
+              prose-a:text-accent prose-a:no-underline hover:prose-a:underline
+              prose-table:text-xs prose-th:text-text-tertiary prose-th:font-mono prose-th:uppercase prose-th:tracking-wider
+              prose-td:text-text-secondary
+              prose-code:rounded prose-code:bg-surface prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:text-[11px]
+              prose-hr:border-border">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{corpus}</ReactMarkdown>
+            </article>
+          ) : (
+            <p className="mt-8 text-sm leading-6 text-text-secondary">
+              Guidance is being prepared. Visit the{' '}
+              {scheme.links[0] ? (
+                <a href={scheme.links[0].url} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-4">
+                  official portal
+                </a>
+              ) : 'official portal'}.
+            </p>
+          )}
+
         </div>
-      </div>
-    </main>
+      </SchemesSidebar>
+    </div>
   );
 }
 

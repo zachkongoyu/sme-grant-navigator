@@ -1,14 +1,10 @@
 # Thunder — AI Grant Navigator
 
-Draft your Easy BUD application this weekend. Hong Kong's HK$100,000 grant for SMEs — free draft, no HK$10,000 consultant.
+Draft your Easy BUD application this weekend. Hong Kong's HK$150,000 grant for SMEs — free draft, no HK$10,000 consultant.
 
 ## What it does
 
-Thunder guides users through three phases:
-
-**Discover → Qualify → Draft**
-
-The agent identifies relevant schemes from the catalog, asks focused qualifying questions, and produces a structured application draft — sections, checklists, and supporting text — ready to review and submit.
+Thunder is an Easy BUD grant application generator. Describe your company and project goals, and Thunder writes the complete application draft — with `[TODO]` markers where your input is required. The draft streams in full, free of charge. The only gate is an email address to download the PDF.
 
 ## Schemes
 

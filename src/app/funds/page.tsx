@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -17,10 +18,21 @@ function formatFundingCap(fundingCap: number | null): string {
   }).format(fundingCap);
 }
 
-function statusStyle(status: string) {
-  if (status === 'active') return 'border-success/40 bg-success/10 text-success';
-  if (status === 'coming-soon') return 'border-warning/40 text-warning';
-  return 'border-border text-text-tertiary';
+function statusStyle(status: string): React.CSSProperties {
+  if (status === 'open' || status === 'active') {
+    return {
+      borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
+      backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
+      color: 'var(--success)',
+    };
+  }
+  if (status === 'coming-soon') {
+    return {
+      borderColor: 'color-mix(in srgb, var(--warning) 40%, transparent)',
+      color: 'var(--warning)',
+    };
+  }
+  return { borderColor: 'var(--border)', color: 'var(--text-tertiary)' };
 }
 
 export default async function FundsPage() {
@@ -57,36 +69,27 @@ export default async function FundsPage() {
             </p>
           </div>
 
-          {/* Agent CTA */}
-          <Link
-            href="/chat"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-medium text-accent transition hover:bg-accent/15"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4 shrink-0" aria-hidden="true">
-              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-              <path d="M20 3v4M22 5h-4" />
-            </svg>
-            Skip the list — ask the agent
-          </Link>
+          {/* Agent CTA — hidden until chat is released */}
         </div>
 
         {/* ── Access mode hint ── */}
         <div className="mt-8 flex flex-wrap gap-2">
           {[
-            { label: 'In-house agent', href: '/chat', active: false },
+            { label: 'In-house agent', href: '#', active: false, soon: true },
             { label: 'REST API', href: '#', active: false, soon: true },
             { label: 'MCP server', href: '#', active: false, soon: true },
             { label: 'Browse UI', href: '/funds', active: true },
           ].map((mode) => (
             <span
               key={mode.label}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] ${
-                mode.active
-                  ? 'border-accent/40 bg-accent/10 text-accent'
-                  : 'border-border text-text-tertiary'
-              }`}
+              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em]"
+              style={mode.active ? {
+                borderColor: 'color-mix(in srgb, var(--accent) 40%, transparent)',
+                backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                color: 'var(--accent)',
+              } : { borderColor: 'var(--border)', color: 'var(--text-tertiary)' }}
             >
-              {mode.active && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
+              {mode.active && <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />}
               {mode.label}
               {mode.soon && <span className="text-[8px] opacity-60"> soon</span>}
             </span>
@@ -116,8 +119,11 @@ export default async function FundsPage() {
               <div className="font-mono text-xs text-text-tertiary">{scheme.category}</div>
               <div className="font-mono text-sm text-text-primary">{formatFundingCap(scheme.fundingCap)}</div>
               <div>
-                <span className={`inline-flex rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] ${statusStyle(scheme.status)}`}>
-                  {scheme.status.replace('-', ' ')}
+                <span
+                  className="inline-flex rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]"
+                  style={statusStyle(scheme.status)}
+                >
+                  {scheme.status === 'coming-soon' ? 'Soon' : scheme.status.replace('-', ' ')}
                 </span>
               </div>
             </Link>
@@ -126,8 +132,7 @@ export default async function FundsPage() {
 
         {/* ── Footer nudge ── */}
         <p className="mt-8 text-center text-xs text-text-tertiary">
-          That was {schemes.length} schemes. The agent reads all of them in one shot.{' '}
-          <Link href="/chat" className="text-accent underline-offset-4 hover:underline">Try it →</Link>
+          {schemes.length} schemes tracked. More soon.
         </p>
       </div>
     </main>

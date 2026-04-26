@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { createClient } from '@/utils/supabase/client';
 
@@ -16,6 +16,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,15 +53,16 @@ export default function SignInPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
-      <Link
-        href={getNext()}
-        className="absolute top-6 left-6 inline-flex items-center gap-1.5 font-mono text-xs text-text-secondary hover:text-text-primary transition-colors"
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="absolute top-6 left-6 inline-flex cursor-pointer items-center gap-1.5 font-mono text-xs text-text-secondary hover:text-text-primary transition-colors"
       >
         <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 3L5 8l5 5" />
         </svg>
         Back
-      </Link>
+      </button>
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-2xl font-semibold text-text-primary">Sign in / Sign up</h1>
 
@@ -122,7 +124,8 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-background transition hover:bg-accent/90 disabled:opacity-50"
+                className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
               >
                 {loading ? 'Sending…' : 'Send sign-in link'}
               </button>
