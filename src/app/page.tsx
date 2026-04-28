@@ -151,6 +151,21 @@ export default async function HomePage() {
               <p className="mt-1 text-xs leading-5 text-text-secondary">Pick a fund, then let Thunder draft the application with the right scheme already loaded.</p>
             </Link>
 
+            {/* Eligibility Check */}
+            <Link href="/eligibility" className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent/40">
+              <div className="flex items-start justify-between">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover text-text-secondary group-hover:text-accent" style={{ transition: 'color 0.15s' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
+                    <path d="M9 12l2 2 4-4" />
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </span>
+                <StatusChip variant="beta" compact />
+              </div>
+              <p className="mt-3 text-sm font-medium text-text-primary">Eligibility Check</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Describe your company and get an instant AI assessment of whether you qualify before writing a word.</p>
+            </Link>
+
             {/* In-house agent */}
             <div className="rounded-xl border border-border bg-surface p-5 opacity-60">
               <div className="flex items-start justify-between">

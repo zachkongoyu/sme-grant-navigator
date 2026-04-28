@@ -1,18 +1,18 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import {
-  getLlmErrorStatus,
   type LlmMessage,
-  streamText,
+  streamChat,
   validateLlmConfiguration,
 } from '@/lib/llm';
 import { getSchemeDocument } from '@/lib/schemes/repository';
-import { buildDrafterSystemPrompt } from '@/lib/prompts/system';
+import { buildDrafterSystemPrompt } from '@/lib/prompts/drafter';
 import {
   createDoneEvent,
   createTokenEvent,
   encodeSseEvent,
 } from '@/lib/stream-events';
+import { log } from 'node:console';
 
 const MAX_CONTEXT_CHARS = 20_000;
 const MAX_ATTACHMENT_CHARS = 30_000;
@@ -33,10 +33,6 @@ interface DraftRequestBody {
 }
 
 function toDraftErrorMessage(error: unknown): string {
-  if (getLlmErrorStatus(error) === 403) {
-    return 'Thunder cannot generate a draft for this scheme right now. Please try again later.';
-  }
-
   return 'Thunder could not generate a draft right now. Please try again later.';
 }
 
@@ -157,7 +153,7 @@ export async function POST(
         let shouldClose = false;
 
       try {
-        for await (const token of streamText(messages, undefined, request.signal)) {
+        for await (const token of streamChat(messages, undefined, request.signal)) {
           controller.enqueue(encodeSseEvent(createTokenEvent(token)));
         }
         controller.enqueue(encodeSseEvent(createDoneEvent()));

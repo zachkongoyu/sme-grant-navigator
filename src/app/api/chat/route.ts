@@ -2,7 +2,7 @@
 
 import type { LlmMessage } from '@/lib/llm';
 import { streamChat } from '@/lib/llm';
-import { buildSystemPrompt } from '@/lib/prompts/system';
+import { buildSystemPrompt } from '@/lib/prompts/chat';
 import {
   getAllSchemesFromDatabase,
   type ResolvedScheme,

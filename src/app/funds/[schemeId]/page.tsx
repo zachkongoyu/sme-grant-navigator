@@ -80,8 +80,8 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
             </div>
           </div>
 
-          {/* ── Draft CTA ── */}
-          <div className="py-8 border-b border-border">
+          {/* ── Draft + Eligibility CTAs ── */}
+          <div className="py-8 border-b border-border space-y-6">
             {scheme.draftable ? (
               <div className="flex items-start justify-between gap-6">
                 <div>
@@ -114,6 +114,26 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
                 <StatusChip variant="soon" />
               </div>
             )}
+
+            {/* Eligibility check CTA */}
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <p className="text-sm font-semibold text-text-primary">Check your eligibility</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary max-w-sm">
+                  Not sure if you qualify? Describe your company and get an instant AI assessment.
+                </p>
+              </div>
+              <Link
+                href={`/eligibility?scheme=${schemeId}`}
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true">
+                  <path d="M9 12l2 2 4-4" />
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+                Check eligibility
+              </Link>
+            </div>
           </div>
 
           {/* ── Right-rail: actions + links ── */}

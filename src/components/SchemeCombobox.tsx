@@ -15,9 +15,13 @@ interface SchemeOption {
 interface SchemeComboboxProps {
   readonly schemes: ReadonlyArray<SchemeOption>;
   readonly selectedId: string;
+  /** Route base used when navigating to a different scheme. Defaults to '/draft'. */
+  readonly basePath?: string;
+  /** Label shown above the selected scheme name. Defaults to 'Drafting for'. */
+  readonly label?: string;
 }
 
-export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
+export function SchemeCombobox({ schemes, selectedId, basePath = '/draft', label = 'Drafting for' }: SchemeComboboxProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -70,7 +74,7 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
       setPendingSchemeId(id);
     });
 
-    router.replace(`/draft?scheme=${id}`);
+    router.replace(`${basePath}?scheme=${id}`);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -109,7 +113,7 @@ export function SchemeCombobox({ schemes, selectedId }: SchemeComboboxProps) {
       >
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Drafting for</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{label}</p>
             <p className="mt-1 truncate text-sm font-semibold text-text-primary">
               {selected?.name ?? 'Select a scheme'}
             </p>
