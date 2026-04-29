@@ -5,7 +5,7 @@ import { BackNavigation } from '@/components/navigation';
 import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/repository';
+import { getAllSchemes } from '@/lib/schemes/db';
 
 export const metadata: Metadata = {
   title: 'Drafter | Thunder',

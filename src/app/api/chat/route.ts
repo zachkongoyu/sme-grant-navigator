@@ -4,11 +4,11 @@ import type { LlmMessage } from '@/lib/llm';
 import { streamChat } from '@/lib/llm';
 import { buildSystemPrompt } from '@/lib/prompts/chat';
 import {
-  getAllSchemesFromDatabase,
+  getAllSchemes,
   type ResolvedScheme,
 } from '@/lib/schemes/db';
 import { getSupabase } from '@/lib/supabase';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/lib/auth';
 import type { ShortlistItem } from '@/components/chat/types';
 import {
   createArtifactEvent,
@@ -114,10 +114,9 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  const user = await getAuthUser();
 
-  const schemes = await getAllSchemesFromDatabase();
+  const schemes = await getAllSchemes();
 
   // Load session message history
   const { data: session } = await supabase

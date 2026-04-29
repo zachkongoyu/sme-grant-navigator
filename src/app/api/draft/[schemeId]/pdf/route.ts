@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 
-import { getSchemeById } from '@/lib/schemes/repository';
+import { getSchemeById } from '@/lib/schemes/db';
 import { createDraftPdf } from './DraftPdf';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

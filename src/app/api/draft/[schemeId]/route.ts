@@ -5,7 +5,7 @@ import {
   streamChat,
   validateLlmConfiguration,
 } from '@/lib/llm';
-import { getSchemeDocument } from '@/lib/schemes/repository';
+import { getSchemeDocument } from '@/lib/schemes/db';
 import { buildDrafterSystemPrompt } from '@/lib/prompts/drafter';
 import {
   createDoneEvent,

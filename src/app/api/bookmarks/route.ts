@@ -1,17 +1,11 @@
 import { type NextRequest } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase';
-import { createClient } from '@/utils/supabase/server';
-
-async function getUser() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
+import { getAuthUser } from '@/lib/auth';
 
 // GET /api/bookmarks — returns scheme IDs bookmarked by the current user
 export async function GET() {
-  const user = await getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return Response.json([]);
@@ -32,7 +26,7 @@ export async function GET() {
 
 // POST /api/bookmarks — add a bookmark
 export async function POST(request: NextRequest) {
-  const user = await getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -58,7 +52,7 @@ export async function POST(request: NextRequest) {
 
 // DELETE /api/bookmarks — remove a bookmark
 export async function DELETE(request: NextRequest) {
-  const user = await getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

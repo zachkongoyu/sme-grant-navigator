@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { EligibilityChecker } from '@/components/EligibilityChecker';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/repository';
+import { getAllSchemes } from '@/lib/schemes/db';
 
 export const metadata: Metadata = {
   title: 'Eligibility Check | Thunder',

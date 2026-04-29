@@ -12,7 +12,7 @@ import { StatusChip } from '@/components/StatusChip';
 import {
   getAllSchemes,
   getSchemeDocument,
-} from '@/lib/schemes/repository';
+} from '@/lib/schemes/db';
 import {
   formatFundingAmount,
 } from '@/lib/schemes/presentation';

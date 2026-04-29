@@ -1,6 +1,6 @@
 import type { Scheme, SchemeCategory, SchemeStatus } from '@/types';
 
-import { hasCorpus } from '@/lib/schemes/corpus';
+import { hasCorpus, loadCorpus } from '@/lib/schemes/corpus';
 import { getSupabase } from '@/lib/supabase';
 
 const schemeCategories = [
@@ -49,7 +49,7 @@ function isSchemeStatus(value: string): value is SchemeStatus {
   return (schemeStatuses as ReadonlyArray<string>).includes(value);
 }
 
-function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
+function rowToResolvedScheme(row: SchemeRow, corpusAvailable: boolean): ResolvedScheme {
   const slug = row.slug ?? row.id;
   const status = row.status && isSchemeStatus(row.status) ? row.status : 'coming-soon';
   return {
@@ -62,7 +62,7 @@ function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
     currency: row.currency,
     durationMonths: row.duration_months,
     links: row.source_url ? [{ label: 'Official programme page', url: row.source_url }] : [],
-    draftable: status === 'open' && hasCorpus(slug),
+    draftable: status === 'open' && corpusAvailable,
     databaseId: row.id,
     guidanceMarkdown: row.guidance_md,
     sourceUrl: row.source_url,
@@ -72,7 +72,10 @@ function rowToResolvedScheme(row: SchemeRow): ResolvedScheme {
 }
 
 export function schemesFromRows(rows: ReadonlyArray<SchemeRow>): ReadonlyArray<ResolvedScheme> {
-  return rows.map(rowToResolvedScheme);
+  return rows.map((row) => {
+    const slug = row.slug ?? row.id;
+    return rowToResolvedScheme(row, hasCorpus(slug));
+  });
 }
 
 async function fetchSchemeRows(): Promise<ReadonlyArray<SchemeRow> | null> {
@@ -97,19 +100,29 @@ async function fetchSchemeRows(): Promise<ReadonlyArray<SchemeRow> | null> {
   }
 }
 
-export async function getAllSchemesFromDatabase(): Promise<ReadonlyArray<ResolvedScheme>> {
+export async function getAllSchemes(): Promise<ReadonlyArray<ResolvedScheme>> {
   const rows = await fetchSchemeRows();
-
-  if (!rows) {
-    return [];
-  }
-
+  if (!rows) return [];
   return schemesFromRows(rows);
 }
 
-export async function getSchemeByIdFromDatabase(
+export async function getSchemeById(
   schemeId: string,
 ): Promise<ResolvedScheme | undefined> {
-  const schemes = await getAllSchemesFromDatabase();
+  const schemes = await getAllSchemes();
   return schemes.find((scheme) => scheme.id === schemeId);
+}
+
+export interface ResolvedSchemeDocument {
+  readonly scheme: ResolvedScheme;
+  readonly corpus: string | null;
+}
+
+export async function getSchemeDocument(
+  schemeId: string,
+): Promise<ResolvedSchemeDocument | undefined> {
+  const scheme = await getSchemeById(schemeId);
+  if (!scheme) return undefined;
+  const corpus = await loadCorpus(schemeId);
+  return { scheme, corpus };
 }

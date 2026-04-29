@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 
-import { getSchemeById } from '@/lib/schemes/repository';
+import { getSchemeById } from '@/lib/schemes/db';
 
 interface DraftSchemePageProps {
   readonly params: Promise<{ schemeId: string }>;

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { getAllSchemes } from '@/lib/schemes/repository';
+import { getAllSchemes } from '@/lib/schemes/db';
 
 const baseUrl = 'https://www.thunderhk.ai';
 

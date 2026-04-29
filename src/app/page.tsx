@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/repository';
+import { getAllSchemes } from '@/lib/schemes/db';
 
 export const metadata: Metadata = {
   title: 'Thunder | AI Grant Drafting Platform',

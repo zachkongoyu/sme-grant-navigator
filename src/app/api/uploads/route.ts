@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase';
-import { createClient } from '@/utils/supabase/server';
+import { getAuthUser } from '@/lib/auth';
 
 // Route segment config.
 // maxDuration: max execution time in seconds (for slow PDF extraction).
@@ -70,8 +70,7 @@ const MAX_FILES_PER_REQUEST = 5;
 
 export async function POST(request: NextRequest) {
   const supabase = getSupabase();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
+  const user = await getAuthUser();
 
   const formData = await request.formData();
   const sessionId = formData.get('sessionId');
