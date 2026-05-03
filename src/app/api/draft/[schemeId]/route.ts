@@ -5,13 +5,13 @@ import {
   streamChat,
   validateLlmConfiguration,
 } from '@/lib/llm';
-import { getSchemeDocument } from '@/lib/schemes/db';
+import { getSchemeContext } from '@/lib/schemes';
 import { buildDrafterSystemPrompt } from '@/lib/prompts/drafter';
 import {
   createDoneEvent,
   createTokenEvent,
   encodeSseEvent,
-} from '@/lib/stream-events';
+} from '@/components/chat/stream-events';
 import { log } from 'node:console';
 
 const MAX_CONTEXT_CHARS = 20_000;
@@ -93,10 +93,10 @@ export async function POST(
 ) {
   const { schemeId } = await params;
 
-  const document = await getSchemeDocument(schemeId);
+  const document = await getSchemeContext(schemeId);
   if (!document) return NextResponse.json({ error: 'Scheme not found' }, { status: 404 });
 
-  const { scheme, corpus } = document;
+  const scheme = document;
 
   const body = (await request.json()) as DraftRequestBody;
   const { userContext, inlineAttachments = [], links = [], history = [] } = body;
@@ -134,7 +134,7 @@ export async function POST(
     ? `${safeContext}\n\n<attachments>\n${attachmentContext}\n</attachments>`
     : safeContext;
 
-  const systemPrompt = buildDrafterSystemPrompt(scheme, corpus);
+  const systemPrompt = buildDrafterSystemPrompt(scheme, scheme.corpus);
 
   const messages: LlmMessage[] = [
     { role: 'system', content: systemPrompt },

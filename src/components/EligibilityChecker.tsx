@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme } from '@/types';
 import type {
   EligibilityCheckResult,
   EligibilityCriterion,
@@ -18,7 +18,7 @@ import { useEligibilityCheck, type ProgressEntry } from '@/components/eligibilit
 const VERDICT: Record<EligibilityVerdict, { label: string; color: string; dimColor: string }> = {
   eligible:        { label: 'Eligible',        color: '#22c55e', dimColor: 'color-mix(in srgb, #22c55e 14%, transparent)' },
   likely_eligible: { label: 'Likely Eligible', color: '#4ade80', dimColor: 'color-mix(in srgb, #4ade80 12%, transparent)' },
-  incomplete:      { label: 'Incomplete',      color: '#f59e0b', dimColor: 'color-mix(in srgb, #f59e0b 12%, transparent)' },
+  insufficient_info: { label: 'Insufficient Info', color: '#f59e0b', dimColor: 'color-mix(in srgb, #f59e0b 12%, transparent)' },
   ineligible:      { label: 'Not Eligible',    color: '#ef4444', dimColor: 'color-mix(in srgb, #ef4444 12%, transparent)' },
 };
 
@@ -276,7 +276,7 @@ function AgentTimeline({ entries, live }: { entries: ProgressEntry[]; live?: boo
 // ── VerdictBanner ─────────────────────────────────────────────────────────────
 
 function VerdictBanner({ result }: { result: EligibilityCheckResult }) {
-  const vcfg   = VERDICT[result.verdict] ?? VERDICT.incomplete;
+  const vcfg   = VERDICT[result.verdict] ?? VERDICT.insufficient_info;
   const passes = result.criteria.filter((c) => c.status === 'pass');
   const fails  = result.criteria.filter((c) => c.status === 'fail');
   const unclear = result.criteria.filter((c) => c.status === 'unclear');
@@ -305,7 +305,7 @@ function VerdictBanner({ result }: { result: EligibilityCheckResult }) {
 // ── EligibilityChecker ────────────────────────────────────────────────────────
 
 interface EligibilityCheckerProps {
-  readonly scheme: ResolvedScheme;
+  readonly scheme: Scheme;
   readonly backHref: string;
   readonly headerControls?: ReactNode;
 }

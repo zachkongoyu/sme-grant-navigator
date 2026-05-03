@@ -1,8 +1,9 @@
-import type { Artifact, Attachment } from '@/components/chat/types';
+import type { Attachment } from '@/types';
+import type { Artifact } from '@/components/chat/types';
 
 import { readErrorMessage, withOptionalSignal } from '@/lib/api/shared';
 import { readSseDataStream } from '@/lib/api/streaming';
-import type { ChatStreamEvent } from '@/lib/stream-events';
+import type { ChatStreamEvent } from '@/components/chat/stream-events';
 
 export interface ChatStreamResult {
   readonly reader: ReadableStreamDefaultReader<Uint8Array>;

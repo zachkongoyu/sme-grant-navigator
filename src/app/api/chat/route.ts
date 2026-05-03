@@ -3,19 +3,17 @@
 import type { LlmMessage } from '@/lib/llm';
 import { streamChat } from '@/lib/llm';
 import { buildSystemPrompt } from '@/lib/prompts/chat';
-import {
-  getAllSchemes,
-  type ResolvedScheme,
-} from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
+import type { Scheme } from '@/types';
 import { getSupabase } from '@/lib/supabase';
 import { getAuthUser } from '@/lib/auth';
-import type { ShortlistItem } from '@/components/chat/types';
+import type { ShortlistItem } from '@/types';
 import {
   createArtifactEvent,
   createDoneEvent,
   createTokenEvent,
   encodeSseEvent,
-} from '@/lib/stream-events';
+} from '@/components/chat/stream-events';
 
 const CHAT_ENABLED = process.env.ENABLE_CHAT === 'true';
 
@@ -28,7 +26,7 @@ function deriveTitle(text: string): string {
 /**
  * Extract scheme IDs mentioned in the assistant's response.
  * Match either the scheme id or the human-readable scheme name.
- * Falls back to top-3 active schemes if none are found.
+ * Falls back to top-3 open schemes if none are found.
  */
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -36,7 +34,7 @@ function escapeRegExp(value: string): string {
 
 function extractMentionedSchemeIds(
   assistantText: string,
-  schemes: ReadonlyArray<ResolvedScheme>,
+  schemes: ReadonlyArray<Scheme>,
 ): string[] {
   const mentioned = schemes
     .filter((scheme) => {
@@ -50,14 +48,14 @@ function extractMentionedSchemeIds(
   if (mentioned.length > 0) return mentioned.slice(0, 3);
 
   return schemes
-    .filter((s) => s.status === 'active')
+    .filter((s) => s.status === 'open')
     .slice(0, 3)
     .map((s) => s.id);
 }
 
 function buildShortlistPayload(
   schemeIds: ReadonlyArray<string>,
-  schemes: ReadonlyArray<ResolvedScheme>,
+  schemes: ReadonlyArray<Scheme>,
 ): ShortlistItem[] {
   return schemeIds
     .map((id) => schemes.find((scheme) => scheme.id === id))
@@ -116,7 +114,7 @@ export async function POST(request: NextRequest) {
   const supabase = getSupabase();
   const user = await getAuthUser();
 
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
 
   // Load session message history
   const { data: session } = await supabase
@@ -213,24 +211,14 @@ export async function POST(request: NextRequest) {
         }
 
         if (checklist) {
-          // Extract document checklist from any scheme the agent mentioned
-          const mentionedSchemes = extractMentionedSchemeIds(fullText, schemes)
-            .map((id) => schemes.find((scheme) => scheme.id === id))
-            .filter((s): s is NonNullable<typeof s> => s !== undefined);
-
-          const applicationDocs: { id: string; label: string; note?: string }[] = [];
-          const reimbursementDocs: { id: string; label: string; note?: string }[] = [];
-
           controller.enqueue(
             encodeSseEvent(createArtifactEvent({
                 id: `checklist-${sessionId}-${Date.now()}`,
                 kind: 'checklist',
                 title: 'Required Documents',
                 payload: {
-                  now: applicationDocs.length > 0
-                    ? applicationDocs
-                    : [{ id: 'generic', label: 'Confirm required documents with the administering body' }],
-                  later: reimbursementDocs,
+                  now: [{ id: 'generic', label: 'Confirm required documents with the administering body' }],
+                  later: [],
                 },
               })),
           );

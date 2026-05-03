@@ -14,7 +14,7 @@ export function AttachmentChip({ item, onRemove }: AttachmentChipProps) {
       : item.url;
 
   return (
-    <span className="inline-flex h-7 max-w-[220px] items-center gap-1.5 truncate rounded-md border border-border bg-surface-hover px-2 font-mono text-xs text-text-secondary">
+    <span className="inline-flex h-7 max-w-55 items-center gap-1.5 truncate rounded-md border border-border bg-surface-hover px-2 font-mono text-xs text-text-secondary">
       {item.kind === 'file' ? (
         <FileIcon />
       ) : (

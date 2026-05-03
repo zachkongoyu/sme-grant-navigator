@@ -1,26 +1,5 @@
-export interface AttachmentFile {
-  readonly kind: 'file';
-  readonly id: string;
-  readonly name: string;
-  readonly size: number;
-  readonly mime: string;
-}
-
-export interface LinkAttachment {
-  readonly kind: 'link';
-  readonly id: string;
-  readonly url: string;
-}
-
-export type Attachment = AttachmentFile | LinkAttachment;
-
-export interface ShortlistItem {
-  readonly id: string;
-  readonly name: string;
-  readonly shortDescription: string;
-  readonly fundingCap: number | null;
-  readonly currency: string | null;
-}
+import type { AttachmentFile, LinkAttachment, Attachment, ShortlistItem } from '@/types';
+export type { AttachmentFile, LinkAttachment, Attachment, ShortlistItem };
 
 export interface ChecklistEntry {
   readonly id: string;

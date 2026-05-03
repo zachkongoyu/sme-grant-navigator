@@ -5,7 +5,7 @@ import { BackNavigation } from '@/components/navigation';
 import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
   title: 'Drafter | Thunder',
@@ -17,7 +17,7 @@ interface DraftPageProps {
 }
 
 export default async function DraftPage({ searchParams }: DraftPageProps) {
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
   const draftableSchemes = schemes.filter((scheme) => scheme.draftable);
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;

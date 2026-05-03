@@ -1,9 +1,8 @@
 # Architecture — Funding Navigator
 
-**Status:** Proposed
+**Status:** Active
 **Date:** 2026-04-21
 **Owner:** Zach
-**Supersedes:** Portions of `SYSTEM_DESIGN.md` (v1) — see "Migration from v1" at the end.
 
 > This document reframes the product from a single-scheme draft generator ("SME Grant Navigator") into a general **funding opportunity → application artifact** engine. BUD remains the commercial wedge for launch; the architecture supports adding ITF, HKSTP, Cyberport, R&D tax credits, accelerators, etc. as content — not engineering — work.
 
@@ -205,10 +204,6 @@ alter table assessments  enable row level security;
 **Unstructured applicant description** powers:
 - Everything the LLM needs to write concrete, non-generic draft content.
 
-### 6.3 Split from v1
-
-v1's `drafts` table collapses applicant, application, and assessment into one row. That's cheap now and painful to split later. The split above happens as part of this ADR.
-
 ---
 
 ## 7. The reasoning pipeline
@@ -316,42 +311,8 @@ The architecture supports any funding scheme, but the product should pick a lane
 
 ---
 
-## 12. Migration from v1
-
-The v1 system (see `SYSTEM_DESIGN.md`) has one `drafts` table and Easy BUD–specific prompt code. Migration is staged — v1 ships on May 11, refactor follows.
-
-**Phase 1 — Pre-launch (ship v1 as designed, May 11):**
-- Keep current `drafts` table. Do not refactor before launch.
-- Author Easy BUD corpus markdown files now (guidance, rubric, form template) — useful for v1 too.
-
-**Phase 2 — Post-launch refactor (weeks 3–4):**
-1. Create `schemes`, `applicants`, `applications`, `assessments` tables.
-2. Seed `schemes` with `hk.bud.easy` row from existing BUD content.
-3. Backfill v1 drafts into the new shape: one row in `applicants`, one in `applications` per v1 draft.
-4. Migrate `/api/match` and `/api/draft` to read `scheme_id` from the request and load corpus from `schemes` table.
-5. Drop the old `drafts` table after a one-week dual-read window.
-
-**Phase 3 — Second scheme (weeks 5–6):**
-- Add `hk.bud.general` as corpus + row, no new code paths. First real test of scheme-agnostic pipeline.
-
----
-
-## 13. Action items
-
-1. [ ] Review and accept this ADR (Zach).
-2. [ ] Ship v1 as-is on May 11 — no refactor before launch.
-3. [ ] Author Easy BUD corpus markdown: `guidance.md`, `rubric.md`, `form_template.md`, `common_rejections.md`, `samples/`. Target: complete by May 4 (Weekend 2).
-4. [ ] Write migration SQL for Phase 2 tables (`schemes`, `applicants`, `applications`, `assessments`).
-5. [ ] Build an eval harness: ~20 synthetic applicant profiles × expected Easy BUD verdicts. Needed before any prompt or corpus change in production.
-6. [ ] Decide v2 commercial scope (recommendation: HK non-dilutive funding). Document in PRD v2.
-7. [ ] Define corpus authoring checklist and quarterly review cadence.
-8. [ ] Revisit auth/user accounts decision when Discover/Track require cross-device persistence.
-
----
-
-## 14. References
+## 12. References
 
 - `PRD.md` — product requirements, Easy BUD launch context, success metrics
-- `SYSTEM_DESIGN.md` — v1 architecture (superseded in part by sections 6 and 7 above)
-- `Government_Funding_Schemes_HK.md` — source material for HK scheme corpus
+- `CONTEXT.md` — domain language and bounded context
 - Easy BUD Guidance Notes, Version 11/2025 (HKPC) — canonical source for Easy BUD corpus

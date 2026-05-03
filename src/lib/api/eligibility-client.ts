@@ -1,4 +1,4 @@
-export type EligibilityVerdict = 'eligible' | 'likely_eligible' | 'ineligible' | 'incomplete';
+export type EligibilityVerdict = 'eligible' | 'likely_eligible' | 'ineligible' | 'insufficient_info';
 export type EligibilityStatus = 'pass' | 'fail' | 'unclear' | 'missing';
 
 // ── Progress events streamed during assessment ────────────────────────────

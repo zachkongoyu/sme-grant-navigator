@@ -20,7 +20,7 @@ export function getSchemeStatusText(status: SchemeStatus): string {
 }
 
 export function getSchemeStatusBadgeStyle(status: SchemeStatus): CSSProperties {
-  if (status === 'open' || status === 'active') {
+  if (status === 'open') {
     return {
       borderColor: 'color-mix(in srgb, var(--success) 40%, transparent)',
       backgroundColor: 'color-mix(in srgb, var(--success) 10%, transparent)',
@@ -42,7 +42,7 @@ export function getSchemeStatusBadgeStyle(status: SchemeStatus): CSSProperties {
 }
 
 export function getSchemeStatusDotColor(status: SchemeStatus): string {
-  if (status === 'open' || status === 'active') return 'var(--success)';
+  if (status === 'open') return 'var(--success)';
   if (status === 'coming-soon') return 'var(--warning)';
   return 'var(--border-strong)';
 }

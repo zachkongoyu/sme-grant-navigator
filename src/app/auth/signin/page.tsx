@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { BackNavigation } from '@/components/navigation';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 function getAuthCallbackUrl() {
   if (typeof window === 'undefined') {

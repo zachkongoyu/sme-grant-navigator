@@ -5,20 +5,19 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme, AttachmentFile, LinkAttachment } from '@/types';
 import {
   downloadDraftPdf,
   readDraftEventStream,
   streamDraftGeneration,
   uploadDraftAttachments,
 } from '@/lib/api/draft-client';
-import type { AttachmentFile, LinkAttachment } from '@/components/chat/types';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
 
 interface DrafterProps {
-  readonly scheme: ResolvedScheme;
+  readonly scheme: Scheme;
   readonly backHref: string;
   readonly headerControls?: ReactNode;
 }

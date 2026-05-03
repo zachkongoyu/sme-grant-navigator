@@ -1,7 +1,7 @@
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme } from '@/types';
 
 export function buildDrafterSystemPrompt(
-  scheme: ResolvedScheme,
+  scheme: Scheme,
   corpus: string | null,
 ): string {
   const capLine = scheme.fundingCap
@@ -19,7 +19,7 @@ ${corpusSection}
 **Scheme:** ${scheme.name}
 **Category:** ${scheme.category}
 ${capLine}
-${scheme.sponsor ? `**Administered by:** ${scheme.sponsor}` : ''}
+${scheme.administrator ? `**Administered by:** ${scheme.administrator}` : ''}
 
 ---
 

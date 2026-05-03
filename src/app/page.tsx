@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
   title: 'Thunder | AI Grant Drafting Platform',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
   const featuredScheme = schemes.find((s) => s.id === 'easy-bud');
 
   return (

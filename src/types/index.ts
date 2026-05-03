@@ -1,6 +1,6 @@
 export type SchemeId = string;
 
-export type SchemeStatus = 'open' | 'active' | 'coming-soon' | 'closed';
+export type SchemeStatus = 'open' | 'coming-soon' | 'closed';
 
 export type SchemeCategory =
   | 'BUD Fund'
@@ -29,4 +29,33 @@ export interface Scheme {
   readonly durationMonths: number | null;
   readonly links: ReadonlyArray<SchemeLink>;
   readonly draftable: boolean;
+  readonly databaseId: string | null;
+  readonly corpus: string | null;
+  readonly sourceUrl: string | null;
+  readonly administrator: string | null;
+  readonly updatedAt: string | null;
+}
+
+export interface AttachmentFile {
+  readonly kind: 'file';
+  readonly id: string;
+  readonly name: string;
+  readonly size: number;
+  readonly mime: string;
+}
+
+export interface LinkAttachment {
+  readonly kind: 'link';
+  readonly id: string;
+  readonly url: string;
+}
+
+export type Attachment = AttachmentFile | LinkAttachment;
+
+export interface ShortlistItem {
+  readonly id: string;
+  readonly name: string;
+  readonly shortDescription: string;
+  readonly fundingCap: number | null;
+  readonly currency: string | null;
 }

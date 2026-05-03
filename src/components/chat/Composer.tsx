@@ -233,7 +233,7 @@ export function Composer({ onSend, isStreaming, onStop, variant = 'chat', prefil
                   type="button"
                   onClick={submit}
                   disabled={!canSend}
-                  className="inline-flex h-7 items-center gap-1.5 rounded-md bg-accent px-3 font-mono text-xs text-[var(--accent-foreground)] hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none transition-opacity"
+                  className="inline-flex h-7 items-center gap-1.5 rounded-md bg-accent px-3 font-mono text-xs text-(--accent-foreground) hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none transition-opacity"
                 >
                   Send
                 </button>

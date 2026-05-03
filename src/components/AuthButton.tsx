@@ -4,24 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { createClient } from '@/utils/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from './useAuth';
 
 export function AuthButton() {
-  const [user, setUser] = useState<User | null>(null);
+  const user = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,7 +57,7 @@ export function AuthButton() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 min-w-[180px] rounded-lg border border-border bg-surface shadow-lg py-1">
+        <div className="absolute right-0 top-10 z-50 min-w-45 rounded-lg border border-border bg-surface shadow-lg py-1">
           <p className="px-3 py-2 font-mono text-[10px] text-text-tertiary truncate border-b border-border">
             {user.email}
           </p>

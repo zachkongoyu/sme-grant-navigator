@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { EligibilityChecker } from '@/components/EligibilityChecker';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { getAllSchemes } from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
   title: 'Eligibility Check | Thunder',
@@ -15,12 +15,12 @@ interface EligibilityPageProps {
 }
 
 export default async function EligibilityPage({ searchParams }: EligibilityPageProps) {
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;
 
-  // Prefer open/active schemes for the default selection
-  const liveSchemes = schemes.filter((s) => s.status === 'open' || s.status === 'active');
+  // Prefer open schemes for the default selection
+  const liveSchemes = schemes.filter((s) => s.status === 'open');
   const selectedScheme =
     schemes.find((s) => s.id === requestedSchemeId) ??
     liveSchemes[0] ??

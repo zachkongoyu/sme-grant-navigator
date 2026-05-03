@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme } from '@/types';
 import type {
   EligibilityCheckResult,
   EligibilityProgressEvent,
@@ -37,7 +37,7 @@ export interface UseEligibilityCheckReturn {
   setFollowupAnswer: (criterionId: string, answer: string) => void;
 }
 
-export function useEligibilityCheck(scheme: ResolvedScheme): UseEligibilityCheckReturn {
+export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
   const [context, setContext]                 = useState('');
   const [result, setResult]                   = useState<EligibilityCheckResult | null>(null);
   const [stage, setStage]                     = useState<Stage>('compose');

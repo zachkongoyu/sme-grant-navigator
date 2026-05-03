@@ -4,34 +4,26 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { fetchBookmarks, updateBookmark } from '@/lib/api/bookmarks-client';
-import { createClient } from '@/utils/supabase/client';
+import { useAuth } from './useAuth';
 
 interface FundDetailActionsProps {
   readonly schemeId: string;
 }
 
 export function FundDetailActions({ schemeId }: FundDetailActionsProps) {
+  const user = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(false);
-  // null = loading, string = signed in, false = anonymous
-  const [userId, setUserId] = useState<string | null | false>(null);
 
   useEffect(() => {
-    const supabase = createClient();
+    if (!user) return;
 
-    supabase.auth.getUser().then(({ data }) => {
-      const uid = data.user?.id ?? false;
-      setUserId(uid);
-
-      if (uid) {
-        fetchBookmarks()
-          .then((ids) => setIsBookmarked(ids.includes(schemeId)))
-          .catch(() => {});
-      }
-    });
-  }, [schemeId]);
+    fetchBookmarks()
+      .then((ids) => setIsBookmarked(ids.includes(schemeId)))
+      .catch(() => {});
+  }, [schemeId, user]);
 
   async function handleBookmarkClick() {
-    if (!userId) return;
+    if (!user) return;
 
     const next = !isBookmarked;
     setIsBookmarked(next);
@@ -40,10 +32,10 @@ export function FundDetailActions({ schemeId }: FundDetailActionsProps) {
   }
 
   // Still loading auth state — render nothing to avoid layout shift
-  if (userId === null) return null;
+  if (user === undefined) return null;
 
   // Anonymous user — prompt to sign in
-  if (userId === false) {
+  if (user === null) {
     return (
       <Link
         href={`/auth/signin?next=${encodeURIComponent(`/funds/${schemeId}`)}`}

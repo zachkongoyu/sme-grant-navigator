@@ -104,7 +104,7 @@ export function ChatLayout({ sessionId, paid = false, sessions = [], seedMessage
             onOpenArtifact={setActiveArtifact}
           />
           {/* Floating composer */}
-          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-8 bg-gradient-to-t from-background via-background/90 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-8 bg-linear-to-t from-background via-background/90 to-transparent">
             <Composer onSend={sendMessage} isStreaming={isStreaming} onStop={stop} />
           </div>
         </div>

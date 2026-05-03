@@ -1,4 +1,4 @@
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme } from '@/types';
 
 export function buildEligibilityAnalysisPrompt(): string {
   return `You are a funding eligibility checker. Given a scheme's eligibility criteria and an applicant's description, reason through whether the applicant is eligible based solely on what they stated.
@@ -40,16 +40,16 @@ List up to 5 actionable suggestions that could improve the applicant's chances o
 
 VERDICT
 Choose one verdict based on the following definitions:
-- eligible        — all criteria pass; no blockers
-- likely_eligible — at least one criterion passes; remaining criteria are unclear or missing (none fail)
-- incomplete      — all criteria are unclear or missing; not enough information to make any determination
-- ineligible      — one or more criteria clearly fail; applicant does not qualify
-VERDICT: <eligible|likely_eligible|ineligible|incomplete>
+- eligible          — all criteria pass; no blockers
+- likely_eligible   — at least one criterion passes; remaining criteria are unclear or missing (none fail)
+- insufficient_info — all criteria are unclear or missing; not enough information to make any determination
+- ineligible        — one or more criteria clearly fail; applicant does not qualify
+VERDICT: <eligible|likely_eligible|ineligible|insufficient_info>
 SUMMARY: <2–4 sentences covering overall result, key blockers, and what would change the outcome>`;
 }
 
 export function buildEligibilityUserMessage(
-  scheme: ResolvedScheme,
+  scheme: Scheme,
   corpus: string | null,
   userContext: string,
 ): string {
@@ -61,7 +61,7 @@ export function buildEligibilityUserMessage(
     `**Scheme:** ${scheme.name}`,
     `**Category:** ${scheme.category}`,
     capLine,
-    scheme.sponsor ? `**Administered by:** ${scheme.sponsor}` : null,
+    scheme.administrator ? `**Administered by:** ${scheme.administrator}` : null,
   ]
     .filter(Boolean)
     .join('\n');

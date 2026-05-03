@@ -2,7 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { getAllSchemes } from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
 import {
   formatFundingAmount,
 } from '@/lib/schemes/presentation';
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FundsPage() {
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
 
   return (
     <main className="min-h-screen bg-background text-text-primary">

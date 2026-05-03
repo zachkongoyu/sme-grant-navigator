@@ -74,7 +74,7 @@ export function CopyFundContext({ scheme, corpus }: CopyFundContextProps) {
         className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
           copied
             ? 'border border-success/40 bg-success/10 text-success'
-            : 'border border-accent/40 bg-[var(--accent)] text-[var(--accent-foreground)] hover:opacity-90'
+            : 'border border-accent/40 bg-(--accent) text-(--accent-foreground) hover:opacity-90'
         }`}
       >
         {copied ? (

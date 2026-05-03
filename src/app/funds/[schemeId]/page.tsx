@@ -10,9 +10,9 @@ import { FundDetailActions } from '@/components/FundDetailActions';
 import { SchemesSidebar } from '@/components/SchemesSidebar';
 import { StatusChip } from '@/components/StatusChip';
 import {
-  getAllSchemes,
-  getSchemeDocument,
-} from '@/lib/schemes/db';
+  listSchemes,
+  getSchemeContext,
+} from '@/lib/schemes';
 import {
   formatFundingAmount,
 } from '@/lib/schemes/presentation';
@@ -24,30 +24,30 @@ interface FundDetailPageProps {
 }
 
 export async function generateStaticParams() {
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
   return schemes.map((scheme) => ({ schemeId: scheme.id }));
 }
 
 export async function generateMetadata({ params }: FundDetailPageProps): Promise<Metadata> {
   const { schemeId } = await params;
-  const document = await getSchemeDocument(schemeId);
+  const document = await getSchemeContext(schemeId);
   if (!document) return { title: 'Fund Not Found | Thunder' };
   return {
-    title: `${document.scheme.name} | Thunder`,
-    description: document.scheme.shortDescription,
+    title: `${document.name} | Thunder`,
+    description: document.shortDescription,
   };
 }
 
 export default async function FundDetailPage({ params }: FundDetailPageProps) {
   const { schemeId } = await params;
   const [document, allSchemes] = await Promise.all([
-    getSchemeDocument(schemeId),
-    getAllSchemes(),
+    getSchemeContext(schemeId),
+    listSchemes(),
   ]);
 
   if (!document) notFound();
 
-  const { scheme, corpus } = document;
+  const scheme = document;
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
@@ -74,8 +74,8 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Sponsor</p>
-                <p className="mt-1 text-sm text-text-primary">{scheme.sponsor ?? '—'}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Administrator</p>
+                <p className="mt-1 text-sm text-text-primary">{scheme.administrator ?? '—'}</p>
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
               <p className="mt-1.5 text-sm font-medium text-text-primary">Copy scheme context</p>
               <p className="mt-1 text-xs leading-5 text-text-secondary">Paste into Claude or GPT for scheme-specific answers.</p>
               <div className="mt-3">
-                <CopyFundContext scheme={scheme} corpus={corpus} />
+                <CopyFundContext scheme={scheme} corpus={scheme.corpus} />
               </div>
             </div>
 
@@ -180,7 +180,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
           </div>
 
           {/* ── Corpus / guidance ── */}
-          {corpus ? (
+          {scheme.corpus ? (
             <article className="mt-8 prose prose-sm prose-invert max-w-none
               prose-headings:font-semibold prose-headings:tracking-tight
               prose-h2:text-lg prose-h2:mt-8 prose-h2:mb-3
@@ -191,7 +191,7 @@ export default async function FundDetailPage({ params }: FundDetailPageProps) {
               prose-td:text-text-secondary
               prose-code:rounded prose-code:bg-surface prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:text-[11px]
               prose-hr:border-border">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{corpus}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{scheme.corpus}</ReactMarkdown>
             </article>
           ) : (
             <p className="mt-8 text-sm leading-6 text-text-secondary">

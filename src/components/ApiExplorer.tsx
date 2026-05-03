@@ -38,14 +38,14 @@ const schemes = await res.json();`,
   {
     "id": "innovation-fund",
     "name": "Innovation Grant",
-    "status": "active",
+    "status": "open",
     "fundingCap": 250000,
     "category": "Innovation"
   },
   {
     "id": "export-support",
     "name": "Export Development Fund",
-    "status": "active",
+    "status": "open",
     "fundingCap": 100000,
     "category": "Export"
   }
@@ -72,7 +72,7 @@ const scheme = await res.json();`,
     response: `{
   "id": "innovation-fund",
   "name": "Innovation Grant",
-  "status": "active",
+  "status": "open",
   "fundingCap": 250000,
   "currency": "USD",
   "category": "Innovation",
@@ -356,7 +356,7 @@ function EndpointList({
               {ep.path}
             </code>
             {ep.phase === 'v2' && (
-              <span className="ml-auto shrink-0 rounded-full border border-border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-text-tertiary">
+              <span className="ml-auto shrink-0 rounded-full border border-border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-widest text-text-tertiary">
                 v2
               </span>
             )}

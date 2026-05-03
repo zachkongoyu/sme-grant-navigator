@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { validateLlmConfiguration } from '@/lib/llm';
-import { getSchemeDocument } from '@/lib/schemes/db';
+import { getSchemeContext } from '@/lib/schemes';
 import { runEligibilityCheck } from '@/lib/eligibility/pipeline';
 import type { EligibilityCheckResult, EligibilityProgressEvent } from '@/lib/api/eligibility-client';
 
@@ -18,7 +18,7 @@ export async function POST(
 ) {
   const { schemeId } = await params;
 
-  const document = await getSchemeDocument(schemeId);
+  const document = await getSchemeContext(schemeId);
   if (!document) {
     return new Response(
       JSON.stringify({ type: 'error', message: 'Scheme not found' }) + '\n',
@@ -26,7 +26,7 @@ export async function POST(
     );
   }
 
-  const { scheme, corpus } = document;
+  const scheme = document;
   const body = (await request.json()) as { userContext?: string };
   const { userContext } = body;
 
@@ -72,7 +72,7 @@ export async function POST(
       try {
         const result = await runEligibilityCheck(
           scheme,
-          corpus,
+          scheme.corpus,
           safeContext,
           (event) => send(event),
         );

@@ -7,7 +7,7 @@ import {
   type JsonSchemaResponseFormat,
   type ToolDefinition,
 } from '@/lib/llm';
-import type { ResolvedScheme } from '@/lib/schemes/db';
+import type { Scheme } from '@/types';
 import { buildEligibilityAnalysisPrompt, buildEligibilityUserMessage } from '@/lib/prompts/eligibility';
 import type { EligibilityCheckResult, EligibilityProgressEvent } from '@/lib/api/eligibility-client';
 
@@ -22,7 +22,7 @@ const ELIGIBILITY_SCHEMA: JsonSchemaResponseFormat = {
       type: 'object',
       additionalProperties: false,
       properties: {
-        verdict: { type: 'string', enum: ['eligible', 'likely_eligible', 'ineligible', 'incomplete'] },
+        verdict: { type: 'string', enum: ['eligible', 'likely_eligible', 'ineligible', 'insufficient_info'] },
         summary: { type: 'string' },
         criteria: {
           type: 'array',
@@ -148,7 +148,7 @@ function toProgressEvent(event: AgentEvent): EligibilityProgressEvent | null {
  * Returns a structured EligibilityCheckResult.
  */
 export async function runEligibilityCheck(
-  scheme: ResolvedScheme,
+  scheme: Scheme,
   corpus: string | null,
   userContext: string,
   onProgress: (event: EligibilityProgressEvent) => void,

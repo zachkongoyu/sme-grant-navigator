@@ -17,7 +17,7 @@ The availability state of a Scheme. Three states: `open` (accepting applications
 _Avoid_: `active` (removed — duplicate of `open`)
 
 **Corpus**:
-The flat markdown string containing all assembled knowledge about a Scheme — may include eligibility rules, guidelines, activity types, key facts, or any combination. Structure varies per Scheme intentionally; "Corpus" signals mixed assembly, not a fixed schema. Lives in the DB — column should be named `corpus` (currently `guidance_md`, pending rename + migration); file-based corpus files are a migration source only.
+The flat markdown string containing all assembled knowledge about a Scheme — may include eligibility rules, guidelines, activity types, key facts, or any combination. Structure varies per Scheme intentionally; "Corpus" signals mixed assembly, not a fixed schema. Lives in the DB `corpus` column.
 _Avoid_: Guidelines, Rules, SchemeDocument, SchemeContent (all imply fixed structure)
 
 **User**:
@@ -54,7 +54,7 @@ _Avoid_: Placeholder, TODO, Action item
 ## Flagged ambiguities
 
 - "Grant", "Fund", "Scheme" were all used in the codebase — resolved: **Scheme** is canonical.
-- `sponsor` field in code + DB — resolved: canonical term is **Administrator**, pending rename.
-- `guidance_md` DB column — resolved: should be renamed to `corpus`, pending migration.
-- `active` SchemeStatus — resolved: duplicate of `open`, to be removed.
+- `sponsor` field in code + DB — resolved: column renamed to `administrator` (migration 008).
+- `guidance_md` DB column — resolved: column renamed to `corpus` (migration 008).
+- `active` SchemeStatus — resolved: removed from `SchemeStatus` type; DB values normalised to `open` (migration 008).
 - `incomplete` EligibilityVerdict — resolved: renamed to `insufficient_info`.

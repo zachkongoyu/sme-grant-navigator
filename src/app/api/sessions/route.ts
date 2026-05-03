@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getSupabase } from '@/lib/supabase';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 const CHAT_ENABLED = process.env.ENABLE_CHAT === 'true';
 

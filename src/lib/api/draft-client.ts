@@ -1,6 +1,6 @@
 import { readErrorMessage, withOptionalSignal } from '@/lib/api/shared';
 import { readSseDataStream } from '@/lib/api/streaming';
-import type { TextStreamEvent } from '@/lib/stream-events';
+import type { TextStreamEvent } from '@/components/chat/stream-events';
 
 export interface DraftInlineAttachment {
   readonly name: string;

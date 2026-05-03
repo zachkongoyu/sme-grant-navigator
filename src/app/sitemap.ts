@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-import { getAllSchemes } from '@/lib/schemes/db';
+import { listSchemes } from '@/lib/schemes';
 
 const baseUrl = 'https://www.thunderhk.ai';
 
@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const schemes = await getAllSchemes();
+  const schemes = await listSchemes();
   const schemeRoutes: MetadataRoute.Sitemap = schemes.map((scheme) => ({
     url: `${baseUrl}/funds/${scheme.id}`,
     lastModified: new Date(),

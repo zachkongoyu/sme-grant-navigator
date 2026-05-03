@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 
-import { getSchemeById } from '@/lib/schemes/db';
+import { getScheme } from '@/lib/schemes';
 
 interface DraftSchemePageProps {
   readonly params: Promise<{ schemeId: string }>;
@@ -8,7 +8,7 @@ interface DraftSchemePageProps {
 
 export default async function DraftSchemePage({ params }: DraftSchemePageProps) {
   const { schemeId } = await params;
-  const scheme = await getSchemeById(schemeId);
+  const scheme = await getScheme(schemeId);
 
   if (!scheme) notFound();
 

@@ -74,7 +74,7 @@ export function McpConversation() {
           {canAdvance ? (
             <button
               onClick={() => setRevealed((r) => r + 1)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--accent-foreground)] transition hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-(--accent) px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-(--accent-foreground) transition hover:opacity-90"
             >
               Next step
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">

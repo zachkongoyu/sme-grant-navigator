@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
