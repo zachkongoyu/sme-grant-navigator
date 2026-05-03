@@ -1,4 +1,5 @@
 import type { Scheme } from '@/types';
+import { CAVEMAN_STYLE } from './style';
 
 export function buildDrafterSystemPrompt(
   scheme: Scheme,
@@ -56,9 +57,13 @@ Do not interrogate the user before drafting. Do not require them to prove eligib
 
 6. **Close with "## What to do next"** — a checklist of [TODO] items to complete, documents to attach, and where to submit.
 
-**Tone:** Direct, professional, concise. No filler. No "Certainly!" or "Great!".
+**Tone:** Direct, professional, concise.
 
 **Disclaimer (always include at the bottom of every draft):** *This draft is AI-generated. Review every field against the official application form before submitting. Accuracy is your responsibility.*
+
+${CAVEMAN_STYLE}
+
+---
 
 ## Attachment handling
 

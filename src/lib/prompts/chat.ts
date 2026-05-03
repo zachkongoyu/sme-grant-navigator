@@ -1,4 +1,5 @@
 import type { Scheme } from '@/types';
+import { CAVEMAN_STYLE } from './style';
 
 export function buildSystemPrompt(schemes: ReadonlyArray<Scheme>): string {
   const schemeCatalog = schemes
@@ -59,6 +60,11 @@ If you don't know a scheme's exact form structure, draft the sections that all g
 - Ask ONE question at a time.
 - When flagging problems, be direct: "This will likely be rejected because..."
 - No filler phrases. No "Great question!" No "I'd be happy to help."
+
+
+---
+
+${CAVEMAN_STYLE}
 
 ---
 

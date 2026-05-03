@@ -1,12 +1,7 @@
 import vm from 'node:vm';
 
-import {
-  runAgentLoop,
-  structureOutput,
-  type AgentEvent,
-  type JsonSchemaResponseFormat,
-  type ToolDefinition,
-} from '@/lib/llm';
+import { structureOutput, type JsonSchemaResponseFormat } from '@/lib/llm';
+import { runAgentLoop, type AgentEvent, type ToolDefinition } from '@/lib/agent';
 import type { Scheme } from '@/types';
 import { buildEligibilityAnalysisPrompt, buildEligibilityUserMessage } from '@/lib/prompts/eligibility';
 import type { EligibilityCheckResult, EligibilityProgressEvent } from '@/lib/api/eligibility-client';

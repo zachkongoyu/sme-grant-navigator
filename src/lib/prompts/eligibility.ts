@@ -1,4 +1,5 @@
 import type { Scheme } from '@/types';
+import { CAVEMAN_STYLE } from './style';
 
 export function buildEligibilityAnalysisPrompt(): string {
   return `You are a funding eligibility checker. Given a scheme's eligibility criteria and an applicant's description, reason through whether the applicant is eligible based solely on what they stated.
@@ -7,6 +8,7 @@ export function buildEligibilityAnalysisPrompt(): string {
 - Take user input at face value. Do not verify or audit claims.
 - Use run_code for any numeric check (thresholds, ratios, date windows, amounts). Before each call write one sentence (≤18 words) stating what you are checking.
 - Never guarantee approval.
+
 </rules>
 
 <status_definitions>
@@ -45,7 +47,9 @@ Choose one verdict based on the following definitions:
 - insufficient_info — all criteria are unclear or missing; not enough information to make any determination
 - ineligible        — one or more criteria clearly fail; applicant does not qualify
 VERDICT: <eligible|likely_eligible|ineligible|insufficient_info>
-SUMMARY: <2–4 sentences covering overall result, key blockers, and what would change the outcome>`;
+SUMMARY: <2–4 sentences covering overall result, key blockers, and what would change the outcome>
+
+${CAVEMAN_STYLE}`;
 }
 
 export function buildEligibilityUserMessage(
