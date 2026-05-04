@@ -51,6 +51,30 @@ _Avoid_: Placeholder, TODO, Action item
 - A **Company** can generate a **Draft** for any **Scheme**
 - An **EligibilityCheck** and a **Draft** are always scoped to one **Company** + one **Scheme**
 
+**Credit**:
+The unit of account for AI feature usage. Purchased in packs via Stripe. Deducted before each AI call. 1 credit per EligibilityCheck, 3 credits per Draft.
+_Avoid_: Token, Point, Usage unit
+
+**FreeCheck**:
+A complimentary EligibilityCheck allowance. Each User gets 3 FreeChecks on their account (one-time, not monthly). Exhausted before Credits are deducted.
+_Avoid_: Free trial, Trial check
+
+**CreditPack**:
+A purchasable bundle of Credits. Three tiers: Starter (10 credits, HKD 58), Value (30 credits, HKD 138), Pro (100 credits, HKD 388). Pack definitions are the single source of truth in `src/config/billing.ts`.
+_Avoid_: Plan, Subscription, Bundle
+
+**Profile**:
+A row in `public.profiles` keyed on `auth.users.id`. Stores `credits_balance` and `free_checks_used` for a User. Created automatically on first sign-in via DB trigger.
+_Avoid_: Account, User record, Wallet
+
+## Relationships
+
+- A **User** has one **Profile** (created on sign-in)
+- A **Profile** holds a **Credit** balance and a **FreeCheck** count
+- An **EligibilityCheck** costs 1 **Credit** (or 1 **FreeCheck** if allowance remains)
+- A **Draft** costs 3 **Credits** (no free allowance)
+- A **User** purchases **Credits** in **CreditPacks** via Stripe; payment credited via webhook
+
 ## Flagged ambiguities
 
 - "Grant", "Fund", "Scheme" were all used in the codebase — resolved: **Scheme** is canonical.

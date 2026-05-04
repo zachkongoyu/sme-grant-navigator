@@ -34,18 +34,23 @@ export async function POST(request: NextRequest) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    const thunderSessionId = session.metadata?.thunder_session_id;
+    const userId = session.metadata?.user_id;
+    const credits = session.metadata?.credits ? parseInt(session.metadata.credits, 10) : null;
 
-    if (thunderSessionId) {
-      const { error } = await getSupabase()
-        .from('sessions')
-        .update({ paid: true })
-        .eq('id', thunderSessionId);
+    if (!userId || !credits) {
+      console.error('Webhook missing metadata:', session.metadata);
+      return new Response('Missing metadata', { status: 400 });
+    }
 
-      if (error) {
-        console.error('Failed to mark session as paid:', error);
-        return new Response('DB update failed', { status: 500 });
-      }
+    // Atomic increment via RPC — avoids read-modify-write race
+    const { error: rpcError } = await getSupabase().rpc('add_credits', {
+      p_user_id: userId,
+      p_amount: credits,
+    });
+
+    if (rpcError) {
+      console.error('Failed to add credits:', rpcError);
+      return new Response('DB update failed', { status: 500 });
     }
   }
 

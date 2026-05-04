@@ -14,6 +14,8 @@ import {
 } from '@/components/chat/stream-events';
 import { getAuthUser } from '@/lib/auth';
 import { extractFiles, fetchUrls, extractUrlsFromText } from '@/lib/attachments/extract';
+import { createClient } from '@/lib/supabase/server';
+import { BILLING } from '@/config/billing';
 
 const MAX_CONTEXT_CHARS    = 20_000;
 const MAX_ATTACHMENT_CHARS = 30_000;
@@ -32,6 +34,19 @@ export async function POST(
   }
 
   const { schemeId } = await params;
+
+  // Credit gate — deduct before AI call
+  const supabase = await createClient();
+  const { data: deducted, error: deductError } = await supabase.rpc('deduct_credit', {
+    p_user_id: user.id,
+    p_amount: BILLING.creditCost.draft,
+  });
+  if (deductError) {
+    return NextResponse.json({ error: 'Failed to verify credit balance' }, { status: 500 });
+  }
+  if (!deducted) {
+    return NextResponse.json({ error: 'Insufficient credits. Top up to continue.' }, { status: 402 });
+  }
 
   const document = await getSchemeContext(schemeId);
   if (!document) return NextResponse.json({ error: 'Scheme not found' }, { status: 404 });

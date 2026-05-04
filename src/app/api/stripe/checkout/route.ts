@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
+import { BILLING, type PackId, getPackById } from '@/config/billing';
 import { createClient } from '@/lib/supabase/server';
 
 function getStripe() {
@@ -14,14 +15,15 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return Response.json({ error: 'Sign in to unlock the full draft' }, { status: 401 });
+    return Response.json({ error: 'Sign in to purchase credits' }, { status: 401 });
   }
 
-  const body = (await request.json()) as { sessionId: string };
-  const { sessionId } = body;
+  const body = (await request.json()) as { packId: PackId };
+  const { packId } = body;
 
-  if (!sessionId) {
-    return Response.json({ error: 'sessionId is required' }, { status: 400 });
+  const pack = BILLING.packs.find((p) => p.id === packId);
+  if (!pack) {
+    return Response.json({ error: 'Invalid pack' }, { status: 400 });
   }
 
   const origin = request.headers.get('origin') ?? 'http://localhost:3000';
@@ -32,22 +34,23 @@ export async function POST(request: NextRequest) {
     line_items: [
       {
         price_data: {
-          currency: 'usd',
-          unit_amount: 29900, // $299.00
+          currency: BILLING.currency.toLowerCase(),
+          unit_amount: pack.priceMinorUnits,
           product_data: {
-            name: 'Thunder — Full application draft',
-            description: 'Unlock all sections of your AI-generated grant application draft.',
+            name: `SME Grant Navigator — ${pack.label} Pack`,
+            description: `${pack.credits} credits for AI eligibility checks and draft generation.`,
           },
         },
         quantity: 1,
       },
     ],
     metadata: {
-      thunder_session_id: sessionId,
       user_id: user.id,
+      pack_id: pack.id,
+      credits: String(pack.credits),
     },
-    success_url: `${origin}/chat/${sessionId}?paid=true`,
-    cancel_url: `${origin}/chat/${sessionId}`,
+    success_url: `${origin}/billing?success=true`,
+    cancel_url: `${origin}/billing`,
   });
 
   return Response.json({ url: checkout.url });

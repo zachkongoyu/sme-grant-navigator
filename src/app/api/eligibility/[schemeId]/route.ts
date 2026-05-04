@@ -6,6 +6,7 @@ import { getSchemeContext } from '@/lib/schemes';
 import { runEligibilityCheck } from '@/lib/eligibility/pipeline';
 import type { EligibilityCheckResult, EligibilityProgressEvent } from '@/lib/api/eligibility-client';
 import { extractFiles, fetchUrls, extractUrlsFromText } from '@/lib/attachments/extract';
+import { createClient } from '@/lib/supabase/server';
 
 const MAX_CONTEXT_CHARS = 10_000;
 
@@ -27,6 +28,22 @@ export async function POST(
   }
 
   const { schemeId } = await params;
+
+  // Credit gate — deduct before AI call
+  const supabase = await createClient();
+  const { data: consumeResult, error: consumeError } = await supabase.rpc('consume_eligibility_check', { p_user_id: user.id });
+  if (consumeError) {
+    return new Response(
+      JSON.stringify({ type: 'error', message: 'Failed to verify credit balance' }) + '\n',
+      { status: 500, headers: { 'Content-Type': 'application/x-ndjson' } },
+    );
+  }
+  if (consumeResult === 'insufficient') {
+    return new Response(
+      JSON.stringify({ type: 'error', message: 'Insufficient credits. Top up to continue.' }) + '\n',
+      { status: 402, headers: { 'Content-Type': 'application/x-ndjson' } },
+    );
+  }
 
   const document = await getSchemeContext(schemeId);
   if (!document) {
