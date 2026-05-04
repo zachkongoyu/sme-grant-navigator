@@ -40,7 +40,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
       >
         {/* Top: back nav */}
         <div className="flex items-center justify-between px-4 py-4">
-          <BackNavigation fallbackHref="/funds" />
+          <BackNavigation fallbackHref="/schemes/easy-bud" />
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -79,7 +79,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
                 return (
                   <Link
                     key={scheme.id}
-                    href={`/funds/${scheme.id}`}
+                    href={`/schemes/${scheme.id}`}
                     className="group block rounded-lg mx-2 px-2.5 py-2 transition"
                     style={isActive ? { backgroundColor: 'var(--surface)' } : undefined}
                   >

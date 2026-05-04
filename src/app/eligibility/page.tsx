@@ -58,7 +58,7 @@ export default async function EligibilityPage({ searchParams }: EligibilityPageP
     <main className="min-h-screen bg-background text-text-primary">
       <EligibilityChecker
         scheme={selectedScheme}
-        backHref="/funds"
+        backHref="/schemes/easy-bud"
         headerControls={combobox}
       />
     </main>

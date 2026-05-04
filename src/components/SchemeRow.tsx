@@ -22,7 +22,7 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
 
   return (
     <Link
-      href={`/funds/${scheme.id}`}
+      href={`/schemes/${scheme.id}`}
       className="grid border-b border-border transition hover:bg-surface-hover md:grid-cols-[60px_minmax(0,1fr)_150px]"
     >
       <div className="hidden px-3 py-4 font-mono text-xs text-text-tertiary md:block">

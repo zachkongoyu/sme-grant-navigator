@@ -144,7 +144,7 @@ export default function OpenGraphImage() {
                     fontSize: 22,
                   }}
                 >
-                  /funds/easy-bud
+                  /schemes/easy-bud
                 </div>
               </div>
             </div>

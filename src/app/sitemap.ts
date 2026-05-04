@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/funds`,
+      url: `${baseUrl}/schemes/easy-bud`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -46,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const schemes = await listSchemes();
   const schemeRoutes: MetadataRoute.Sitemap = schemes.map((scheme) => ({
-    url: `${baseUrl}/funds/${scheme.id}`,
+    url: `${baseUrl}/schemes/${scheme.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: scheme.id === 'easy-bud' ? 0.9 : 0.6,

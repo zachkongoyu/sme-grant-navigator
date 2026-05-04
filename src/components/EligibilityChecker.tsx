@@ -465,7 +465,7 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
           </Link>
         )}
         <button type="button" onClick={reset} className="inline-flex items-center rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">Check again</button>
-        <Link href={`/funds/${scheme.id}`} className="text-sm text-text-tertiary underline underline-offset-4 transition hover:text-text-secondary">View scheme details</Link>
+        <Link href={`/schemes/${scheme.id}`} className="text-sm text-text-tertiary underline underline-offset-4 transition hover:text-text-secondary">View scheme details</Link>
       </div>
 
       <p className="mt-6 text-xs leading-5 text-text-tertiary">AI-generated assessment based on the information you provided. Verify against official scheme documentation before applying.</p>

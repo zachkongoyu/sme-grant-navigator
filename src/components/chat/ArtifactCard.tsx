@@ -36,7 +36,7 @@ function ShortlistPreview({ items }: { items: ShortlistItem[] }) {
         <li key={item.id} className="flex items-center gap-2">
           <span className="h-1 w-1 shrink-0 rounded-full bg-text-tertiary" />
           <Link
-            href={`/funds/${item.id}`}
+            href={`/schemes/${item.id}`}
             className="truncate text-xs text-text-secondary hover:text-accent transition-colors"
             onClick={(e) => e.stopPropagation()}
           >

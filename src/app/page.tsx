@@ -71,7 +71,7 @@ export default async function HomePage() {
                     Draft application
                   </Link>
                   <Link
-                    href={`/funds/${featuredScheme.id}`}
+                    href={`/schemes/${featuredScheme.id}`}
                     className="inline-flex items-center rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
                   >
                     Scheme details
@@ -100,7 +100,7 @@ export default async function HomePage() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-[0.14em]">
               <Link
-                href="/funds"
+                href="/schemes/easy-bud"
                 className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] text-accent transition hover:opacity-80"
                 style={{
                   border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
@@ -148,7 +148,7 @@ export default async function HomePage() {
                 <StatusChip variant="beta" compact />
               </div>
               <p className="mt-3 text-sm font-medium text-text-primary">Drafter</p>
-              <p className="mt-1 text-xs leading-5 text-text-secondary">Pick a fund, then let Thunder draft the application with the right scheme already loaded.</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Pick a scheme, then let Thunder draft the application with the right scheme already loaded.</p>
             </Link>
 
             {/* Eligibility Check */}

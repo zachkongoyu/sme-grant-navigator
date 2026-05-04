@@ -53,11 +53,11 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
   return (
     <main className="min-h-screen bg-background text-text-primary">
       {selectedScheme.draftable ? (
-        <Drafter scheme={selectedScheme} backHref="/funds" headerControls={combobox} />
+        <Drafter scheme={selectedScheme} backHref="/schemes/easy-bud" headerControls={combobox} />
       ) : (
         <div className="relative px-4 py-16 sm:px-6">
           <div className="absolute top-6 left-6">
-            <BackNavigation fallbackHref="/funds" />
+            <BackNavigation fallbackHref="/schemes/easy-bud" />
           </div>
           <div className="mx-auto max-w-3xl">
             <div className="mb-8 flex justify-center">
@@ -83,7 +83,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
 
               <div className="mt-6 flex justify-center">
                 <Link
-                  href={`/funds/${selectedScheme.id}`}
+                  href={`/schemes/${selectedScheme.id}`}
                   className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
                 >
                   View scheme details

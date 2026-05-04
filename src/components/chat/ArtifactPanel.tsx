@@ -71,7 +71,7 @@ function ShortlistContent({ items }: { items: ShortlistItem[] }) {
           </div>
           <p className="mt-1 text-sm leading-5 text-text-secondary">{item.shortDescription}</p>
           <Link
-            href={`/funds/${item.id}`}
+            href={`/schemes/${item.id}`}
             className="mt-2 inline-flex font-mono text-xs text-text-tertiary hover:text-accent transition-colors underline underline-offset-4"
           >
             View scheme →
