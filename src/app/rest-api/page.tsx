@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';

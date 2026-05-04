@@ -32,7 +32,6 @@ export function McpConversation() {
   const [revealed, setRevealed] = useState(1);
 
   const canAdvance = revealed < TURNS.length;
-  const isComplete = revealed === TURNS.length;
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">

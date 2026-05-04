@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -31,15 +31,15 @@ export function ThemeToggle({ className = '' }: ThemeToggleProps) {
   useEffect(() => {
     const savedTheme = window.localStorage.getItem(STORAGE_KEY);
     if (savedTheme === 'light' || savedTheme === 'dark') {
-      setTheme(savedTheme);
+      startTransition(() => setTheme(savedTheme));
       return;
     }
     const domTheme = document.documentElement.dataset.theme;
     if (domTheme === 'light' || domTheme === 'dark') {
-      setTheme(domTheme as Theme);
+      startTransition(() => setTheme(domTheme as Theme));
       return;
     }
-    setTheme(getSystemTheme());
+    startTransition(() => setTheme(getSystemTheme()));
   }, []);
 
   function toggleTheme() {

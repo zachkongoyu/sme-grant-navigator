@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { ArtifactPanel } from './ArtifactPanel';
 import { Composer } from './Composer';
 import { MessageList } from './MessageList';
-import type { Artifact, Attachment, ChatMessage } from './types';
+import type { Artifact, Attachment } from './types';
 import { useChat } from './useChat';
 
 interface Session {

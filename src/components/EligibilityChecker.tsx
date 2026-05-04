@@ -197,7 +197,7 @@ function AgentTimeline({ entries, live }: { entries: ProgressEntry[]; live?: boo
           const isExpanded = expandedKeys.has(group.entry.key);
           const toggle = () => setExpandedKeys((prev) => {
             const next = new Set(prev);
-            next.has(group.entry.key) ? next.delete(group.entry.key) : next.add(group.entry.key);
+            if (next.has(group.entry.key)) { next.delete(group.entry.key); } else { next.add(group.entry.key); }
             return next;
           });
 
@@ -237,7 +237,7 @@ function AgentTimeline({ entries, live }: { entries: ProgressEntry[]; live?: boo
         const isExpanded = expandedKeys.has(call.key);
         const toggle = () => setExpandedKeys((prev) => {
           const next = new Set(prev);
-          next.has(call.key) ? next.delete(call.key) : next.add(call.key);
+          if (next.has(call.key)) { next.delete(call.key); } else { next.add(call.key); }
           return next;
         });
 

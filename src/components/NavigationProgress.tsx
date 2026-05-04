@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import { PageLoadingIndicator } from '@/components/PageLoadingIndicator';
@@ -25,7 +25,7 @@ export function NavigationProgress() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setIsVisible(false);
+    startTransition(() => setIsVisible(false));
   }, [pathname, searchParams]);
 
   useEffect(() => {
