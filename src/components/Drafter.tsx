@@ -10,7 +10,6 @@ import {
   downloadDraftPdf,
   readDraftEventStream,
   streamDraftGeneration,
-  uploadDraftAttachments,
 } from '@/lib/api/draft-client';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { BackNavigation } from '@/components/navigation';
@@ -33,10 +32,9 @@ function isRejection(text: string): boolean {
   return t.startsWith('i can only help draft');
 }
 
-/** Extends AttachmentFile with the extracted text content (stored client-side, not in DB). */
+/** Extends AttachmentFile with a raw File reference (never uploaded separately). */
 interface DraftFileAttachment extends AttachmentFile {
-  text: string;
-  uploading?: boolean;
+  file: File;
 }
 
 type DraftAttachment = DraftFileAttachment | LinkAttachment;
@@ -68,38 +66,15 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     const list = Array.from(files);
     if (list.length === 0) return;
 
-    // Add placeholder chips with uploading=true
-    const placeholders: DraftFileAttachment[] = list.map((f) => ({
+    const newItems: DraftFileAttachment[] = list.map((f) => ({
       kind: 'file',
       id: crypto.randomUUID(),
       name: f.name,
       size: f.size,
       mime: f.type,
-      text: '',
-      uploading: true,
+      file: f,
     }));
-    setAttachments((prev) => [...prev, ...placeholders]);
-
-    // Upload all files to /api/extract and replace placeholders with results
-    try {
-      const extracted = await uploadDraftAttachments(list);
-      setAttachments((prev) => {
-        const remaining = prev.filter((a) => !placeholders.some((p) => p.id === a.id));
-        const resolved: DraftFileAttachment[] = extracted.map((e) => ({
-          kind: 'file',
-          id: e.id,
-          name: e.name,
-          size: e.size,
-          mime: e.mime,
-          text: e.text,
-          uploading: false,
-        }));
-        return [...remaining, ...resolved];
-      });
-    } catch (error) {
-      setAttachments((prev) => prev.filter((a) => !placeholders.some((p) => p.id === a.id)));
-      setErrorMsg((error as Error).message || 'File upload failed');
-    }
+    setAttachments((prev) => [...prev, ...newItems]);
   }
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -139,11 +114,11 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     if (e.dataTransfer.files.length > 0) void addFiles(e.dataTransfer.files);
   }
 
-  const isUploading = attachments.some((a) => a.kind === 'file' && (a as DraftFileAttachment).uploading);
-  const canGenerate = context.trim().length > 0 && !isUploading;
+  const isUploading = false;
+  const canGenerate = context.trim().length > 0 || attachments.length > 0;
 
   const generate = useCallback(async () => {
-    if (!context.trim() || isUploading) return;
+    if (!canGenerate) return;
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -152,18 +127,18 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     setStage('streaming');
     setErrorMsg('');
 
-    const inlineAttachments = attachments
+    const files = attachments
       .filter((a): a is DraftFileAttachment => a.kind === 'file')
-      .map((a) => ({ name: a.name, text: a.text }));
+      .map((a) => a.file);
 
-    const links = attachments
+    const urls = attachments
       .filter((a): a is LinkAttachment => a.kind === 'link')
       .map((a) => a.url);
 
     try {
       const reader = await streamDraftGeneration(
         scheme.id,
-        { userContext: context, inlineAttachments, links },
+        { userContext: context, files, urls },
         ctrl.signal,
       );
       const fullDraft = await readDraftEventStream(reader, (chunk) => {
@@ -186,7 +161,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
       setErrorMsg((err as Error)?.message ?? 'Generation failed');
       setStage('error');
     }
-  }, [context, attachments, scheme.id, isUploading]);
+  }, [context, attachments, scheme.id, canGenerate]);
 
   const revise = useCallback(async () => {
     const msg = followUp.trim();
@@ -331,11 +306,6 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
               {attachments.map((a) => (
                 <span key={a.id} className="relative">
                   <AttachmentChip item={a} onRemove={() => removeAttachment(a.id)} />
-                  {a.kind === 'file' && (a as DraftFileAttachment).uploading && (
-                    <span className="absolute -right-1 -top-1">
-                      <span className="block h-2.5 w-2.5 animate-spin rounded-full border border-accent border-t-transparent" />
-                    </span>
-                  )}
                 </span>
               ))}
             </div>

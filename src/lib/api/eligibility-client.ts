@@ -47,13 +47,19 @@ export interface EligibilityCheckResult {
 export async function runEligibilityCheck(
   schemeId: string,
   userContext: string,
+  files: ReadonlyArray<File>,
+  urls: ReadonlyArray<string>,
   onEvent: (event: EligibilityProgressEvent) => void,
   signal?: AbortSignal,
-): Promise<EligibilityCheckResult> {
+): Promise<{ result: EligibilityCheckResult; warnings: string[] }> {
+  const form = new FormData();
+  form.append('userContext', userContext);
+  files.forEach((f) => form.append('files', f));
+  urls.forEach((u) => form.append('urls', u));
+
   const response = await fetch(`/api/eligibility/${schemeId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userContext }),
+    body: form,
     signal: signal ?? null,
   });
 
@@ -91,7 +97,10 @@ export async function runEligibilityCheck(
       }
 
       if (event.type === 'result') {
-        return event.result as EligibilityCheckResult;
+        return {
+          result: event.result as EligibilityCheckResult,
+          warnings: (event.warnings as string[] | undefined) ?? [],
+        };
       }
       if (event.type === 'error') {
         throw new Error((event.message as string | undefined) ?? 'Assessment failed');
@@ -109,4 +118,3 @@ export async function runEligibilityCheck(
 
   throw new Error('Stream ended without a result');
 }
-

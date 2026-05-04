@@ -29,9 +29,10 @@ export interface UseEligibilityCheckReturn {
   stage: Stage;
   result: EligibilityCheckResult | null;
   errorMsg: string;
+  warnings: string[];
   followupAnswers: FollowupAnswers;
   progress: ProgressEntry[];
-  check: () => void;
+  check: (files?: File[], urls?: string[]) => void;
   recheckWithFollowups: () => void;
   reset: () => void;
   setFollowupAnswer: (criterionId: string, answer: string) => void;
@@ -42,6 +43,7 @@ export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
   const [result, setResult]                   = useState<EligibilityCheckResult | null>(null);
   const [stage, setStage]                     = useState<Stage>('compose');
   const [errorMsg, setErrorMsg]               = useState('');
+  const [warnings, setWarnings]               = useState<string[]>([]);
   const [followupAnswers, setFollowupAnswers] = useState<FollowupAnswers>({});
   const [progress, setProgress]               = useState<ProgressEntry[]>([]);
   const abortRef = useRef<AbortController | null>(null);
@@ -109,20 +111,24 @@ export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
     }
   }, [addProgress]);
 
-  const runCheck = useCallback(async (userContext: string) => {
+  const runCheck = useCallback(async (userContext: string, files: File[] = [], urls: string[] = []) => {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
     setStage('checking');
     setErrorMsg('');
+    setWarnings([]);
     setResult(null);
     setFollowupAnswers({});
     setProgress([]);
 
     try {
-      const data = await runEligibilityCheck(scheme.id, userContext, onEvent, ctrl.signal);
+      const { result: data, warnings: w } = await runEligibilityCheck(
+        scheme.id, userContext, files, urls, onEvent, ctrl.signal,
+      );
       setResult(data);
+      setWarnings(w);
       setStage('done');
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
@@ -131,9 +137,9 @@ export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
     }
   }, [scheme.id, onEvent]);
 
-  const check = useCallback(() => {
-    if (!context.trim()) return;
-    void runCheck(context);
+  const check = useCallback((files: File[] = [], urls: string[] = []) => {
+    if (!context.trim() && files.length === 0 && urls.length === 0) return;
+    void runCheck(context, files, urls);
   }, [context, runCheck]);
 
   const recheckWithFollowups = useCallback(() => {
@@ -150,6 +156,7 @@ export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
     setResult(null);
     setStage('compose');
     setErrorMsg('');
+    setWarnings([]);
     setFollowupAnswers({});
     setProgress([]);
   }, []);
@@ -164,6 +171,7 @@ export function useEligibilityCheck(scheme: Scheme): UseEligibilityCheckReturn {
     stage,
     result,
     errorMsg,
+    warnings,
     followupAnswers,
     progress,
     check,

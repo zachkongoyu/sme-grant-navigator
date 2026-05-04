@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 
-import type { Scheme } from '@/types';
+import type { Scheme, AttachmentFile, LinkAttachment, Attachment } from '@/types';
 import type {
   EligibilityCheckResult,
   EligibilityCriterion,
@@ -11,6 +11,7 @@ import type {
 } from '@/lib/api/eligibility-client';
 import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
+import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { useEligibilityCheck, type ProgressEntry } from '@/components/eligibility/useEligibilityCheck';
 
 // ── Verdict config ────────────────────────────────────────────────────────────
@@ -312,9 +313,57 @@ interface EligibilityCheckerProps {
 
 export function EligibilityChecker({ scheme, backHref, headerControls }: EligibilityCheckerProps) {
   const {
-    context, setContext, stage, result, errorMsg,
+    context, setContext, stage, result, errorMsg, warnings,
     followupAnswers, progress, check, recheckWithFollowups, reset, setFollowupAnswer,
   } = useEligibilityCheck(scheme);
+
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [linkInputVisible, setLinkInputVisible] = useState(false);
+  const [linkDraft, setLinkDraft] = useState('');
+  const fileMapRef = useRef<Map<string, File>>(new Map());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function addFiles(fileList: FileList | File[]) {
+    const list = Array.from(fileList);
+    const newItems: AttachmentFile[] = list.map((f) => {
+      const id = crypto.randomUUID();
+      fileMapRef.current.set(id, f);
+      return { kind: 'file', id, name: f.name, size: f.size, mime: f.type };
+    });
+    setAttachments((prev) => [...prev, ...newItems]);
+  }
+
+  function removeAttachment(id: string) {
+    fileMapRef.current.delete(id);
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }
+
+  function addLink() {
+    const url = linkDraft.trim();
+    if (!url) return;
+    setAttachments((prev) => [...prev, { kind: 'link', id: crypto.randomUUID(), url }]);
+    setLinkDraft('');
+    setLinkInputVisible(false);
+  }
+
+  function handleTextareaPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const pasted = e.clipboardData.getData('text').trim();
+    if (/^https?:\/\/\S+$/.test(pasted)) {
+      e.preventDefault();
+      setAttachments((prev) => [...prev, { kind: 'link', id: crypto.randomUUID(), url: pasted }]);
+    }
+  }
+
+  function handleSubmit() {
+    const files = attachments
+      .filter((a): a is AttachmentFile => a.kind === 'file')
+      .map((a) => fileMapRef.current.get(a.id))
+      .filter((f): f is File => f !== undefined);
+    const urls = attachments
+      .filter((a): a is LinkAttachment => a.kind === 'link')
+      .map((a) => a.url);
+    void check(files, urls);
+  }
 
   const capDisplay = scheme.fundingCap ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K` : 'Varies';
 
@@ -350,23 +399,58 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
           <textarea
             value={context}
             onChange={(e) => setContext(e.target.value)}
+            onPaste={handleTextareaPaste}
             placeholder={`Describe your company and project…\n\nE.g. Acme Ltd, 12-person HK-registered food manufacturer. We want to fund market research in the GBA and a Chinese e-catalogue. No prior BUD funding received.`}
             rows={9}
             className="w-full resize-none bg-transparent px-5 pt-5 pb-3 text-sm leading-7 text-text-primary placeholder:text-text-tertiary focus:outline-none"
           />
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 border-t border-border px-5 py-3">
+              {attachments.map((a) => (
+                <AttachmentChip key={a.id} item={a} onRemove={() => removeAttachment(a.id)} />
+              ))}
+            </div>
+          )}
+          {linkInputVisible && (
+            <div className="flex gap-2 border-t border-border px-5 py-3">
+              <input
+                autoFocus
+                type="url"
+                value={linkDraft}
+                onChange={(e) => setLinkDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); addLink(); }
+                  if (e.key === 'Escape') { setLinkInputVisible(false); setLinkDraft(''); }
+                }}
+                placeholder="https://…"
+                className="h-8 flex-1 rounded-md border border-border bg-background px-3 font-mono text-xs text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
+              />
+              <button type="button" onClick={addLink} className="h-8 rounded-md border border-border px-3 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">Add</button>
+              <button type="button" onClick={() => { setLinkInputVisible(false); setLinkDraft(''); }} className="h-8 rounded-md px-3 font-mono text-xs text-text-tertiary hover:text-text-primary transition-colors">Cancel</button>
+            </div>
+          )}
           {stage === 'error' && errorMsg && (
             <div className="border-t border-border px-5 py-3">
               <p className="text-sm" style={{ color: '#ef4444' }}>{errorMsg}</p>
             </div>
           )}
           <div className="flex items-center justify-between border-t border-border px-5 py-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">{context.length > 0 ? `${context.length} chars` : 'Any length works'}</span>
-            <button type="button" disabled={!context.trim()} onClick={() => void check()} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors" aria-label="Attach file">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5" aria-hidden="true"><path d="M13.5 7.5l-6 6a3.5 3.5 0 0 1-5-5l6.5-6.5a2 2 0 0 1 2.8 2.8l-6.5 6.5a.5.5 0 0 1-.7-.7L10 4.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              <button type="button" onClick={() => setLinkInputVisible((v) => !v)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors" aria-label="Add link">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5" aria-hidden="true"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5l-1 1" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5l1-1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+              <span className="ml-1 font-mono text-[10px] text-text-tertiary">{context.length > 0 ? `${context.length} / 10 000 chars` : 'Drop files or paste a URL'}</span>
+            </div>
+            <button type="button" disabled={!context.trim() && attachments.length === 0} onClick={handleSubmit} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
               Check eligibility
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true"><path d="M4 10h12M11 6l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
         </div>
+        <input ref={fileInputRef} type="file" multiple className="hidden" accept=".pdf,.docx,.xlsx,.xls,.csv,.tsv,.md,.txt" onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }} />
       </>,
     );
   }
@@ -409,6 +493,17 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
   return pageShell(
     <>
       <VerdictBanner result={result} />
+
+      {warnings.length > 0 && (
+        <div className="mb-4 rounded-xl border px-5 py-3.5" style={{ borderColor: 'color-mix(in srgb, #f59e0b 30%, transparent)', backgroundColor: 'color-mix(in srgb, #f59e0b 5%, transparent)' }}>
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: '#f59e0b' }}>Extraction warnings</p>
+          <ul className="space-y-1">
+            {warnings.map((w, i) => (
+              <li key={i} className="text-xs text-text-secondary">{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {result.blockers.length > 0 && (
         <div className="mb-4 rounded-xl border px-5 py-4" style={{ borderColor: 'color-mix(in srgb, #ef4444 25%, transparent)', backgroundColor: 'color-mix(in srgb, #ef4444 5%, transparent)' }}>

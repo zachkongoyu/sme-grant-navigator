@@ -5,12 +5,13 @@ import { validateLlmConfiguration } from '@/lib/llm';
 import { getSchemeContext } from '@/lib/schemes';
 import { runEligibilityCheck } from '@/lib/eligibility/pipeline';
 import type { EligibilityCheckResult, EligibilityProgressEvent } from '@/lib/api/eligibility-client';
+import { extractFiles, fetchUrls, extractUrlsFromText } from '@/lib/attachments/extract';
 
 const MAX_CONTEXT_CHARS = 10_000;
 
 type StreamEvent =
   | EligibilityProgressEvent
-  | { type: 'result'; result: EligibilityCheckResult; at: number }
+  | { type: 'result'; result: EligibilityCheckResult; warnings: string[]; at: number }
   | { type: 'error'; message: string; at: number };
 
 export async function POST(
@@ -36,12 +37,18 @@ export async function POST(
   }
 
   const scheme = document;
-  const body = (await request.json()) as { userContext?: string };
-  const { userContext } = body;
+  const formData = await request.formData();
+  const userContextRaw = formData.get('userContext');
+  const fileEntries = formData.getAll('files');
+  const urlEntries = formData.getAll('urls');
 
-  if (!userContext || typeof userContext !== 'string' || !userContext.trim()) {
+  const userContext = typeof userContextRaw === 'string' ? userContextRaw : '';
+  const files = fileEntries.filter((e): e is File => e instanceof File);
+  const urls = urlEntries.filter((e): e is string => typeof e === 'string');
+
+  if (!userContext.trim() && files.length === 0 && urls.length === 0) {
     return new Response(
-      JSON.stringify({ type: 'error', message: 'userContext is required' }) + '\n',
+      JSON.stringify({ type: 'error', message: 'userContext or at least one attachment is required' }) + '\n',
       { status: 400, headers: { 'Content-Type': 'application/x-ndjson' } },
     );
   }
@@ -56,6 +63,28 @@ export async function POST(
   }
 
   const safeContext = userContext.slice(0, MAX_CONTEXT_CHARS);
+
+  const inlineUrls = extractUrlsFromText(safeContext);
+  const allUrls = [...new Set([...inlineUrls, ...urls])];
+
+  const { results: extractedFiles, warnings: fileWarnings } = await extractFiles(files);
+  const { results: fetchedUrls, warnings: urlWarnings } = await fetchUrls(allUrls);
+
+  const warnings = [
+    ...fileWarnings.map((w) => `${w.source}: ${w.message}`),
+    ...urlWarnings.map((w) => `${w.source}: ${w.message}`),
+  ];
+
+  const contextParts: string[] = [];
+  if (safeContext) contextParts.push(safeContext);
+  for (const ef of extractedFiles) {
+    if (ef.text) contextParts.push(`--- ${ef.name} ---\n${ef.text}`);
+  }
+  for (const fu of fetchedUrls) {
+    if (fu.text) contextParts.push(`--- Link: ${fu.url} ---\n${fu.text}`);
+  }
+  const enrichedContext = contextParts.join('\n\n');
+
   const encoder = new TextEncoder();
   const timeNow = () => Date.now();
 
@@ -82,10 +111,10 @@ export async function POST(
         const result = await runEligibilityCheck(
           scheme,
           scheme.corpus,
-          safeContext,
+          enrichedContext,
           (event) => send(event),
         );
-        send({ type: 'result', result, at: timeNow() });
+        send({ type: 'result', result, warnings, at: timeNow() });
       } catch (err) {
         console.error('Eligibility assessment error:', err);
         send({ type: 'error', message: 'Assessment failed. Please try again.', at: timeNow() });

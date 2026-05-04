@@ -13,78 +13,13 @@ import {
   encodeSseEvent,
 } from '@/components/chat/stream-events';
 import { getAuthUser } from '@/lib/auth';
+import { extractFiles, fetchUrls, extractUrlsFromText } from '@/lib/attachments/extract';
 
-const MAX_CONTEXT_CHARS = 20_000;
+const MAX_CONTEXT_CHARS    = 20_000;
 const MAX_ATTACHMENT_CHARS = 30_000;
-const MAX_LINK_RESPONSE_BYTES = 50_000;
-const LINK_FETCH_TIMEOUT_MS = 5_000;
-const MAX_LINKS = 5;
-
-interface InlineAttachment {
-  name: string;
-  text: string;
-}
-
-interface DraftRequestBody {
-  userContext: string;
-  inlineAttachments?: InlineAttachment[];
-  links?: string[];
-  history?: ReadonlyArray<{ role: 'user' | 'assistant'; content: string }>;
-}
 
 function toDraftErrorMessage(): string {
   return 'Thunder could not generate a draft right now. Please try again later.';
-}
-
-/**
- * Guard against SSRF: rejects localhost, loopback, link-local, and RFC-1918 addresses.
- * Returns true if the URL should be blocked.
- */
-function isPrivateUrl(urlStr: string): boolean {
-  try {
-    const url = new URL(urlStr);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return true;
-    const host = url.hostname.toLowerCase();
-    if (host === 'localhost' || host === '::1' || host === '[::1]') return true;
-    const parts = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
-    if (parts) {
-      const [a, b] = [Number(parts[1]), Number(parts[2])];
-      if (a === 10) return true;
-      if (a === 127) return true;
-      if (a === 169 && b === 254) return true;
-      if (a === 172 && b >= 16 && b <= 31) return true;
-      if (a === 192 && b === 168) return true;
-      if (a === 0) return true;
-    }
-    return false;
-  } catch {
-    return true;
-  }
-}
-
-async function fetchLinkText(url: string): Promise<string> {
-  const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), LINK_FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      headers: { 'User-Agent': 'Thunder-Grant-Drafter/1.0' },
-    });
-    if (!res.ok) return '';
-    const raw = await res.arrayBuffer();
-    const text = new TextDecoder('utf-8', { fatal: false }).decode(
-      raw.slice(0, MAX_LINK_RESPONSE_BYTES),
-    );
-    // Strip HTML tags for HTML pages
-    if (res.headers.get('content-type')?.includes('text/html')) {
-      return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-    return text;
-  } catch {
-    return '';
-  } finally {
-    clearTimeout(timeout);
-  }
 }
 
 export async function POST(
@@ -103,8 +38,18 @@ export async function POST(
 
   const scheme = document;
 
-  const body = (await request.json()) as DraftRequestBody;
-  const { userContext, inlineAttachments = [], links = [], history = [] } = body;
+  const formData = await request.formData();
+  const userContextRaw = formData.get('userContext');
+  const fileEntries = formData.getAll('files');
+  const urlEntries = formData.getAll('urls');
+  const historyRaw = formData.get('history');
+
+  const userContext = typeof userContextRaw === 'string' ? userContextRaw : '';
+  const files = fileEntries.filter((e): e is File => e instanceof File);
+  const urls = urlEntries.filter((e): e is string => typeof e === 'string');
+  const history = historyRaw
+    ? (JSON.parse(historyRaw as string) as ReadonlyArray<{ role: 'user' | 'assistant'; content: string }>)
+    : [];
 
   if (!userContext || typeof userContext !== 'string' || userContext.trim().length === 0) {
     return NextResponse.json({ error: 'userContext is required' }, { status: 400 });
@@ -112,31 +57,27 @@ export async function POST(
 
   const safeContext = userContext.slice(0, MAX_CONTEXT_CHARS);
 
-  // Build attachment context block from inline file texts and fetched links.
+  const inlineUrls = extractUrlsFromText(safeContext);
+  const allUrls = [...new Set([...inlineUrls, ...urls])];
+
+  const { results: extractedFiles } = await extractFiles(files);
+  const { results: fetchedUrls } = await fetchUrls(allUrls);
+
   const contextParts: string[] = [];
-
-  if (inlineAttachments.length > 0) {
-    let raw = inlineAttachments
-      .filter((a) => a.text)
-      .map((a) => `--- ${a.name} ---\n${a.text}`)
-      .join('\n\n');
-    if (raw.length > MAX_ATTACHMENT_CHARS) {
-      raw = raw.slice(0, MAX_ATTACHMENT_CHARS) + '\n[Attachment content truncated]';
-    }
-    if (raw) contextParts.push(raw);
+  for (const ef of extractedFiles) {
+    if (ef.text) contextParts.push(`--- ${ef.name} ---\n${ef.text}`);
+  }
+  for (const fu of fetchedUrls) {
+    if (fu.text) contextParts.push(`--- Link: ${fu.url} ---\n${fu.text}`);
   }
 
-  if (links.length > 0) {
-    const validLinks = links.slice(0, MAX_LINKS).filter((url) => !isPrivateUrl(url));
-    for (const url of validLinks) {
-      const text = await fetchLinkText(url);
-      if (text) contextParts.push(`--- Link: ${url} ---\n${text}`);
-    }
+  let attachmentRaw = contextParts.join('\n\n');
+  if (attachmentRaw.length > MAX_ATTACHMENT_CHARS) {
+    attachmentRaw = attachmentRaw.slice(0, MAX_ATTACHMENT_CHARS) + '\n[Attachment content truncated]';
   }
 
-  const attachmentContext = contextParts.join('\n\n');
-  const userContent = attachmentContext
-    ? `${safeContext}\n\n<attachments>\n${attachmentContext}\n</attachments>`
+  const userContent = attachmentRaw
+    ? `${safeContext}\n\n<attachments>\n${attachmentRaw}\n</attachments>`
     : safeContext;
 
   const systemPrompt = buildDrafterSystemPrompt(scheme, scheme.corpus);
