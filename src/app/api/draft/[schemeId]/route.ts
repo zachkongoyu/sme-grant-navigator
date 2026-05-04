@@ -12,7 +12,7 @@ import {
   createTokenEvent,
   encodeSseEvent,
 } from '@/components/chat/stream-events';
-import { log } from 'node:console';
+import { getAuthUser } from '@/lib/auth';
 
 const MAX_CONTEXT_CHARS = 20_000;
 const MAX_ATTACHMENT_CHARS = 30_000;
@@ -32,7 +32,7 @@ interface DraftRequestBody {
   history?: ReadonlyArray<{ role: 'user' | 'assistant'; content: string }>;
 }
 
-function toDraftErrorMessage(error: unknown): string {
+function toDraftErrorMessage(): string {
   return 'Thunder could not generate a draft right now. Please try again later.';
 }
 
@@ -91,6 +91,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ schemeId: string }> },
 ) {
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { schemeId } = await params;
 
   const document = await getSchemeContext(schemeId);
@@ -144,8 +149,8 @@ export async function POST(
 
   try {
     validateLlmConfiguration();
-  } catch (error) {
-    return NextResponse.json({ error: toDraftErrorMessage(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: toDraftErrorMessage() }, { status: 500 });
   }
 
   const stream = new ReadableStream({
@@ -165,7 +170,7 @@ export async function POST(
         }
 
           console.error('Draft stream error:', err);
-          controller.error(new Error(toDraftErrorMessage(err)));
+          controller.error(new Error(toDraftErrorMessage()));
           return;
       } finally {
           if (shouldClose) {

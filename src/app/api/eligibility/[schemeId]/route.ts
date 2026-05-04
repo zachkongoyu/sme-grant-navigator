@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 
+import { getAuthUser } from '@/lib/auth';
 import { validateLlmConfiguration } from '@/lib/llm';
 import { getSchemeContext } from '@/lib/schemes';
 import { runEligibilityCheck } from '@/lib/eligibility/pipeline';
@@ -16,6 +17,14 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ schemeId: string }> },
 ) {
+  const user = await getAuthUser();
+  if (!user) {
+    return new Response(
+      JSON.stringify({ type: 'error', message: 'Unauthorized' }) + '\n',
+      { status: 401, headers: { 'Content-Type': 'application/x-ndjson' } },
+    );
+  }
+
   const { schemeId } = await params;
 
   const document = await getSchemeContext(schemeId);

@@ -97,6 +97,11 @@ function selectArtifacts(
 export async function POST(request: NextRequest) {
   if (!CHAT_ENABLED) return NextResponse.json(null, { status: 404 });
 
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const body = (await request.json()) as {
     sessionId: string;
     message: { text: string; links: string[]; attachmentIds: string[] };
@@ -112,7 +117,6 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const user = await getAuthUser();
 
   const schemes = await listSchemes();
 
