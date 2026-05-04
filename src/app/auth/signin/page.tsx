@@ -10,12 +10,7 @@ function getAuthCallbackUrl() {
     return new URL('/auth/callback', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000');
   }
 
-  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  const baseUrl = configuredOrigin && configuredOrigin.length > 0
-    ? configuredOrigin
-    : window.location.origin;
-
-  return new URL('/auth/callback', baseUrl);
+  return new URL('/auth/callback', window.location.origin);
 }
 
 function getNext() {
