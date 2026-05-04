@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'sme-grant-navigator.theme';
+const STORAGE_KEY = 'thunder.theme';
 
 function getSystemTheme(): Theme {
   if (typeof window === 'undefined') {

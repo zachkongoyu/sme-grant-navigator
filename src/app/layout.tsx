@@ -40,7 +40,7 @@ export default function RootLayout({
       <head>
         <Script id="theme-init" strategy="beforeInteractive">{`(() => {
   try {
-    const key = 'sme-grant-navigator.theme';
+    const key = 'thunder.theme';
     const saved = localStorage.getItem(key);
     const isValid = saved === 'light' || saved === 'dark';
     const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

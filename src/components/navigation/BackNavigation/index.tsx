@@ -1,21 +1,6 @@
-'use client';
-
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-import { Button } from '@/components/ui/button';
 
 export function BackNavigation({ fallbackHref }: { readonly fallbackHref: string }) {
-  const router = useRouter();
-
-  function handleClick() {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push(fallbackHref);
-    }
-  }
-
   const sharedControlClassName =
     'inline-flex h-9 items-center justify-center rounded-full text-text-secondary transition duration-200 hover:-translate-y-px hover:text-text-primary';
 
@@ -28,18 +13,15 @@ export function BackNavigation({ fallbackHref }: { readonly fallbackHref: string
         boxShadow: 'inset 0 1px 0 color-mix(in srgb, white 12%, transparent)',
       }}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={handleClick}
-        className={`${sharedControlClassName} min-w-24 cursor-pointer gap-2.5 px-3.5 font-mono text-[10px] uppercase tracking-[0.24em]`}
+      <Link
+        href={fallbackHref}
+        className={`${sharedControlClassName} min-w-24 gap-2.5 px-3.5 font-mono text-[10px] uppercase tracking-[0.24em]`}
       >
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
           <path d="M10 13L5 8l5-5" />
         </svg>
         Back
-      </Button>
+      </Link>
       <span
         className="h-5 w-px shrink-0"
         aria-hidden="true"
