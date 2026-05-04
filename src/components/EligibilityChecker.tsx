@@ -553,7 +553,7 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
       )}
 
       <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6">
-        {scheme.draftable && result.verdict !== 'ineligible' && (
+        {result.verdict !== 'ineligible' && (
           <Link href={`/draft?scheme=${scheme.id}`} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /></svg>
             Draft application

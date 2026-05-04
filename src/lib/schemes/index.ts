@@ -39,7 +39,6 @@ function rowToScheme(row: SchemeRow): Scheme {
     currency: row.currency,
     durationMonths: row.duration_months,
     links: row.source_url ? [{ label: 'Official programme page', url: row.source_url }] : [],
-    draftable: status === 'open' && Boolean(row.corpus?.trim()),
     databaseId: row.id,
     corpus: row.corpus,
     sourceUrl: row.source_url,

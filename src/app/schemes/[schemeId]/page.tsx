@@ -8,7 +8,6 @@ import remarkGfm from 'remark-gfm';
 import { CopySchemeContext } from '@/components/CopySchemeContext';
 import { SchemeDetailActions } from '@/components/SchemeDetailActions';
 import { SchemesSidebar } from '@/components/SchemesSidebar';
-import { StatusChip } from '@/components/StatusChip';
 import {
   listSchemes,
   getSchemeContext,
@@ -82,38 +81,24 @@ export default async function SchemeDetailPage({ params }: SchemeDetailPageProps
 
           {/* ── Draft + Eligibility CTAs ── */}
           <div className="py-8 border-b border-border space-y-6">
-            {scheme.draftable ? (
-              <div className="flex items-start justify-between gap-6">
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">Generate a draft application</p>
-                  <p className="mt-1 text-xs leading-5 text-text-secondary max-w-sm">
-                    Describe your company. Thunder writes the draft and marks gaps with <code className="rounded bg-surface px-1 py-0.5 font-mono text-[10px]">[TODO]</code>.
-                  </p>
-                </div>
-                <Link
-                  href={`/draft?scheme=${schemeId}`}
-                  className="shrink-0 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90"
-                  style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true">
-                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                  </svg>
-                  Draft application
-                </Link>
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <p className="text-sm font-semibold text-text-primary">Generate a draft application</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary max-w-sm">
+                  Describe your company. Thunder writes the draft and marks gaps with <code className="rounded bg-surface px-1 py-0.5 font-mono text-[10px]">[TODO]</code>.
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-text-primary">AI drafter — soon</p>
-                  <p className="mt-1 text-xs text-text-secondary">
-                    <a href="mailto:hello@thunderhk.ai?subject=Notify+me" className="underline underline-offset-4" style={{ color: 'var(--accent)' }}>
-                      Notify me when it launches →
-                    </a>
-                  </p>
-                </div>
-                <StatusChip variant="soon" />
-              </div>
-            )}
+              <Link
+                href={`/draft?scheme=${schemeId}`}
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true">
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                </svg>
+                Draft application
+              </Link>
+            </div>
 
             {/* Eligibility check CTA */}
             <div className="flex items-start justify-between gap-6">

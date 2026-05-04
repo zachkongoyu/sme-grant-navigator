@@ -28,7 +28,6 @@ export interface Scheme {
   readonly currency: string | null;
   readonly durationMonths: number | null;
   readonly links: ReadonlyArray<SchemeLink>;
-  readonly draftable: boolean;
   readonly databaseId: string | null;
   readonly corpus: string | null;
   readonly sourceUrl: string | null;

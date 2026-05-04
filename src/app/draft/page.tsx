@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation';
 import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
@@ -18,12 +16,10 @@ interface DraftPageProps {
 
 export default async function DraftPage({ searchParams }: DraftPageProps) {
   const schemes = await listSchemes();
-  const draftableSchemes = schemes.filter((scheme) => scheme.draftable);
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;
   const selectedScheme =
     schemes.find((scheme) => scheme.id === requestedSchemeId)
-    ?? draftableSchemes[0]
     ?? schemes[0];
 
   if (!selectedScheme) {
@@ -34,9 +30,9 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
             <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-text-tertiary">AI Drafter</p>
             <StatusChip variant="beta" compact />
           </div>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">No draftable schemes yet</h1>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight">No schemes yet</h1>
           <p className="mt-3 text-sm leading-6 text-text-secondary">
-            Thunder does not have a live drafter for any fund yet.
+            Thunder does not have any schemes loaded yet.
           </p>
         </div>
       </main>
@@ -52,47 +48,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
 
   return (
     <main className="min-h-screen bg-background text-text-primary">
-      {selectedScheme.draftable ? (
-        <Drafter scheme={selectedScheme} backHref="/schemes/easy-bud" headerControls={combobox} />
-      ) : (
-        <div className="relative px-4 py-16 sm:px-6">
-          <div className="absolute top-6 left-6">
-            <BackNavigation fallbackHref="/schemes/easy-bud" />
-          </div>
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-8 flex justify-center">
-              {combobox}
-            </div>
-
-            <div className="rounded-2xl border border-border bg-surface p-6 text-center sm:p-8">
-              <div className="flex items-center justify-center gap-2">
-                <StatusChip variant="beta" compact />
-                <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-warning">
-                  Coming soon
-                </span>
-                </div>
-              </div>
-
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                {selectedScheme.name}
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-text-secondary">
-                This scheme is in Thunder already, but the AI drafter for it is not live yet.
-              </p>
-
-              <div className="mt-6 flex justify-center">
-                <Link
-                  href={`/schemes/${selectedScheme.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
-                >
-                  View scheme details
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Drafter scheme={selectedScheme} backHref="/schemes/easy-bud" headerControls={combobox} />
     </main>
   );
 }
