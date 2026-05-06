@@ -63,8 +63,7 @@ function buildShortlistPayload(
     .map((s) => ({
       id: s.id,
       name: s.name,
-      shortDescription: s.shortDescription,
-      fundingCap: s.fundingCap,
+      maxFunding: s.maxFunding,
       currency: s.currency,
     }));
 }

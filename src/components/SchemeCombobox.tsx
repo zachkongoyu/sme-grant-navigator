@@ -9,7 +9,6 @@ import { PageLoadingIndicator } from '@/components/PageLoadingIndicator';
 interface SchemeOption {
   id: string;
   name: string;
-  category: string;
 }
 
 interface SchemeComboboxProps {
@@ -35,8 +34,7 @@ export function SchemeCombobox({ schemes, selectedId, basePath = '/draft', label
 
   const filtered = query.trim()
     ? schemes.filter((s) =>
-        s.name.toLowerCase().includes(query.toLowerCase()) ||
-        s.category.toLowerCase().includes(query.toLowerCase()),
+        s.name.toLowerCase().includes(query.toLowerCase()),
       )
     : schemes;
 
@@ -180,9 +178,6 @@ export function SchemeCombobox({ schemes, selectedId, basePath = '/draft', label
                   <div className="min-w-0">
                     <p className={`truncate text-sm font-medium ${isCurrent ? 'text-accent' : 'text-text-primary'}`}>
                       {scheme.name}
-                    </p>
-                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
-                      {scheme.category}
                     </p>
                   </div>
                 </li>

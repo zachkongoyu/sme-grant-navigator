@@ -5,8 +5,8 @@ export function buildDrafterSystemPrompt(
   scheme: Scheme,
   corpus: string | null,
 ): string {
-  const capLine = scheme.fundingCap
-    ? `Maximum funding: HK$${scheme.fundingCap.toLocaleString()} ${scheme.currency ?? 'HKD'}`
+  const capLine = scheme.maxFunding
+    ? `Maximum funding: HK$${scheme.maxFunding.toLocaleString()} ${scheme.currency ?? 'HKD'}`
     : 'Maximum funding: varies — see official portal';
 
   const corpusSection = corpus
@@ -18,7 +18,7 @@ ${corpusSection}
 ## Scheme context
 
 **Scheme:** ${scheme.name}
-**Category:** ${scheme.category}
+**Jurisdiction:** ${scheme.jurisdiction}
 ${capLine}
 ${scheme.administrator ? `**Administered by:** ${scheme.administrator}` : ''}
 

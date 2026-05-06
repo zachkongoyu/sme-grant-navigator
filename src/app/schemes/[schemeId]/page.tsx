@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: SchemeDetailPageProps): Promi
   if (!document) return { title: 'Scheme Not Found | Thunder' };
   return {
     title: `${document.name} | Thunder`,
-    description: document.shortDescription,
+    description: document.name,
   };
 }
 
@@ -56,20 +56,19 @@ export default async function SchemeDetailPage({ params }: SchemeDetailPageProps
 
           {/* ── Hero ── */}
           <div className="border-b border-border pb-8">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.category}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">{scheme.jurisdiction} · {scheme.administrator ?? '—'}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] leading-tight">{scheme.name}</h1>
-            <p className="mt-4 text-base leading-7 text-text-secondary max-w-xl">{scheme.shortDescription}</p>
 
             {/* ── Key stats inline ── */}
             <div className="mt-6 flex flex-wrap gap-6">
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Max funding</p>
-                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{formatFundingAmount(scheme.fundingCap, scheme.currency)}</p>
+                <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{formatFundingAmount(scheme.maxFunding, scheme.currency)}</p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Duration</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">Next deadline</p>
                 <p className="mt-1 font-mono text-xl font-semibold text-text-primary">
-                  {scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} mo`}
+                  {scheme.nextDeadline ? new Date(scheme.nextDeadline).toLocaleDateString('en-HK') : 'Rolling'}
                 </p>
               </div>
               <div>

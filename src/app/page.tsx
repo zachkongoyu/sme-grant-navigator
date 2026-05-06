@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { StatusChip } from '@/components/StatusChip';
+import { FEATURED_SCHEME_ID } from '@/config/site';
 import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const schemes = await listSchemes();
-  const featuredScheme = schemes.find((s) => s.id === 'easy-bud');
+  const featuredScheme = schemes.find((s) => s.id === FEATURED_SCHEME_ID);
 
   return (
     <main className="relative overflow-hidden">
@@ -35,7 +36,7 @@ export default async function HomePage() {
                   </span>
                   <StatusChip variant="live" compact />
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
-                    {featuredScheme.category}
+                    {featuredScheme.jurisdiction}
                   </span>
                 </div>
 
@@ -44,15 +45,12 @@ export default async function HomePage() {
                     <h2 className="text-xl font-semibold tracking-tight text-text-primary">
                       {featuredScheme.name}
                     </h2>
-                    <p className="mt-1.5 text-sm leading-6 text-text-secondary">
-                      {featuredScheme.shortDescription}
-                    </p>
                   </div>
-                  {featuredScheme.fundingCap && (
+                  {featuredScheme.maxFunding && (
                     <div className="min-w-25 shrink-0 rounded-xl border border-border bg-background px-4 py-3 text-center">
                       <p className="font-mono text-[9px] uppercase tracking-widest text-text-tertiary">Max grant</p>
                       <p className="mt-0.5 text-xl font-semibold tracking-tight text-text-primary">
-                        HK${(featuredScheme.fundingCap / 1000).toFixed(0)}K
+                        HK${(featuredScheme.maxFunding / 1000).toFixed(0)}K
                       </p>
                       <p className="font-mono text-[9px] text-text-tertiary">50% match</p>
                     </div>
@@ -100,7 +98,7 @@ export default async function HomePage() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-[0.14em]">
               <Link
-                href="/schemes/easy-bud"
+                href={`/schemes/${FEATURED_SCHEME_ID}`}
                 className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] text-accent transition hover:opacity-80"
                 style={{
                   border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',

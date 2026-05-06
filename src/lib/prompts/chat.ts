@@ -5,8 +5,7 @@ export function buildSystemPrompt(schemes: ReadonlyArray<Scheme>): string {
   const schemeCatalog = schemes
     .map(
       (s) =>
-        `- **${s.name}** (id: \`${s.id}\`, status: ${s.status}, category: ${s.category}${s.fundingCap ? `, up to ${s.fundingCap.toLocaleString()} ${s.currency ?? ''}` : ''})
-  ${s.shortDescription}
+        `- **${s.name}** (id: \`${s.id}\`, status: ${s.status}, jurisdiction: ${s.jurisdiction}${s.maxFunding ? `, up to ${s.maxFunding.toLocaleString()} ${s.currency ?? ''}` : ''})
   Administrator: ${s.administrator ?? 'not specified'}
   Source URL: ${s.sourceUrl ?? 'not listed'}`,
     )

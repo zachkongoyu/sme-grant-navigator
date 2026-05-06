@@ -57,13 +57,13 @@ export function buildEligibilityUserMessage(
   corpus: string | null,
   userContext: string,
 ): string {
-  const capLine = scheme.fundingCap
-    ? `Maximum funding: HK$${scheme.fundingCap.toLocaleString()} ${scheme.currency ?? 'HKD'}`
+  const capLine = scheme.maxFunding
+    ? `Maximum funding: HK$${scheme.maxFunding.toLocaleString()} ${scheme.currency ?? 'HKD'}`
     : 'Maximum funding: varies — see official portal';
 
   const schemeMeta = [
     `**Scheme:** ${scheme.name}`,
-    `**Category:** ${scheme.category}`,
+    `**Jurisdiction:** ${scheme.jurisdiction}`,
     capLine,
     scheme.administrator ? `**Administered by:** ${scheme.administrator}` : null,
   ]

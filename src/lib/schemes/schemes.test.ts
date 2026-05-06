@@ -7,32 +7,29 @@ describe('schemesFromRows', () => {
   it('maps database rows to resolved schemes', () => {
     const rows: ReadonlyArray<SchemeRow> = [
       {
-        id: 'db-easy-bud',
-        slug: null,
+        id: 'hk.bud-easy',
         name: 'Innovation Grant',
         administrator: 'Innovation Agency',
-        category: 'Export',
+        jurisdiction: 'HK',
         status: 'closed',
-        funding_cap: 123456,
+        max_funding: 123456,
         currency: 'USD',
-        duration_months: 18,
-        short_description: 'Live description from Supabase.',
+        next_deadline: null,
         corpus: 'Live guidance',
+        version: 1,
+        last_updated: '2026-04-24T00:00:00.000Z',
         source_url: 'https://example.com/easy-bud',
-        updated_at: '2026-04-24T00:00:00.000Z',
       },
     ];
 
     const [scheme] = schemesFromRows(rows);
 
     expect(scheme).toBeDefined();
-    expect(scheme?.id).toBe('db-easy-bud');
+    expect(scheme?.id).toBe('hk.bud-easy');
     expect(scheme?.name).toBe('Innovation Grant');
-    expect(scheme?.shortDescription).toBe('Live description from Supabase.');
-    expect(scheme?.category).toBe('Export');
     expect(scheme?.status).toBe('closed');
-    expect(scheme?.fundingCap).toBe(123456);
-    expect(scheme?.durationMonths).toBe(18);
+    expect(scheme?.maxFunding).toBe(123456);
+    expect(scheme?.jurisdiction).toBe('HK');
     expect(scheme?.corpus).toBe('Live guidance');
     expect(scheme?.links).toEqual([
       {

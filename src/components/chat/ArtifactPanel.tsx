@@ -66,10 +66,9 @@ function ShortlistContent({ items }: { items: ShortlistItem[] }) {
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium text-text-primary">{item.name}</p>
             <span className="shrink-0 font-mono text-xs text-text-tertiary">
-              {formatFundingAmount(item.fundingCap, item.currency)}
+              {formatFundingAmount(item.maxFunding, item.currency)}
             </span>
           </div>
-          <p className="mt-1 text-sm leading-5 text-text-secondary">{item.shortDescription}</p>
           <Link
             href={`/schemes/${item.id}`}
             className="mt-2 inline-flex font-mono text-xs text-text-tertiary hover:text-accent transition-colors underline underline-offset-4"

@@ -365,7 +365,7 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
     void check(files, urls);
   }
 
-  const capDisplay = scheme.fundingCap ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K` : 'Varies';
+  const capDisplay = scheme.maxFunding ? `HK$${(scheme.maxFunding / 1000).toFixed(0)}K` : 'Varies';
 
   const pageShell = (children: ReactNode) => (
     <div className="relative min-h-screen bg-background">
@@ -377,7 +377,7 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
             <StatusChip variant="beta" compact />
             <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">{scheme.category} · Up to {capDisplay}</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">{scheme.jurisdiction} · Up to {capDisplay}</span>
             </div>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{scheme.name}</h1>

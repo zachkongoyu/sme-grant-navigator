@@ -11,27 +11,26 @@ interface CopySchemeContextProps {
 
 function buildContext(scheme: Scheme, corpus: string | null): string {
   const cap =
-    scheme.fundingCap === null
+    scheme.maxFunding === null
       ? 'Varies'
       : new Intl.NumberFormat('en-HK', {
           style: 'currency',
           currency: scheme.currency ?? 'HKD',
           maximumFractionDigits: 0,
-        }).format(scheme.fundingCap);
+        }).format(scheme.maxFunding);
 
-  const duration =
-    scheme.durationMonths === null ? 'Varies' : `${scheme.durationMonths} months`;
+  const deadline = scheme.nextDeadline
+    ? new Date(scheme.nextDeadline).toLocaleDateString('en-HK')
+    : 'Rolling';
 
   const lines: string[] = [
     `## Grant Scheme: ${scheme.name}`,
     '',
     `**Status:** ${scheme.status.replace('-', ' ')}`,
-    `**Category:** ${scheme.category}`,
+    `**Administrator:** ${scheme.administrator ?? '—'}`,
+    `**Jurisdiction:** ${scheme.jurisdiction}`,
     `**Max Funding:** ${cap}`,
-    `**Duration:** ${duration}`,
-    '',
-    `### Description`,
-    scheme.shortDescription,
+    `**Next Deadline:** ${deadline}`,
   ];
 
   if (corpus) {
@@ -55,9 +54,9 @@ export function CopySchemeContext({ scheme, corpus }: CopySchemeContextProps) {
     setTimeout(() => setCopied(false), 2500);
   }
 
-  const capDisplay = scheme.fundingCap === null
+  const capDisplay = scheme.maxFunding === null
     ? 'Varies'
-    : `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`;
+    : `HK$${(scheme.maxFunding / 1000).toFixed(0)}K`;
   const preview = `## Grant Scheme: ${scheme.name}\n**Status:** ${scheme.status.replace('-', ' ')} · **Max Funding:** ${capDisplay}\n...`;
 
   return (

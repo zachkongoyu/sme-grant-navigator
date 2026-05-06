@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
 
+import { FEATURED_SCHEME_ID } from '@/config/site';
+
 export const size = {
   width: 1200,
   height: 630,
@@ -144,7 +146,7 @@ export default function OpenGraphImage() {
                     fontSize: 22,
                   }}
                 >
-                  /schemes/easy-bud
+                  /schemes/{FEATURED_SCHEME_ID}
                 </div>
               </div>
             </div>

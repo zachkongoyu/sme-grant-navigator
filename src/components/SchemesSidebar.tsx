@@ -4,7 +4,8 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { BackNavigation } from '@/components/navigation';
-import { filterSchemes, groupSchemesByCategory } from '@/lib/schemes/filter';
+import { FEATURED_SCHEME_ID } from '@/config/site';
+import { filterSchemes, groupSchemesByJurisdiction } from '@/lib/schemes/filter';
 import type { Scheme } from '@/types';
 
 interface SchemesSidebarProps {
@@ -28,7 +29,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
   const deferred = useDeferredValue(search);
 
   const filtered = useMemo(() => filterSchemes(schemes, deferred), [schemes, deferred]);
-  const grouped = useMemo(() => groupSchemesByCategory(filtered), [filtered]);
+  const grouped = useMemo(() => groupSchemesByJurisdiction(filtered), [filtered]);
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -40,7 +41,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
       >
         {/* Top: back nav */}
         <div className="flex items-center justify-between px-4 py-4">
-          <BackNavigation fallbackHref="/schemes/easy-bud" />
+          <BackNavigation fallbackHref={`/schemes/${FEATURED_SCHEME_ID}`} />
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -67,7 +68,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
           </label>
         </div>
 
-        {/* Scheme list grouped by category */}
+        {/* Scheme list grouped by jurisdiction */}
         <nav className="flex-1 overflow-y-auto pb-4">
           {grouped.map(([category, items]) => (
             <div key={category} className="mb-1">

@@ -4,6 +4,7 @@ import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
 import { CreditInfoBar } from '@/components/CreditInfoBar';
+import { FEATURED_SCHEME_ID } from '@/config/site';
 import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
 
   const combobox = (
     <SchemeCombobox
-      schemes={schemes.map((s) => ({ id: s.id, name: s.name, category: s.category }))}
+      schemes={schemes.map((s) => ({ id: s.id, name: s.name }))}
       selectedId={selectedScheme.id}
     />
   );
@@ -51,7 +52,7 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
     <main className="min-h-screen bg-background text-text-primary">
       <Drafter
         scheme={selectedScheme}
-        backHref="/schemes/easy-bud"
+        backHref={`/schemes/${FEATURED_SCHEME_ID}`}
         headerControls={
           <div className="flex flex-col items-center gap-3 w-full">
             {combobox}

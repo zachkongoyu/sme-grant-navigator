@@ -1,36 +1,27 @@
-import type { Scheme, SchemeCategory } from '@/types';
-
-export type SchemeFilter = 'All' | SchemeCategory;
+import type { Scheme } from '@/types';
 
 export function filterSchemes(
   schemes: ReadonlyArray<Scheme>,
   query: string,
-  selectedCategory: SchemeFilter = 'All',
 ): ReadonlyArray<Scheme> {
   const normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery.length === 0) return schemes;
 
-  return schemes.filter((scheme) => {
-    const matchesCategory =
-      selectedCategory === 'All' || scheme.category === selectedCategory;
-    const matchesQuery =
-      normalizedQuery.length === 0 ||
-      scheme.name.toLowerCase().includes(normalizedQuery) ||
-      scheme.shortDescription.toLowerCase().includes(normalizedQuery) ||
-      scheme.category.toLowerCase().includes(normalizedQuery);
-
-    return matchesCategory && matchesQuery;
-  });
+  return schemes.filter((scheme) =>
+    scheme.name.toLowerCase().includes(normalizedQuery) ||
+    (scheme.administrator ?? '').toLowerCase().includes(normalizedQuery),
+  );
 }
 
-export function groupSchemesByCategory(
+export function groupSchemesByJurisdiction(
   schemes: ReadonlyArray<Scheme>,
-): ReadonlyArray<readonly [SchemeCategory, ReadonlyArray<Scheme>]> {
-  const grouped = new Map<SchemeCategory, Scheme[]>();
+): ReadonlyArray<readonly [string, ReadonlyArray<Scheme>]> {
+  const grouped = new Map<string, Scheme[]>();
 
   for (const scheme of schemes) {
-    const items = grouped.get(scheme.category) ?? [];
+    const items = grouped.get(scheme.jurisdiction) ?? [];
     items.push(scheme);
-    grouped.set(scheme.category, items);
+    grouped.set(scheme.jurisdiction, items);
   }
 
   return Array.from(grouped.entries()).sort(([left], [right]) => left.localeCompare(right));

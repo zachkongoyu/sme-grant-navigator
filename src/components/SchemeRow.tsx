@@ -44,7 +44,7 @@ export function SchemeRow({ index, scheme }: SchemeRowProps) {
         </div>
       </div>
       <div className="hidden px-3 py-4 font-mono text-sm text-text-primary md:block">
-        {formatFundingAmount(scheme.fundingCap, scheme.currency)}
+        {formatFundingAmount(scheme.maxFunding, scheme.currency)}
       </div>
     </Link>
   );

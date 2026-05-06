@@ -238,8 +238,8 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
     }
   }, [pdfEmail, draft, scheme.id]);
 
-  const capDisplay = scheme.fundingCap
-    ? `HK$${(scheme.fundingCap / 1000).toFixed(0)}K`
+  const capDisplay = scheme.maxFunding
+    ? `HK$${(scheme.maxFunding / 1000).toFixed(0)}K`
     : 'Varies';
 
   // ── Compose / error ──────────────────────────────────────────────────────
@@ -267,7 +267,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
             <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-secondary">
-              {scheme.category} · Up to {capDisplay}
+              {scheme.jurisdiction} · Up to {capDisplay}
             </span>
             </div>
           </div>
@@ -488,7 +488,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="mb-1 flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary">{scheme.category}</span>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-text-tertiary">{scheme.jurisdiction}</span>
           </div>
           <p className="text-sm font-semibold leading-snug text-text-primary">{scheme.name}</p>
           <p className="mt-0.5 font-mono text-xs text-text-tertiary">Up to {capDisplay}</p>

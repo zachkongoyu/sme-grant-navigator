@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+import { FEATURED_SCHEME_ID } from '@/config/site';
 import { listSchemes } from '@/lib/schemes';
 
 const baseUrl = 'https://www.thunderhk.ai';
@@ -19,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/schemes/easy-bud`,
+      url: `${baseUrl}/schemes/${FEATURED_SCHEME_ID}`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -49,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}/schemes/${scheme.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
-    priority: scheme.id === 'easy-bud' ? 0.9 : 0.6,
+    priority: scheme.id === FEATURED_SCHEME_ID ? 0.9 : 0.6,
   }));
 
   return [...staticRoutes, ...schemeRoutes];

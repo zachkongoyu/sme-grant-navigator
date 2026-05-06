@@ -17,8 +17,16 @@ The availability state of a Scheme. Three states: `open` (accepting applications
 _Avoid_: `active` (removed — duplicate of `open`)
 
 **Corpus**:
-The flat markdown string containing all assembled knowledge about a Scheme — may include eligibility rules, guidelines, activity types, key facts, or any combination. Structure varies per Scheme intentionally; "Corpus" signals mixed assembly, not a fixed schema. Lives in the DB `corpus` column.
+All scheme knowledge fed to the LLM. Lives in the DB `corpus` column.
 _Avoid_: Guidelines, Rules, SchemeDocument, SchemeContent (all imply fixed structure)
+
+**SchemeId**:
+Canonical text slug. Convention: `{jurisdiction}.{slug}` e.g. `hk.bud-easy`, `hk.itf-ess`.
+_Avoid_: UUID
+
+**MaxFunding**:
+Maximum government funding per project. Stored as `max_funding` in DB. `null` = uncapped or not applicable.
+_Avoid_: funding_cap, award, funding ceiling
 
 **User**:
 The person who logs in and uses the platform. Owns one Company (for now).
