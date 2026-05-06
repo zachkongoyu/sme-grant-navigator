@@ -1,6 +1,6 @@
-# SME Grant Navigator
+# Thunder
 
-An AI-powered tool that helps SME owners assess eligibility and generate application drafts for government funding schemes.
+The goto platform for founders, SME owners, investors, and advisors in the HK startup ecosystem. Combines AI-powered tools (scheme navigation, eligibility, drafts) with a public people directory.
 
 ## Language
 
@@ -29,11 +29,23 @@ Maximum government funding per project. Stored as `max_funding` in DB. `null` = 
 _Avoid_: funding_cap, award, funding ceiling
 
 **User**:
-The person who logs in and uses the platform. Owns one Company (for now).
+The person who logs in and uses the platform. Has one Profile. Optionally associated with one or more Companies.
 _Avoid_: Applicant, Member, Account
 
+**UserRole**:
+Tag(s) describing how a User participates in the ecosystem. Multi-select. Values: `founder`, `sme_owner`, `investor`, `advisor`, `service_provider`.
+_Avoid_: UserType, AccountType (implies single-select or fixed schema per type)
+
+**LookingFor**:
+Tags on a Profile signalling what a User is open to. Used for directory discovery. Values TBD (e.g. `seeking-investment`, `seeking-cofounder`, `open-to-advising`).
+_Avoid_: Interests, Goals, OpenTo
+
+**Follow**:
+A one-way relationship where one User follows another. No mutual confirmation required. No messaging implied.
+_Avoid_: Connection, Friend, Link (all imply two-way)
+
 **Company**:
-The business entity being assessed or drafted for. Belongs to a User. Holds the company's profile information used across all Scheme interactions.
+A standalone business entity. Not owned by a single User — multiple Users can be associated with one Company. Used by grant tools (EligibilityCheck, Draft) as context, and surfaced on Profiles.
 _Avoid_: Applicant, Business, SME, Organisation, Firm
 
 **EligibilityCheck**:
@@ -54,7 +66,11 @@ _Avoid_: Placeholder, TODO, Action item
 
 ## Relationships
 
-- A **User** owns one **Company**
+- **User** has one **Profile** (billing + public identity, created on sign-in)
+- **User** can be associated with zero or more **Companies** (many-to-many)
+- **Company** can be associated with multiple **Users**
+- **User** can **Follow** other **Users** (one-way, no messaging)
+- **EligibilityCheck** and **Draft** take company context as free-form text (no hard Company FK for now)
 - A **Company** can run an **EligibilityCheck** against any **Scheme**
 - A **Company** can generate a **Draft** for any **Scheme**
 - An **EligibilityCheck** and a **Draft** are always scoped to one **Company** + one **Scheme**
@@ -72,13 +88,15 @@ A purchasable bundle of Credits. Three tiers: Starter (10 credits, HKD 58), Valu
 _Avoid_: Plan, Subscription, Bundle
 
 **Profile**:
-A row in `public.profiles` keyed on `auth.users.id`. Stores `credits_balance` and `free_checks_used` for a User. Created automatically on first sign-in via DB trigger.
-_Avoid_: Account, User record, Wallet
+A row in `public.profiles` keyed on `auth.users.id`. Single record per User covering both billing and public identity.
+Billing fields: `credits_balance`, `free_checks_used`. Created automatically on first sign-in via DB trigger.
+Identity fields: `display_name`, `avatar_url`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `looking_for[]`, `is_public`.
+_Avoid_: Account, User record, Wallet, PersonProfile
 
 ## Relationships
 
-- A **User** has one **Profile** (created on sign-in)
-- A **Profile** holds a **Credit** balance and a **FreeCheck** count
+- **User** has one **Profile** (created on sign-in)
+- **Profile** holds a **Credit** balance, a **FreeCheck** count, and all public identity fields
 - An **EligibilityCheck** costs 1 **Credit** (or 1 **FreeCheck** if allowance remains)
 - A **Draft** costs 3 **Credits** (no free allowance)
 - A **User** purchases **Credits** in **CreditPacks** via Stripe; payment credited via webhook
@@ -90,3 +108,5 @@ _Avoid_: Account, User record, Wallet
 - `guidance_md` DB column — resolved: column renamed to `corpus` (migration 008).
 - `active` SchemeStatus — resolved: removed from `SchemeStatus` type; DB values normalised to `open` (migration 008).
 - `incomplete` EligibilityVerdict — resolved: renamed to `insufficient_info`.
+- "Profile" overloaded — resolved: single **Profile** record covers both billing and public identity. No separate PersonProfile.
+- "User owns one Company" — resolved: many-to-many. Company is standalone, not owned by User.
