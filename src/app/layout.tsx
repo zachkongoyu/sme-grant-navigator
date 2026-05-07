@@ -38,8 +38,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <Script id="theme-init" strategy="beforeInteractive">{`(() => {
+      <head />
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} flex min-h-screen flex-col bg-background text-text-primary antialiased`}
+      >
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: `(() => {
   try {
     const key = 'thunder.theme';
     const saved = localStorage.getItem(key);
@@ -49,11 +55,8 @@ export default function RootLayout({
   } catch {
     document.documentElement.dataset.theme = 'dark';
   }
-})();`}</Script>
-      </head>
-      <body
-        className={`${GeistSans.variable} ${GeistMono.variable} flex min-h-screen flex-col bg-background text-text-primary antialiased`}
-      >
+})();` }}
+        />
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
@@ -73,6 +76,7 @@ export default function RootLayout({
             </p>
             <nav className="flex flex-wrap gap-5" aria-label="Footer">
               {[
+                { href: '/showcase', label: 'Showcase' },
                 { href: '/privacy', label: 'Privacy' },
                 { href: '/terms', label: 'Terms' },
                 { href: '/reimbursement', label: 'Reimbursement' },

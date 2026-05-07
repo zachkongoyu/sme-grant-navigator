@@ -37,8 +37,17 @@ Tag(s) describing how a User participates in the ecosystem. Multi-select. Values
 _Avoid_: UserType, AccountType (implies single-select or fixed schema per type)
 
 **LookingFor**:
-Tags on a Profile signalling what a User is open to. Used for directory discovery. Values TBD (e.g. `seeking-investment`, `seeking-cofounder`, `open-to-advising`).
+Tags on a Profile signalling what a User is open to. Used for directory discovery. Values: `seeking-investment` (actively fundraising), `seeking-cofounder` (looking for co-founder), `seeking-advisor` (looking for domain experts), `seeking-mentor` (looking for informal guidance), `open-to-advising` (will take advisory conversations), `open-to-fractional` (available as fractional exec), `deal-flow` (investor wants to see startups), `open-to-roles` (open to joining a startup).
 _Avoid_: Interests, Goals, OpenTo
+
+**Project**:
+A standalone product or venture listed on the Showcase wall. Has its own public page at `/showcase/[slug]`. Multiple Projects per User allowed. Status: `draft` (private, not yet published) or `published` (visible on wall). Not the same as Company — a Project is what someone is building; a Company is the legal/operational entity.
+Fields: `slug` (user-defined, unique), `name`, `tagline`, `description` (rich text — problem + features + how to use), `web_url`, `app_store_url`, `play_store_url`, `media_url` (YouTube/Loom demo), `thumbnail_url`, `stage` (idea/building/launched), `status` (draft/published), `platform[]` (web/ios/android/chrome-extension/desktop/api), `sector[]` (fintech/ai/healthtech/etc.), `seeking[]` (investment/beta-users/co-founder/engineers/advisors/partnerships), `traction` (free-form one-liner e.g. "1,000 beta users"), `contact_url` (any reach-out link — form, email, wa.me, Discord), `makers[]` (User references — creator + co-makers).
+_Avoid_: Product, Build, Startup (as entity name)
+
+**Showcase**:
+The public wall at `/showcase` displaying all published Projects. The feature name for the browsable product directory. Not an entity itself — it is the collection of published Projects.
+_Avoid_: Demo wall, Product Hunt (external brand)
 
 **Follow**:
 A one-way relationship where one User follows another. No mutual confirmation required. No messaging implied.
