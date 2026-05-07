@@ -22,10 +22,13 @@ export function ProfileCard({
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-border bg-surface"
+      className="relative overflow-hidden rounded-3xl border border-white/10"
       style={{
+        background: 'rgba(10, 10, 18, 0.45)',
+        backdropFilter: 'blur(24px) saturate(1.4)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
         boxShadow:
-          '0 0 0 1px rgba(255,255,255,0.06) inset, 0 32px 64px -12px rgba(0,0,0,0.7), 0 8px 24px -4px rgba(0,0,0,0.5)',
+          '0 0 0 1px rgba(255,255,255,0.07) inset, 0 32px 64px -12px rgba(0,0,0,0.6), 0 8px 24px -4px rgba(0,0,0,0.4)',
         transform: 'translateY(-2px)',
       }}
     >
