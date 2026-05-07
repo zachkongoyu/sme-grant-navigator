@@ -1,6 +1,6 @@
 # Thunder
 
-The goto platform for founders, SME owners, investors, and advisors in the HK startup ecosystem. Combines AI-powered tools (scheme navigation, eligibility, drafts) with a public people directory.
+The goto platform for founders, SME owners, investors, and advisors in the global startup ecosystem. Combines AI-powered tools (scheme navigation, eligibility, drafts) with a public people directory and project showcase. Starting from Hong Kong, expanding globally.
 
 ## Language
 
