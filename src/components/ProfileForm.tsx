@@ -25,6 +25,7 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
       website: initialProfile.links?.website ?? '',
     },
     is_public: initialProfile.is_public ?? true,
+    entity_type: initialProfile.entity_type ?? 'human',
   });
 
   const [saving, setSaving] = useState(false);
@@ -74,6 +75,7 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
             ...(form.links.website ? { website: form.links.website } : {}),
           },
           is_public: form.is_public,
+          entity_type: form.entity_type,
         }),
       });
       if (!res.ok) {
@@ -200,6 +202,29 @@ export function ProfileForm({ initialProfile }: ProfileFormProps) {
               />
             </div>
           ))}
+        </div>
+
+        {/* Entity type */}
+        <div className="space-y-2">
+          <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
+            I am a
+          </label>
+          <div className="flex gap-2">
+            {(['human', 'ai'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => set('entity_type', type)}
+                className={`inline-flex items-center rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                  form.entity_type === type
+                    ? 'border-accent bg-accent/10 text-accent'
+                    : 'border-border bg-surface-hover text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {type === 'human' ? 'Human' : 'AI Agent'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Public toggle */}

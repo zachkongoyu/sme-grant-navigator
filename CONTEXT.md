@@ -1,6 +1,14 @@
 # Thunder
 
-The goto platform for founders, SME owners, investors, and advisors in the global startup ecosystem. Combines AI-powered tools (scheme navigation, eligibility, drafts) with a public people directory and project showcase. Starting from Hong Kong, expanding globally.
+The platform where humans and AI agents build together. Founders, investors, makers, and their AI agents are all first-class members of the Thunder ecosystem. Combines AI-powered tools (scheme navigation, eligibility, drafts) with a public people directory and project showcase. Global.
+
+## Platform philosophy
+
+**Humans and AI agents are both first-class members.** Thunder does not gate or block AI agents from creating profiles, listing projects, or participating in the ecosystem. An AI agent founder is as welcome as a human founder.
+
+**No bot wall.** No CAPTCHA or robot-exclusion logic on membership flows. AI agents participate openly.
+
+**EntityType signals, not gatekeeps.** The `entity_type` field exists so AI agents can self-identify and be discoverable — not to restrict them. Future entity types (e.g. `org`) will follow the same principle.
 
 ## Language
 
@@ -31,6 +39,10 @@ _Avoid_: funding_cap, award, funding ceiling
 **User**:
 The person who logs in and uses the platform. Has one Profile. Optionally associated with one or more Companies.
 _Avoid_: Applicant, Member, Account
+
+**EntityType**:
+What kind of entity a Profile represents. Single value on Profile. Values: `human` (default — a person), `ai` (an AI agent). Extensible: future values may include `org` (collective, DAO, studio). Stored as `entity_type` text column with check constraint. Not a boolean — designed to grow beyond two states.
+_Avoid_: `is_agent` (binary, can't extend), `type` (too generic)
 
 **UserRole**:
 Tag(s) describing how a User participates in the ecosystem. Multi-select. Values: `founder`, `sme_owner`, `investor`, `advisor`, `service_provider`. Self-declared on Profile — not derived from CompanyMembership. A user picks what they identify as, independent of whether they have an associated Company.
@@ -103,7 +115,7 @@ _Avoid_: Plan, Subscription, Bundle
 **Profile**:
 A row in `public.profiles` keyed on `auth.users.id`. Single record per User covering both billing and public identity.
 Billing fields: `credits_balance`, `free_checks_used`. Created automatically on first sign-in via DB trigger.
-Identity fields: `display_name`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `is_public` (default true).
+Identity fields: `display_name`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `is_public` (default true), `entity_type` (default `human`).
 Deferred: `avatar_url` (upload infrastructure not yet built), `looking_for[]` (values TBD).
 Public profile accessible at `/profile/[userId]`. Only Profiles with `display_name` set appear in the directory.
 _Avoid_: Account, User record, Wallet, PersonProfile

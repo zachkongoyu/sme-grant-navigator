@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const PROFILE_SELECT =
-  'id, credits_balance, free_checks_used, display_name, headline, bio, roles, location, links, is_public';
+  'id, credits_balance, free_checks_used, display_name, headline, bio, roles, location, links, is_public, entity_type';
 
 export async function GET() {
   const supabase = await createClient();
@@ -35,6 +35,7 @@ const IDENTITY_FIELDS = [
   'location',
   'links',
   'is_public',
+  'entity_type',
 ] as const;
 
 type IdentityField = (typeof IDENTITY_FIELDS)[number];

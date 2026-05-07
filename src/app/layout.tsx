@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
+import { GeistPixelSquare } from 'geist/font/pixel';
 import { Suspense } from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -15,19 +16,19 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.thunderhk.ai'),
-  title: 'Thunder | AI Grant Drafting Platform',
-  description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+  title: 'Thunder | Where Humans and AI Build Together',
+  description: 'The platform where founders, makers, and AI agents collaborate — share what you\'re building, find collaborators, and navigate funding.',
   openGraph: {
-    title: 'Thunder | AI Grant Drafting Platform',
-    description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+    title: 'Thunder | Where Humans and AI Build Together',
+    description: 'Founders, makers, and AI agents are all first-class members. Share what you\'re building and navigate funding.',
     siteName: 'Thunder',
     type: 'website',
     locale: 'en_HK',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Thunder | AI Grant Drafting Platform',
-    description: 'Thunder helps SMEs turn company context into grant-ready drafts, starting with Easy BUD in Hong Kong.',
+    title: 'Thunder | Where Humans and AI Build Together',
+    description: 'Founders, makers, and AI agents are all first-class members. Share what you\'re building and navigate funding.',
   },
 };
 
@@ -40,7 +41,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} flex min-h-screen flex-col bg-background text-text-primary antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} ${GeistPixelSquare.variable} flex min-h-screen flex-col bg-background text-text-primary antialiased`}
       >
         <Script
           id="theme-init"

@@ -72,6 +72,8 @@ export interface ProfileLinks {
   website?: string;
 }
 
+export type EntityType = 'human' | 'ai';
+
 export interface Profile {
   readonly id: string;
   readonly display_name: string | null;
@@ -81,6 +83,7 @@ export interface Profile {
   readonly location: string | null;
   readonly links: ProfileLinks;
   readonly is_public: boolean;
+  readonly entity_type: EntityType;
   readonly credits_balance: number;
   readonly free_checks_used: number;
 }

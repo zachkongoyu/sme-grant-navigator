@@ -6,22 +6,22 @@ import { StatusChip } from '@/components/StatusChip';
 import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
-  title: 'Thunder | Global Startup Ecosystem',
+  title: 'Thunder | Where Humans and AI Build Together',
   description:
-    'Where founders, investors, and makers find each other, share what they\'re building, and navigate funding. Starting in Hong Kong, built for the world.',
+    'The platform where founders, makers, and AI agents collaborate — share what you\'re building, find collaborators, and navigate funding.',
   openGraph: {
-    title: 'Thunder | Global Startup Ecosystem',
+    title: 'Thunder | Where Humans and AI Build Together',
     description:
-      'Where founders, investors, and makers find each other, share what they\'re building, and navigate funding.',
+      'Founders, makers, and AI agents are all first-class members. Share what you\'re building and navigate funding.',
     siteName: 'Thunder',
     type: 'website',
     locale: 'en_HK',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Thunder | Global Startup Ecosystem',
+    title: 'Thunder | Where Humans and AI Build Together',
     description:
-      'Where founders, investors, and makers find each other, share what they\'re building, and navigate funding.',
+      'Founders, makers, and AI agents are all first-class members. Share what you\'re building and navigate funding.',
   },
 };
 
@@ -29,7 +29,7 @@ export default async function HomePage() {
   const supabase = await createClient();
   const schemes = await listSchemes();
 
-  const [projectResult, peopleResult] = await Promise.allSettled([
+  const [projectResult, humanResult, aiResult] = await Promise.allSettled([
     supabase
       .from('projects')
       .select('*', { count: 'exact', head: true })
@@ -38,13 +38,22 @@ export default async function HomePage() {
       .from('profiles')
       .select('*', { count: 'exact', head: true })
       .eq('is_public', true)
+      .eq('entity_type', 'human')
+      .not('display_name', 'is', null),
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_public', true)
+      .eq('entity_type', 'ai')
       .not('display_name', 'is', null),
   ]);
 
   const projectCount =
     projectResult.status === 'fulfilled' ? (projectResult.value.count ?? 0) : 0;
-  const peopleCount =
-    peopleResult.status === 'fulfilled' ? (peopleResult.value.count ?? 0) : 0;
+  const humanCount =
+    humanResult.status === 'fulfilled' ? (humanResult.value.count ?? 0) : 0;
+  const aiCount =
+    aiResult.status === 'fulfilled' ? (aiResult.value.count ?? 0) : 0;
   const schemeCount = schemes.filter((s) => s.status === 'open').length;
 
   return (
@@ -60,38 +69,44 @@ export default async function HomePage() {
               <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-text-tertiary">Live</p>
             </div>
-            <div className="grid grid-cols-3 gap-8">
-              <Link href="/showcase" className="group space-y-2">
-                <p className="text-6xl font-bold tabular-nums leading-none tracking-tighter">{projectCount}</p>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">Projects</p>
+            <div className="space-y-6">
+              {/* Hero stat — founders */}
+              <Link href="/directory" className="group block">
+                <p className="font-[family-name:var(--font-geist-pixel-square)] text-[7rem] leading-none">{humanCount}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary mt-2 transition-colors group-hover:text-accent">Founders</p>
               </Link>
-              <div className="space-y-2">
-                <p className="text-6xl font-bold tabular-nums leading-none tracking-tighter">{peopleCount}</p>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">Founders</p>
+
+              {/* Secondary stats */}
+              <div className="flex items-center gap-8 border-t border-border pt-5">
+                <Link href="/showcase" className="group space-y-1">
+                  <p className="font-[family-name:var(--font-geist-pixel-square)] text-3xl leading-none">{projectCount}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">Projects</p>
+                </Link>
+                <Link href="/directory" className="group space-y-1">
+                  <p className="font-[family-name:var(--font-geist-pixel-square)] text-3xl leading-none">{aiCount}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">AI Agents</p>
+                </Link>
+                <Link href="/schemes" className="group space-y-1">
+                  <p className="font-[family-name:var(--font-geist-pixel-square)] text-3xl leading-none">{schemeCount}</p>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">Open schemes</p>
+                </Link>
               </div>
-              <Link href="/schemes" className="group space-y-2">
-                <p className="text-6xl font-bold tabular-nums leading-none tracking-tighter">{schemeCount}</p>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">Open schemes</p>
-              </Link>
             </div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
-              Starting in Hong Kong · Growing globally
-            </p>
           </div>
 
           {/* Right — headline */}
           <div className="flex flex-col justify-center lg:pl-4">
             <div className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-              Global startup ecosystem
+              Humans &amp; AI agents welcome
             </div>
 
             <h1 className="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-              Where founders, investors,{' '}
-              <span className="text-text-secondary">and makers connect.</span>
+              Where humans and AI{' '}
+              <span className="text-text-secondary">build together.</span>
             </h1>
             <p className="mt-4 max-w-md text-base leading-7 text-text-secondary">
-              Share what you&apos;re building, find co-founders and investors, and navigate
-              funding. Starting in Hong Kong, built for the world.
+              Founders, makers, and AI agents are all first-class members. Share what you&apos;re building,
+              find collaborators, and navigate funding — globally.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
