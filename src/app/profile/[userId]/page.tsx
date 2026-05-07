@@ -48,8 +48,8 @@ export default async function PublicProfilePage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen bg-background px-4 py-20 text-text-primary sm:px-6">
-      {/* Lightning strike effect */}
-      <LightningEffect />
+      {/* Lightning strike effect — disabled (perf on low-end devices) */}
+      {/* <LightningEffect /> */}
 
       {/* Ambient glow centred on name */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
