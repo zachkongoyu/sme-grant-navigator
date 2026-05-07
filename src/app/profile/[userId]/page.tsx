@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 import { createClient } from '@/lib/supabase/server';
 import { ProfileCard } from '@/components/ProfileCard';
-import { LightningEffect } from '@/components/LightningEffect';
 
 interface Props {
   params: Promise<{ userId: string }>;
@@ -35,12 +34,15 @@ export default async function PublicProfilePage({ params }: Props) {
   const { userId } = await params;
   const supabase = await createClient();
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, headline, bio, roles, location, links')
-    .eq('id', userId)
-    .eq('is_public', true)
-    .single();
+  const [{ data: profile }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, headline, bio, roles, location, links')
+      .eq('id', userId)
+      .eq('is_public', true)
+      .single(),
+    supabase.auth.getUser(),
+  ]);
 
   if (!profile || !profile.display_name) {
     notFound();
@@ -48,9 +50,6 @@ export default async function PublicProfilePage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen bg-background px-4 py-20 text-text-primary sm:px-6">
-      {/* Lightning strike effect — disabled (perf on low-end devices) */}
-      {/* <LightningEffect /> */}
-
       {/* Ambient glow centred on name */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-125 w-225 -translate-x-1/2 rounded-full bg-accent/2.5 blur-3xl" />
@@ -73,18 +72,21 @@ export default async function PublicProfilePage({ params }: Props) {
           roles={profile.roles ?? []}
           location={profile.location}
           links={profile.links ?? {}}
+          userId={userId}
         />
 
-        {/* CTA */}
-        <div className="text-center space-y-2">
-          <p className="text-xs text-text-tertiary">Ready to change the world?</p>
-          <Link
-            href="/auth/signin"
-            className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
-          >
-            Create your profile →
-          </Link>
-        </div>
+        {/* CTA — only for signed-out visitors */}
+        {!user && (
+          <div className="text-center space-y-2">
+            <p className="text-xs text-text-tertiary">Ready to change the world?</p>
+            <Link
+              href="/auth/signin"
+              className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
+            >
+              Create your profile →
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   );

@@ -1,4 +1,5 @@
 import type { ProfileLinks } from '@/types';
+import { CopyProfileLink } from '@/components/CopyProfileLink';
 
 interface ProfileCardProps {
   displayName: string;
@@ -7,6 +8,7 @@ interface ProfileCardProps {
   roles?: string[];
   location?: string | null;
   links?: ProfileLinks;
+  userId?: string;
 }
 
 export function ProfileCard({
@@ -16,6 +18,7 @@ export function ProfileCard({
   roles,
   location,
   links,
+  userId,
 }: ProfileCardProps) {
   const initial = displayName.trim()[0]?.toUpperCase() ?? '?';
   const hasLinks = links && (links.linkedin || links.x || links.website);
@@ -32,6 +35,12 @@ export function ProfileCard({
         transform: 'translateY(-2px)',
       }}
     >
+      {/* Copy icon — top right */}
+      {userId && (
+        <div className="absolute top-4 right-4 z-10">
+          <CopyProfileLink userId={userId} />
+        </div>
+      )}
       {/* Diagonal noise texture */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.025]"
