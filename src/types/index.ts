@@ -45,3 +45,42 @@ export interface ShortlistItem {
   readonly maxFunding: number | null;
   readonly currency: string | null;
 }
+
+export const USER_ROLE_OPTIONS = [
+  'Founder',
+  'Co-founder',
+  'CEO',
+  'CFO',
+  'CTO',
+  'COO',
+  'Product',
+  'Engineer',
+  'Designer',
+  'Marketing',
+  'BD',
+  'Operations',
+  'Advisor',
+  'Investor',
+  'Consultant',
+] as const;
+
+export type UserRole = typeof USER_ROLE_OPTIONS[number];
+
+export interface ProfileLinks {
+  linkedin?: string;
+  x?: string;
+  website?: string;
+}
+
+export interface Profile {
+  readonly id: string;
+  readonly display_name: string | null;
+  readonly headline: string | null;
+  readonly bio: string | null;
+  readonly roles: string[];
+  readonly location: string | null;
+  readonly links: ProfileLinks;
+  readonly is_public: boolean;
+  readonly credits_balance: number;
+  readonly free_checks_used: number;
+}

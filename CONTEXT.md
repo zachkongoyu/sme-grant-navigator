@@ -33,7 +33,7 @@ The person who logs in and uses the platform. Has one Profile. Optionally associ
 _Avoid_: Applicant, Member, Account
 
 **UserRole**:
-Tag(s) describing how a User participates in the ecosystem. Multi-select. Values: `founder`, `sme_owner`, `investor`, `advisor`, `service_provider`.
+Tag(s) describing how a User participates in the ecosystem. Multi-select. Values: `founder`, `sme_owner`, `investor`, `advisor`, `service_provider`. Self-declared on Profile — not derived from CompanyMembership. A user picks what they identify as, independent of whether they have an associated Company.
 _Avoid_: UserType, AccountType (implies single-select or fixed schema per type)
 
 **LookingFor**:
@@ -45,8 +45,12 @@ A one-way relationship where one User follows another. No mutual confirmation re
 _Avoid_: Connection, Friend, Link (all imply two-way)
 
 **Company**:
-A standalone business entity. Not owned by a single User — multiple Users can be associated with one Company. Used by grant tools (EligibilityCheck, Draft) as context, and surfaced on Profiles.
+A standalone business entity. Not owned by a single User — multiple Users can be associated with one Company. First-class entity with its own public profile page and directory presence. Used by grant tools (EligibilityCheck, Draft) as context, and surfaced on Profiles.
 _Avoid_: Applicant, Business, SME, Organisation, Firm
+
+**CompanyMembership**:
+The join between a User and a Company. Carries a role label (one of the UserRole values) — one role per user per company. Allows a user to be founder at one company and advisor at another.
+_Avoid_: Affiliation, Association
 
 **EligibilityCheck**:
 An AI-run assessment of whether a Company meets the criteria for a specific Scheme. Produces a verdict, a list of criteria outcomes, blockers, and tips.
@@ -90,7 +94,9 @@ _Avoid_: Plan, Subscription, Bundle
 **Profile**:
 A row in `public.profiles` keyed on `auth.users.id`. Single record per User covering both billing and public identity.
 Billing fields: `credits_balance`, `free_checks_used`. Created automatically on first sign-in via DB trigger.
-Identity fields: `display_name`, `avatar_url`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `looking_for[]`, `is_public`.
+Identity fields: `display_name`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `is_public` (default true).
+Deferred: `avatar_url` (upload infrastructure not yet built), `looking_for[]` (values TBD).
+Public profile accessible at `/profile/[userId]`. Only Profiles with `display_name` set appear in the directory.
 _Avoid_: Account, User record, Wallet, PersonProfile
 
 ## Relationships
@@ -110,3 +116,5 @@ _Avoid_: Account, User record, Wallet, PersonProfile
 - `incomplete` EligibilityVerdict — resolved: renamed to `insufficient_info`.
 - "Profile" overloaded — resolved: single **Profile** record covers both billing and public identity. No separate PersonProfile.
 - "User owns one Company" — resolved: many-to-many. Company is standalone, not owned by User.
+- "UserRole is derived from Company" — resolved: UserRole is self-declared on Profile. Not derived. Company association is optional.
+- "Company as attribute vs entity" — resolved: Company is first-class with its own public profile. CompanyMembership carries a role label on the join.
