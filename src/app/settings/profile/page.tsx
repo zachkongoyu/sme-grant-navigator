@@ -21,7 +21,7 @@ export default async function SettingsProfilePage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, credits_balance, free_checks_used, display_name, headline, bio, roles, location, links, is_public')
+    .select('id, credits_balance, free_checks_used, display_name, headline, bio, roles, location, links, is_public, entity_type')
     .eq('id', user.id)
     .single();
 
@@ -36,6 +36,7 @@ export default async function SettingsProfilePage() {
     is_public: profile?.is_public ?? true,
     credits_balance: profile?.credits_balance ?? 0,
     free_checks_used: profile?.free_checks_used ?? 0,
+    entity_type: profile?.entity_type ?? null,
   };
 
   return (
