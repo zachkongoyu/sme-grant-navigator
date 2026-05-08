@@ -37,7 +37,7 @@ export function ShowcaseClient({ allProjects, makerNames, isAuthenticated }: Pro
     }
 
     if (tab === 'all') {
-      if (filterStage.length > 0) result = result.filter((p) => filterStage.includes(p.stage));
+      if (filterStage.length > 0) result = result.filter((p) => p.stage != null && filterStage.includes(p.stage));
       if (filterSector.length > 0) result = result.filter((p) => filterSector.some((s) => p.sector?.includes(s)));
       if (filterPlatform.length > 0) result = result.filter((p) => filterPlatform.some((s) => p.platform?.includes(s)));
       if (filterSeeking.length > 0) result = result.filter((p) => filterSeeking.some((s) => p.seeking?.includes(s)));
