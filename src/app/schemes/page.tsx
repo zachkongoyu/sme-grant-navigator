@@ -237,7 +237,7 @@ export default function SchemesPage() {
           {processedFunds.map((fund) => (
             <Link
               key={fund.id}
-              href={`/funds/${fund.id}`}
+              href={`/schemes/${fund.id}`}
               className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent"
             >
               <div className="flex items-start justify-between">

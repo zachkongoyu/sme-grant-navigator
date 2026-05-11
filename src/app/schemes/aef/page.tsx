@@ -19,7 +19,7 @@ export default function FundDetailPage() {
         {/* ── Back button ── */}
         <div className="mb-6">
           <Link
-            href="/funds"
+            href="/schemes"
             className="inline-flex items-center gap-1.5 text-sm text-text-tertiary transition hover:text-text-primary"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
