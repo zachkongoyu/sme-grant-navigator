@@ -201,3 +201,12 @@ a {
   initial-value: 0deg;
   inherits: false;
 }
+
+@keyframes bolt-strike {
+  0%      { opacity: 0; }
+  0.4%    { opacity: 1; }        /* snap on */
+  2%      { opacity: 0.65; }     /* flicker */
+  2.5%    { opacity: 1; }
+  5%      { opacity: 0; }        /* off — dark most of the cycle */
+  100%    { opacity: 0; }
+}

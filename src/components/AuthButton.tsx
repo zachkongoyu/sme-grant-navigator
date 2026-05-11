@@ -61,6 +61,13 @@ export function AuthButton() {
           <p className="px-3 py-2 font-mono text-[10px] text-text-tertiary truncate border-b border-border">
             {user.email}
           </p>
+          <Link
+            href="/settings/profile"
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          >
+            Profile
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}
