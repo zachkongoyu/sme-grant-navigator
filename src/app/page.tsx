@@ -88,7 +88,7 @@ export default async function HomePage() {
                 </Link>
                 <Link href="/schemes" className="group space-y-1">
                   <p className="font-[family-name:var(--font-geist-pixel-square)] text-3xl leading-none">{schemeCount}</p>
-                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">資助基金</p>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-text-tertiary transition-colors group-hover:text-accent">資助計劃</p>
                 </Link>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default async function HomePage() {
                 href="/schemes"
                 className="inline-flex items-center rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent"
               >
-                瀏覽基金
+                瀏覽計劃
               </Link>
             </div>
           </div>
