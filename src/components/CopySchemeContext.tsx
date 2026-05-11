@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-
 import type { Scheme } from '@/types';
+import { CopyButton } from '@/components/CopyButton';
 
 interface CopySchemeContextProps {
   readonly scheme: Scheme;
@@ -46,14 +45,6 @@ function buildContext(scheme: Scheme, corpus: string | null): string {
 }
 
 export function CopySchemeContext({ scheme, corpus }: CopySchemeContextProps) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopy() {
-    await navigator.clipboard.writeText(buildContext(scheme, corpus));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  }
-
   const capDisplay = scheme.maxFunding === null
     ? 'Varies'
     : `HK$${(scheme.maxFunding / 1000).toFixed(0)}K`;
@@ -66,33 +57,12 @@ export function CopySchemeContext({ scheme, corpus }: CopySchemeContextProps) {
         {preview}
       </div>
 
-      {/* Copy button */}
-      <button
-        type="button"
-        onClick={handleCopy}
-        className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-          copied
-            ? 'border border-success/40 bg-success/10 text-success'
-            : 'border border-accent/40 bg-(--accent) text-(--accent-foreground) hover:opacity-90'
-        }`}
-      >
-        {copied ? (
-          <>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 shrink-0" aria-hidden="true">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-            Copied
-          </>
-        ) : (
-          <>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4 shrink-0" aria-hidden="true">
-              <rect x="9" y="9" width="13" height="13" rx="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
-            Copy prompt
-          </>
-        )}
-      </button>
+      <CopyButton
+        variant="primary"
+        value={buildContext(scheme, corpus)}
+        label="Copy prompt"
+        className="w-full justify-center"
+      />
     </div>
   );
 }

@@ -73,8 +73,28 @@ _Avoid_: Applicant, Business, SME, Organisation, Firm
 The join between a User and a Company. Carries a role label (one of the UserRole values) — one role per user per company. Allows a user to be founder at one company and advisor at another.
 _Avoid_: Affiliation, Association
 
+**FundraisingHub**:
+The `/fundraise` page surfacing all fundraising tools. Two sections: "Grant Funding" (links into Scheme flow — EligibilityCheck + Draft) and "Investor Funding" (OnePager, PitchDeck, InvestorEmail, DataRoomChecklist). Hub, not a tool — individual tools keep own routes. Thunder is unique in covering both funding paths (non-dilutive grants + equity investor) in one place.
+_Avoid_: Dashboard, Toolkit, Fund page
+
+**OnePager**:
+AI-generated single-page investor summary (~400-500 words). Seven sections: company headline / problem / solution / traction metrics / market opportunity / team / ask. Input: pre-filled from Project fields (tagline, description, traction, sector, seeking) + Company context, editable before generation. Output: copy (markdown) + PDF. Costs 1 Credit. Lives under FundraisingHub.
+_Avoid_: Executive summary, Company overview, Teaser
+
+**PitchDeck**:
+AI-generated 10-slide investor pitch script. Standard slide order: Problem / Solution / Why Now / Market / Product / Business Model / Traction / Team / Competition / Ask. Financial slide requires 3 founder inputs (current MRR, monthly burn, assumed monthly growth %) — AI computes Year 1/2/3 projections, does not invent numbers. All other slides pre-filled from Project + Company context. Output: markdown (copy) + PDF. Standard structure in v1 — no reorder. Costs 1 Credit. Lives under FundraisingHub.
+_Avoid_: Slide deck, Presentation, Pitch document
+
+**InvestorEmail**:
+AI-generated personalised cold email to a named investor (angel or VC). Input: investor name + firm + thesis/focus (user-supplied) + Project/Company context (pre-filled). Target <125 words with 2 specific personalised sentences referencing investor thesis. Output: copy only. Costs 1 Credit. Lives under FundraisingHub.
+_Avoid_: Cold email template, Outreach email
+
+**DataRoomChecklist**:
+AI-generated prioritised checklist of documents a founder needs for investor due diligence. Tailored by stage + sector (pre-filled from Project). Output: markdown (copy) + PDF. Does not generate the documents — checklist only. Financial model item links founders to external templates. Costs 1 Credit. Lives under FundraisingHub.
+_Avoid_: Due diligence checklist, Investor readiness checklist
+
 **EligibilityCheck**:
-An AI-run assessment of whether a Company meets the criteria for a specific Scheme. Produces a verdict, a list of criteria outcomes, blockers, and tips.
+An AI-run assessment of whether a Company meets the criteria for a specific Scheme. Produces a verdict, a list of criteria outcomes, and tips.
 _Avoid_: Assessment, Screening, Qualification check
 
 **EligibilityVerdict**:
@@ -116,7 +136,7 @@ _Avoid_: Plan, Subscription, Bundle
 A row in `public.profiles` keyed on `auth.users.id`. Single record per User covering both billing and public identity.
 Billing fields: `credits_balance`, `free_checks_used`. Created automatically on first sign-in via DB trigger.
 Identity fields: `display_name`, `headline`, `bio`, `roles[]`, `location`, `links` (LinkedIn/Twitter/X/website), `is_public` (default true), `entity_type` (default `human`).
-Deferred: `avatar_url` (upload infrastructure not yet built), `looking_for[]` (values TBD).
+Deferred: `avatar_url` (upload infrastructure not yet built), `looking_for[]` (values defined — see LookingFor — but field not yet in DB or UI).
 Public profile accessible at `/profile/[userId]`. Only Profiles with `display_name` set appear in the directory.
 _Avoid_: Account, User record, Wallet, PersonProfile
 

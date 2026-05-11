@@ -26,11 +26,6 @@ export interface EligibilityCriterion {
   readonly followup_question: string | null;
 }
 
-export interface EligibilityBlocker {
-  readonly criterion_id: string;
-  readonly reason: string;
-}
-
 export interface EligibilityTip {
   readonly area: string;
   readonly advice: string;
@@ -40,7 +35,6 @@ export interface EligibilityCheckResult {
   readonly verdict: EligibilityVerdict;
   readonly summary: string;
   readonly criteria: ReadonlyArray<EligibilityCriterion>;
-  readonly blockers: ReadonlyArray<EligibilityBlocker>;
   readonly tips: ReadonlyArray<EligibilityTip>;
 }
 

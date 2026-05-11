@@ -68,6 +68,13 @@ export function AuthButton() {
           >
             Profile
           </Link>
+          <Link
+            href="/billing"
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+          >
+            Credits
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}

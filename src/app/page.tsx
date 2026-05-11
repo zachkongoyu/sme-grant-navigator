@@ -244,6 +244,76 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* ── Investor funding section ── */}
+        <section className="mt-16">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-text-tertiary">
+              Investor funding
+            </p>
+            <Link
+              href="/fundraise"
+              className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:text-accent"
+            >
+              All tools →
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+            {/* One-Pager */}
+            <Link href="/fundraise/one-pager" className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent/40">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover text-text-secondary transition-colors group-hover:text-accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <line x1="10" y1="9" x2="8" y2="9" />
+                </svg>
+              </span>
+              <p className="mt-3 text-sm font-medium text-text-primary">One-Pager</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">AI-drafted investor one-pager with Company, Problem, Solution, Traction and Ask sections.</p>
+            </Link>
+
+            {/* Pitch Deck Script */}
+            <Link href="/fundraise/pitch-deck" className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent/40">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover text-text-secondary transition-colors group-hover:text-accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </span>
+              <p className="mt-3 text-sm font-medium text-text-primary">Pitch Deck Script</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">10-slide narrative with speaker notes and Year 1–3 financial projections from your MRR.</p>
+            </Link>
+
+            {/* Investor Email */}
+            <Link href="/fundraise/investor-email" className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent/40">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover text-text-secondary transition-colors group-hover:text-accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </span>
+              <p className="mt-3 text-sm font-medium text-text-primary">Investor Email</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Cold outreach under 125 words, personalised to the investor's thesis and firm.</p>
+            </Link>
+
+            {/* Data Room Checklist */}
+            <Link href="/fundraise/data-room" className="group rounded-xl border border-border bg-surface p-5 transition hover:border-accent/40">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-hover text-text-secondary transition-colors group-hover:text-accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-4 w-4" aria-hidden="true">
+                  <path d="M9 11l3 3L22 4" />
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+              </span>
+              <p className="mt-3 text-sm font-medium text-text-primary">Data Room Checklist</p>
+              <p className="mt-1 text-xs leading-5 text-text-secondary">Prioritised due diligence checklist tailored to your stage and sector — HIGH / MEDIUM / LOW.</p>
+            </Link>
+
+          </div>
+        </section>
+
       </div>
     </main>
   );

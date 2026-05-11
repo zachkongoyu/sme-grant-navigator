@@ -14,6 +14,7 @@ import {
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
+import { CopyButton } from '@/components/CopyButton';
 
 interface DrafterProps {
   readonly scheme: Scheme;
@@ -512,11 +513,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
 
         {stage === 'done' && (
           <div className="space-y-2">
-            <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
-              <CopyIcon />
-              Copy draft
-            </button>
+            <CopyButton value={draft} label="Copy draft" className="w-full justify-center" />
             <button type="button" onClick={() => { setPdfError(''); setShowPdfModal(true); }}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
               <DownloadIcon />
@@ -546,11 +543,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
-              <CopyIcon />
-              Copy draft
-            </button>
+            <CopyButton value={draft} label="Copy draft" size="compact" className="hidden sm:flex" />
             <button type="button" onClick={() => { setPdfError(''); setShowPdfModal(true); }}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary hover:border-accent hover:text-accent transition-colors">
               <DownloadIcon />
@@ -581,10 +574,7 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
 
         {/* Mobile actions */}
         <div className="mt-4 flex gap-3 sm:hidden">
-          <button type="button" onClick={() => navigator.clipboard.writeText(draft)}
-            className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">
-            Copy draft
-          </button>
+          <CopyButton value={draft} label="Copy draft" className="flex-1 justify-center" />
           <button type="button" onClick={reset}
             className="flex-1 rounded-xl border border-border bg-surface py-2.5 text-sm text-text-tertiary transition hover:text-text-primary">
             Reset draft
@@ -645,15 +635,6 @@ function SparkleIcon() {
   return (
     <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M8 1.5 9.06 5.44a2 2 0 0 0 1.5 1.5L14.5 8l-3.94 1.06a2 2 0 0 0-1.5 1.5L8 14.5l-1.06-3.94a2 2 0 0 0-1.5-1.5L1.5 8l3.94-1.06a2 2 0 0 0 1.5-1.5L8 1.5Z" />
-    </svg>
-  );
-}
-
-function CopyIcon() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="5" y="5" width="8" height="8" rx="1.5" />
-      <path d="M3 11V3h8" />
     </svg>
   );
 }

@@ -10,7 +10,6 @@ import { Analytics } from '@vercel/analytics/next';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
-import { CreditBadge } from '@/components/CreditBadge';
 
 import './globals.css';
 
@@ -62,7 +61,6 @@ export default function RootLayout({
           <NavigationProgress />
         </Suspense>
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
-          <CreditBadge />
           <AuthButton />
         </div>
         <div className="flex-1">
@@ -77,6 +75,7 @@ export default function RootLayout({
             </p>
             <nav className="flex flex-wrap gap-5" aria-label="Footer">
               {[
+                { href: '/fundraise', label: 'Fundraise' },
                 { href: '/showcase', label: 'Showcase' },
                 { href: '/privacy', label: 'Privacy' },
                 { href: '/terms', label: 'Terms' },
