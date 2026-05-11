@@ -53,17 +53,17 @@ export default function InvestmentStage() {
   return (
     <div className="flex items-center gap-2">
       <InfoPopover
-        label="早期輪次"
+        label="開發階段"
         description="種子輪／天使輪。企業通常處於概念驗證或產品開發初期，需要資金將想法轉化為實際業務。"
       />
       <span className="text-text-tertiary text-xl">|</span>
       <InfoPopover
-        label="成長輪次"
+        label="成長階段"
         description="A輪、B輪、C輪。企業已驗證商業模式並具備穩定收入，需要資金擴大市場規模及加速發展。"
       />
       <span className="text-text-tertiary text-xl">|</span>
       <InfoPopover
-        label="成熟輪次"
+        label="成熟階段"
         description="D輪、E輪及IPO前期。企業已達相當規模，正進行上市準備或進行策略性擴張。"
       />
     </div>

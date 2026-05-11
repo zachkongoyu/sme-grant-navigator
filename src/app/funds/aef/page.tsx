@@ -16,6 +16,19 @@ export default function FundDetailPage() {
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
       <div className="mx-auto max-w-2xl px-6 py-12">
 
+        {/* ── Back button ── */}
+        <div className="mb-6">
+          <Link
+            href="/funds"
+            className="inline-flex items-center gap-1.5 text-sm text-text-tertiary transition hover:text-text-primary"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            返回列表
+          </Link>
+        </div>
+
         {/* ── Hero ── */}
         <div className="border-b border-border pb-8">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">

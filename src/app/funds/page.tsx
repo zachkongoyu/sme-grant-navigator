@@ -14,9 +14,9 @@ interface Fund {
   type: string;
   industry: string;
   deadline: string;
-  deadlineSort: number;
+  deadlineSort: number; // timestamp for sorting, Infinity for 全年開放
   amount: string;
-  amountSort: number;
+  amountSort: number; // numeric value for sorting
 }
 
 const funds: Fund[] = [
@@ -87,13 +87,14 @@ const sortOptions: { key: SortKey; label: string }[] = [
   { key: 'amount-desc', label: '資助金額：由高至低' },
 ];
 
-export default function SchemesPage() {
+export default function FundsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('default');
 
   const processedFunds = useMemo(() => {
     let result = [...funds];
 
+    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -109,6 +110,7 @@ export default function SchemesPage() {
       );
     }
 
+    // Sorting
     switch (sortBy) {
       case 'deadline-asc':
         result.sort((a, b) => {
