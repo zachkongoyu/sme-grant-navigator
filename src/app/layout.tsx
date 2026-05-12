@@ -63,12 +63,12 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
-          <LocaleSwitcher />
-          <CreditBadge />
-          <AuthButton />
-        </div>
         <I18nWrapper>
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+            <LocaleSwitcher />
+            <CreditBadge />
+            <AuthButton />
+          </div>
           <div className="flex-1">
             {children}
           </div>
