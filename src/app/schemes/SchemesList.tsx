@@ -127,8 +127,8 @@ export default function SchemesList({ schemes }: SchemesListProps) {
         </div>
       </div>
 
-      {/* Filters + Sort */}
-      <div className="py-6 border-b border-border">
+      {/* Filters */}
+      <div className="pt-6 border-b border-border">
         <div className="flex flex-wrap items-start gap-6">
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.stage')}</span>
@@ -166,21 +166,23 @@ export default function SchemesList({ schemes }: SchemesListProps) {
               ))}
             </div>
           </div>
-          <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.sort')}</span>
-            <div className="mt-2">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortKey)}
-                className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
-              >
-                {sortOptions.map((opt) => (
-                  <option key={opt.key} value={opt.key}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        </div>
+
+        {/* Sort */}
+        <div className="pb-6 pt-4">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.sort')}</span>
+          <div className="mt-2">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortKey)}
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
