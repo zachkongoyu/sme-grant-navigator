@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import { BackNavigation } from './BackNavigation';
@@ -30,9 +31,23 @@ function resolveNavigation(pathname: string, schemeId: string | null) {
   return getRootFlowNavigation();
 }
 
+function subscribe(): () => void {
+  return () => undefined;
+}
+
+function useIsHydrated() {
+  return useSyncExternalStore(subscribe, () => true, () => false);
+}
+
 export function AppPageNavigation() {
+  const isHydrated = useIsHydrated();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  if (!isHydrated) {
+    return null;
+  }
+
   const navigation = resolveNavigation(pathname, searchParams.get('scheme'));
 
   if (!navigation) {
