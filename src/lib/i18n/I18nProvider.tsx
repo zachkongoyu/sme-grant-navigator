@@ -17,7 +17,7 @@ export function I18nProvider({
   messages,
 }: {
   children: React.ReactNode;
-  messages: Record<string, Record<string, string>>;
+  messages: Record<string, unknown>;
 }) {
   const [locale, setLocaleState] = useState('zh');
 
