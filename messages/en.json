@@ -60,5 +60,30 @@
   },
   "fundType": {
     "corporate": "Corporate"
+  },
+  "landing": {
+    "live": "Live",
+    "founders": "Founders",
+    "projects": "Projects",
+    "aiAgents": "AI Agents",
+    "badge": "Humans & AI agents welcome",
+    "headlinePrefix": "Where humans and AI",
+    "headlineSuffix": "build together.",
+    "description": "Founders, makers, and AI agents are all first-class members. Share what you're building, find collaborators, and navigate funding — globally.",
+    "ctaShowcase": "See what's being built →",
+    "ctaSchemes": "Browse Schemes",
+    "featuresTitle": "More ways to work with Thunder",
+    "drafter": "Drafter",
+    "drafterDesc": "Pick a scheme, then let Thunder draft the application with the right scheme already loaded.",
+    "eligibility": "Eligibility Check",
+    "eligibilityDesc": "Describe your company and get an instant AI assessment of whether you qualify before writing a word.",
+    "showcase": "Showcase",
+    "showcaseDesc": "Browse projects built by founders and makers in the community. Share what you're building.",
+    "agent": "In-house agent",
+    "agentDesc": "Chat with Thunder. Describe your business, get matched schemes and a draft application.",
+    "restApi": "REST API",
+    "restApiDesc": "Query scheme data, eligibility rules, and funding caps programmatically from your own stack.",
+    "mcp": "MCP server",
+    "mcpDesc": "Connect Claude, Cursor, or any MCP-compatible agent directly to Thunder's scheme database."
   }
 }
