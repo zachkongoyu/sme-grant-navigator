@@ -2,15 +2,15 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Scheme, SchemeStatus } from '@/types';
 import { formatFundingAmount } from '@/lib/schemes/presentation';
 
-// Extra fields we attach to schemes for the fund-style display
 type EnrichedScheme = Scheme & {
-  stage?: string;      // 早期 / 成長期 / 成熟期
-  type?: string;       // 想法 / 初創 / 中小企
-  industry?: string;   // 科技 / 任何類型
-  difficulty?: number; // 1-5
+  stage?: string;
+  type?: string;
+  industry?: string;
+  difficulty?: number;
 };
 
 type SortKey = 'default' | 'deadline-asc' | 'deadline-desc' | 'amount-asc' | 'amount-desc';
@@ -19,48 +19,42 @@ interface SchemesListProps {
   schemes: ReadonlyArray<EnrichedScheme>;
 }
 
-const statusLabels: Record<SchemeStatus, string> = {
-  open: '開放申請',
-  'coming-soon': '即將開放',
-  closed: '已截止',
-};
-
-const statusStyles: Record<SchemeStatus, string> = {
-  open: 'border-green-500/30 bg-green-500/10 text-green-600',
-  'coming-soon': 'border-amber-500/30 bg-amber-500/10 text-amber-600',
-  closed: 'border-red-500/30 bg-red-500/10 text-red-600',
-};
-
-const filterOptions = {
-  stage: ['全部', '早期', '成長期', '成熟期'],
-  type: ['全部', '想法', '初創', '中小企'],
-};
-
-const sortOptions: { key: SortKey; label: string }[] = [
-  { key: 'default', label: '預設排序' },
-  { key: 'deadline-asc', label: '申請限期：由近至遠' },
-  { key: 'deadline-desc', label: '申請限期：由遠至近' },
-  { key: 'amount-asc', label: '資助金額：由低至高' },
-  { key: 'amount-desc', label: '資助金額：由高至低' },
-];
-
-function deadlineSortValue(s: EnrichedScheme): number {
-  if (!s.nextDeadline) return Infinity; // Rolling / 全年開放
-  return new Date(s.nextDeadline).getTime();
-}
-
-function amountSortValue(s: EnrichedScheme): number {
-  return s.maxFunding ?? 0;
-}
-
 export default function SchemesList({ schemes }: SchemesListProps) {
+  const t = useTranslations();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('default');
+
+  const statusStyles: Record<SchemeStatus, string> = {
+    open: 'border-green-500/30 bg-green-500/10 text-green-600',
+    'coming-soon': 'border-amber-500/30 bg-amber-500/10 text-amber-600',
+    closed: 'border-red-500/30 bg-red-500/10 text-red-600',
+  };
+
+  const filterOptions = {
+    stage: [t('filters.all'), t('filters.early'), t('filters.growth'), t('filters.mature')],
+    type: [t('filters.all'), t('filters.idea'), t('filters.startup'), t('filters.sme')],
+  };
+
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: 'default', label: t('filters.sortDefault') },
+    { key: 'deadline-asc', label: t('filters.sortDeadlineAsc') },
+    { key: 'deadline-desc', label: t('filters.sortDeadlineDesc') },
+    { key: 'amount-asc', label: t('filters.sortAmountAsc') },
+    { key: 'amount-desc', label: t('filters.sortAmountDesc') },
+  ];
+
+  function deadlineSortValue(s: EnrichedScheme): number {
+    if (!s.nextDeadline) return Infinity;
+    return new Date(s.nextDeadline).getTime();
+  }
+
+  function amountSortValue(s: EnrichedScheme): number {
+    return s.maxFunding ?? 0;
+  }
 
   const processedSchemes = useMemo(() => {
     let result = [...schemes];
 
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -76,7 +70,6 @@ export default function SchemesList({ schemes }: SchemesListProps) {
       );
     }
 
-    // Sorting
     switch (sortBy) {
       case 'deadline-asc':
         result.sort((a, b) => {
@@ -111,7 +104,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
 
   return (
     <>
-      {/* ── Search ── */}
+      {/* Search */}
       <div className="pt-6">
         <div className="relative">
           <svg
@@ -126,7 +119,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
           </svg>
           <input
             type="text"
-            placeholder="搜尋計劃名稱、管理機構、地區、階段、類型、申請限期或資助金額…"
+            placeholder={t('schemes.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-xl border border-border bg-surface py-3 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-tertiary transition focus:border-accent focus:outline-none"
@@ -134,18 +127,18 @@ export default function SchemesList({ schemes }: SchemesListProps) {
         </div>
       </div>
 
-      {/* ── Filters + Sort ── */}
+      {/* Filters + Sort */}
       <div className="py-6 border-b border-border">
         <div className="flex flex-wrap items-start gap-6">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">投資階段</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.stage')}</span>
             <div className="mt-2 flex flex-wrap gap-2">
               {filterOptions.stage.map((opt) => (
                 <button
                   key={opt}
                   type="button"
                   className={`rounded-lg border px-3 py-1.5 text-xs transition ${
-                    opt === '全部'
+                    opt === t('filters.all')
                       ? 'border-accent bg-accent text-accent-foreground'
                       : 'border-border bg-surface text-text-secondary hover:border-accent'
                   }`}
@@ -156,14 +149,14 @@ export default function SchemesList({ schemes }: SchemesListProps) {
             </div>
           </div>
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">計劃類型</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.type')}</span>
             <div className="mt-2 flex flex-wrap gap-2">
               {filterOptions.type.map((opt) => (
                 <button
                   key={opt}
                   type="button"
                   className={`rounded-lg border px-3 py-1.5 text-xs transition ${
-                    opt === '全部'
+                    opt === t('filters.all')
                       ? 'border-accent bg-accent text-accent-foreground'
                       : 'border-border bg-surface text-text-secondary hover:border-accent'
                   }`}
@@ -174,7 +167,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
             </div>
           </div>
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">排序</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('filters.sort')}</span>
             <div className="mt-2">
               <select
                 value={sortBy}
@@ -192,12 +185,12 @@ export default function SchemesList({ schemes }: SchemesListProps) {
         </div>
       </div>
 
-      {/* ── Scheme List ── */}
+      {/* Scheme List */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {processedSchemes.map((scheme) => {
           const deadlineLabel = scheme.nextDeadline
             ? new Date(scheme.nextDeadline).toLocaleDateString('zh-HK')
-            : '全年開放';
+            : t('schemes.rolling');
           const isRolling = !scheme.nextDeadline;
 
           return (
@@ -210,7 +203,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
               <span
                 className={`absolute right-4 top-4 rounded-md border px-2 py-0.5 text-[10px] font-medium ${statusStyles[scheme.status]}`}
               >
-                {statusLabels[scheme.status]}
+                {t(`schemes.${scheme.status === 'open' ? 'open' : scheme.status === 'coming-soon' ? 'comingSoon' : 'closed'}`)}
               </span>
 
               <div className="flex items-start justify-between pr-16">
@@ -262,7 +255,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
                     <line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
                   <span className="text-text-secondary">
-                    申請限期：
+                    {t('schemes.deadline')}：
                     <span className={isRolling ? 'font-medium text-green-600' : 'font-medium text-text-primary'}>
                       {deadlineLabel}
                     </span>
@@ -280,7 +273,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </svg>
                   <span className="text-text-secondary">
-                    資助金額：
+                    {t('schemes.amount')}：
                     <span className="font-medium text-text-primary">
                       {formatFundingAmount(scheme.maxFunding, scheme.currency)}
                     </span>
@@ -292,7 +285,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
         })}
         {processedSchemes.length === 0 && (
           <div className="col-span-full py-12 text-center text-sm text-text-tertiary">
-            沒有符合搜尋條件的計劃
+            {t('schemes.noResults')}
           </div>
         )}
       </div>

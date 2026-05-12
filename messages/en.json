@@ -1,0 +1,53 @@
+{
+  "schemes": {
+    "title": "Funding Schemes",
+    "subtitle": "Browse funding schemes, investment programmes and startup support",
+    "searchPlaceholder": "Search scheme name, administrator, stage, type, deadline or amount…",
+    "noResults": "No schemes match your search",
+    "deadline": "Deadline",
+    "amount": "Funding Amount",
+    "open": "Open",
+    "comingSoon": "Coming Soon",
+    "closed": "Closed",
+    "rolling": "Open Year-round"
+  },
+  "filters": {
+    "stage": "Investment Stage",
+    "type": "Scheme Type",
+    "sort": "Sort",
+    "all": "All",
+    "idea": "Idea",
+    "startup": "Startup",
+    "sme": "SME",
+    "early": "Development",
+    "growth": "Growth",
+    "mature": "Mature",
+    "sortDefault": "Default",
+    "sortDeadlineAsc": "Deadline: Earliest First",
+    "sortDeadlineDesc": "Deadline: Latest First",
+    "sortAmountAsc": "Amount: Low to High",
+    "sortAmountDesc": "Amount: High to Low"
+  },
+  "fundDetail": {
+    "backToList": "Back to List",
+    "fundSize": "Fund Size",
+    "investmentStage": "Investment Stage",
+    "fundType": "Fund Type",
+    "officialPortal": "Official Portal",
+    "saveFund": "Save Fund",
+    "applyNow": "Apply Now",
+    "applicationDifficulty": "Difficulty",
+    "high": "High"
+  },
+  "sections": {
+    "overview": "Overview",
+    "eligibility": "Eligibility",
+    "application": "Application",
+    "highlights": "Highlights",
+    "successStories": "Success Stories"
+  },
+  "home": {
+    "browseSchemes": "Browse Schemes",
+    "schemes": "Schemes"
+  }
+}

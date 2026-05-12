@@ -1,22 +1,21 @@
+'use client';
+
 import React from 'react';
-import type { Metadata } from 'next';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import MetadataTabs from './MetadataTabs';
 import InvestmentStage from './InvestmentStage';
 
-export const metadata: Metadata = {
-  title: '阿里巴巴創業者基金 | Thunder',
-  description: '阿里巴巴創業者基金（AEF）是阿里巴巴集團於 2015 年創立的非營利項目，旨在向創業家和年輕人提供企業資本及策略指導。',
-};
-
 export default function FundDetailPage() {
+  const t = useTranslations();
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
       <div className="mx-auto max-w-2xl px-6 py-12">
 
-        {/* ── Back button ── */}
+        {/* Back button */}
         <div className="mb-6">
           <Link
             href="/schemes"
@@ -25,11 +24,11 @@ export default function FundDetailPage() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
               <path d="M15 18l-6-6 6-6" />
             </svg>
-            返回列表
+            {t('fundDetail.backToList')}
           </Link>
         </div>
 
-        {/* ── Hero ── */}
+        {/* Hero */}
         <div className="border-b border-border pb-8">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-tertiary">
             香港 / 台灣 · 阿里巴巴集團
@@ -38,30 +37,30 @@ export default function FundDetailPage() {
             阿里巴巴創業者基金
           </h1>
 
-          {/* ── Key stats inline ── */}
+          {/* Key stats inline */}
           <div className="mt-6 flex flex-wrap gap-6">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">基金規模</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundSize')}</p>
               <p className="mt-1 font-mono text-xl font-semibold text-text-primary">HK$1B</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">投資階段</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.investmentStage')}</p>
               <div className="mt-1">
                 <InvestmentStage />
               </div>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">基金類型</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundType')}</p>
               <p className="mt-1 font-mono text-xl font-semibold text-text-primary">企業導向</p>
             </div>
           </div>
         </div>
 
-        {/* ── Right-rail: actions + links ── */}
+        {/* Right-rail: actions + links */}
         <div className="py-8 border-b border-border grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Official links */}
           <div className="rounded-xl border border-border bg-surface p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">官方網站</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">{t('fundDetail.officialPortal')}</p>
             <ul className="mt-3 space-y-2">
               <li>
                 <a
@@ -98,7 +97,7 @@ export default function FundDetailPage() {
           <div className="flex flex-col gap-4">
             {/* Application difficulty */}
             <div className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">申請難度</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">{t('fundDetail.applicationDifficulty')}</span>
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span
@@ -109,7 +108,7 @@ export default function FundDetailPage() {
                     }}
                   />
                 ))}
-                <span className="ml-1.5 text-xs font-medium text-text-primary">偏高</span>
+                <span className="ml-1.5 text-xs font-medium text-text-primary">{t('fundDetail.high')}</span>
               </div>
             </div>
 
@@ -122,19 +121,19 @@ export default function FundDetailPage() {
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.7">
                   <path d="M6 4.5a1.5 1.5 0 0 1 1.5-1.5h9A1.5 1.5 0 0 1 18 4.5V21l-6-3-6 3V4.5Z" />
                 </svg>
-                <span>收藏基金</span>
+                <span>{t('fundDetail.saveFund')}</span>
               </span>
             </button>
           </div>
         </div>
 
-        {/* ── Structured content ── */}
+        {/* Structured content */}
         <div className="mt-8 space-y-0">
-          <CollapsibleSection title="計劃總覽" defaultOpen>
+          <CollapsibleSection title={t('sections.overview')} defaultOpen>
             <div className="space-y-4 text-sm leading-7 text-text-secondary">
               <p>
                 阿里巴巴創業者基金（Alibaba Entrepreneurs Fund，簡稱 AEF）是阿里巴巴集團於 2015 年創立的非營利項目。
-                該基金分別在香港成立了 10 億港元的基金，以及在台灣成立了 100 億新台幣的基金，旨在向創業家和年輕人提供企業資本及策略指導。
+                該基金分別在香港成立了 10 億港元的基金，旨在向創業家和年輕人提供企業資本及策略指導。
               </p>
               <p>
                 該計劃是將透過首次公開發行（IPO）和其他方式收回的資金進行再投資，以支持更多初創企業。
@@ -142,7 +141,7 @@ export default function FundDetailPage() {
             </div>
           </CollapsibleSection>
 
-          <CollapsibleSection title="申請資格" hasNumbers>
+          <CollapsibleSection title={t('sections.eligibility')} hasNumbers>
             <ol className="list-decimal list-inside space-y-3 text-sm leading-7 text-text-secondary">
               <li>
                 <span className="font-medium text-text-primary">香港投資計劃：</span>
@@ -163,7 +162,7 @@ export default function FundDetailPage() {
             </ol>
           </CollapsibleSection>
 
-          <CollapsibleSection title="申請方法" hasNumbers>
+          <CollapsibleSection title={t('sections.application')} hasNumbers>
             <ol className="list-decimal list-inside space-y-3 text-sm leading-7 text-text-secondary">
               <li>
                 <span className="font-medium text-text-primary">線上申請：</span>
@@ -184,7 +183,7 @@ export default function FundDetailPage() {
             </ol>
           </CollapsibleSection>
 
-          <CollapsibleSection title="計劃重點" hasNumbers>
+          <CollapsibleSection title={t('sections.highlights')} hasNumbers>
             <ol className="list-decimal list-inside space-y-3 text-sm leading-7 text-text-secondary">
               <li>
                 <span className="font-medium text-text-primary">阿里巴巴生態系賦能：</span>
@@ -201,7 +200,7 @@ export default function FundDetailPage() {
             </ol>
           </CollapsibleSection>
 
-          <CollapsibleSection title="成功例子">
+          <CollapsibleSection title={t('sections.successStories')}>
             <div className="space-y-4 text-sm leading-7 text-text-secondary">
               <div className="rounded-lg border border-border bg-surface p-4">
                 <p className="font-medium text-text-primary">GoGoVan（現稱 GoGoX）</p>
@@ -217,12 +216,10 @@ export default function FundDetailPage() {
               </div>
             </div>
           </CollapsibleSection>
-
         </div>
 
-        {/* ── Metadata tags ── */}
+        {/* Metadata tags */}
         <MetadataTabs />
-
       </div>
     </div>
   );

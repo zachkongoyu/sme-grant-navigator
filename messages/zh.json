@@ -1,0 +1,53 @@
+{
+  "schemes": {
+    "title": "資助計劃一覽",
+    "subtitle": "瀏覽適合初創企業及中小企的資助計劃、投資方案及創業支援",
+    "searchPlaceholder": "搜尋計劃名稱、管理機構、階段、類型、申請限期或資助金額…",
+    "noResults": "沒有符合搜尋條件的計劃",
+    "deadline": "申請限期",
+    "amount": "資助金額",
+    "open": "開放申請",
+    "comingSoon": "即將開放",
+    "closed": "已截止",
+    "rolling": "全年開放"
+  },
+  "filters": {
+    "stage": "投資階段",
+    "type": "計劃類型",
+    "sort": "排序",
+    "all": "全部",
+    "idea": "想法",
+    "startup": "初創",
+    "sme": "中小企",
+    "early": "開發階段",
+    "growth": "成長期",
+    "mature": "成熟期",
+    "sortDefault": "預設排序",
+    "sortDeadlineAsc": "申請限期：由近至遠",
+    "sortDeadlineDesc": "申請限期：由遠至近",
+    "sortAmountAsc": "資助金額：由低至高",
+    "sortAmountDesc": "資助金額：由高至低"
+  },
+  "fundDetail": {
+    "backToList": "返回列表",
+    "fundSize": "基金規模",
+    "investmentStage": "投資階段",
+    "fundType": "基金類型",
+    "officialPortal": "官方網站",
+    "saveFund": "收藏基金",
+    "applyNow": "立即申請",
+    "applicationDifficulty": "申請難度",
+    "high": "偏高"
+  },
+  "sections": {
+    "overview": "計劃總覽",
+    "eligibility": "申請資格",
+    "application": "申請方法",
+    "highlights": "計劃重點",
+    "successStories": "成功例子"
+  },
+  "home": {
+    "browseSchemes": "瀏覽計劃",
+    "schemes": "資助計劃"
+  }
+}

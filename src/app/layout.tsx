@@ -11,6 +11,8 @@ import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
 import { CreditBadge } from '@/components/CreditBadge';
+import I18nWrapper from '@/components/I18nWrapper';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 
 import './globals.css';
 
@@ -62,12 +64,15 @@ export default function RootLayout({
           <NavigationProgress />
         </Suspense>
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+          <LocaleSwitcher />
           <CreditBadge />
           <AuthButton />
         </div>
-        <div className="flex-1">
-          {children}
-        </div>
+        <I18nWrapper>
+          <div className="flex-1">
+            {children}
+          </div>
+        </I18nWrapper>
 
         {/* ── Footer ── */}
         <footer className="border-t border-border py-8">
