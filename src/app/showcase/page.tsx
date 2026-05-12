@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { GeistPixelLine } from 'geist/font/pixel';
 
 import { createClient } from '@/lib/supabase/server';
-import { BackNavigation } from '@/components/navigation';
 import type { Project } from '@/types';
 import { ShowcaseClient } from './ShowcaseClient';
 
@@ -53,10 +52,6 @@ export default async function ShowcasePage() {
         backgroundSize: '28px 28px',
       }}
     >
-      <div className="absolute top-6 left-6 z-10">
-        <BackNavigation fallbackHref="/" />
-      </div>
-
       <div className="mx-auto max-w-2xl space-y-8">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">

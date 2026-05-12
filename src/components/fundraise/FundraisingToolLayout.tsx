@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation';
 import { CopyButton } from '@/components/CopyButton';
 
 interface FundraisingToolLayoutProps {
@@ -39,9 +38,6 @@ export function FundraisingToolLayout({
 }: FundraisingToolLayoutProps) {
   return (
     <div className="relative min-h-screen bg-background">
-      <div className="absolute top-6 left-6 z-10">
-        <BackNavigation fallbackHref="/fundraise" />
-      </div>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center gap-2 text-center">

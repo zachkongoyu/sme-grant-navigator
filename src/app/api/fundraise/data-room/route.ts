@@ -7,6 +7,8 @@ import { buildDataRoomSystemPrompt, buildDataRoomUserMessage } from '@/lib/promp
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
+import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
@@ -31,30 +33,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Insufficient credits. Top up to continue.' }, { status: 402 });
   }
 
-  let body: { stage: string; sector: string; companyContext?: string };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-  }
-
-  const { stage, sector, companyContext = '' } = body;
+  const formData = await request.formData();
+  const stageRaw = formData.get('stage');
+  const sectorRaw = formData.get('sector');
+  const stage = typeof stageRaw === 'string' ? stageRaw : '';
+  const sector = typeof sectorRaw === 'string' ? sectorRaw : '';
+  const companyContext = await buildFundraiseCompanyContext(formData, {
+    maxContextChars: 3_000,
+    maxAttachmentChars: 30_000,
+  });
   if (!stage?.trim() || !sector?.trim()) {
     return NextResponse.json({ error: 'stage and sector are required' }, { status: 400 });
   }
 
-  const response = await chatCompletions({
-    model: defaultModel(),
-    messages: [
-      { role: 'system', content: buildDataRoomSystemPrompt() },
-      { role: 'user', content: buildDataRoomUserMessage(stage.trim(), sector.trim(), companyContext.slice(0, 3_000)) },
-    ],
-    stream: false,
-    max_tokens: maxTokens(),
-  });
+  try {
+    const response = await chatCompletions({
+      model: defaultModel(),
+      messages: [
+        { role: 'system', content: buildDataRoomSystemPrompt() },
+        { role: 'user', content: buildDataRoomUserMessage(stage.trim(), sector.trim(), companyContext) },
+      ],
+      stream: false,
+      max_tokens: maxTokens(),
+    });
 
-  const json = await response.json() as { choices: [{ message: { content: string } }] };
-  const content = json.choices[0]?.message?.content ?? '';
+    const json = await response.json() as { choices: [{ message: { content: string } }] };
+    const content = json.choices[0]?.message?.content ?? '';
 
-  return NextResponse.json({ content });
+    return NextResponse.json({ content });
+  } catch (error) {
+    return handleFundraiseExternalError('fundraise.data-room', error);
+  }
 }

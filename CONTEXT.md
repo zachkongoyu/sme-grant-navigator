@@ -93,6 +93,10 @@ _Avoid_: Cold email template, Outreach email
 AI-generated prioritised checklist of documents a founder needs for investor due diligence. Tailored by stage + sector (pre-filled from Project). Output: markdown (copy) + PDF. Does not generate the documents — checklist only. Financial model item links founders to external templates. Costs 1 Credit. Lives under FundraisingHub.
 _Avoid_: Due diligence checklist, Investor readiness checklist
 
+**Company context**:
+Free-form founder/company input supplied to AI tools. Can come from direct typed text, attached documents, shared links, or any combination of those. In the product/domain sense, this means the full combined input available to the tool, not only the textarea field.
+_Avoid_: treating "Company context" as textarea-only input
+
 **EligibilityCheck**:
 An AI-run assessment of whether a Company meets the criteria for a specific Scheme. Produces a verdict, a list of criteria outcomes, and tips.
 _Avoid_: Assessment, Screening, Qualification check

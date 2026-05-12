@@ -96,15 +96,6 @@ export default async function ProjectDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-background px-4 py-16 text-text-primary sm:px-6">
       <div className="mx-auto max-w-2xl space-y-8">
-
-        {/* Back */}
-        <Link
-          href="/showcase"
-          className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40 transition hover:text-accent"
-        >
-          ← Back to Showcase
-        </Link>
-
         {/* Draft banner */}
         {p.status === 'draft' && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 font-mono text-xs text-amber-400">

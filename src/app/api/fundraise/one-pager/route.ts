@@ -7,6 +7,8 @@ import { buildOnePagerSystemPrompt, buildOnePagerUserMessage } from '@/lib/promp
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
+import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
@@ -31,30 +33,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Insufficient credits. Top up to continue.' }, { status: 402 });
   }
 
-  let body: { companyContext: string };
-  try {
-    body = (await request.json()) as { companyContext: string };
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-  }
-
-  const { companyContext } = body;
-  if (!companyContext?.trim()) {
-    return NextResponse.json({ error: 'companyContext is required' }, { status: 400 });
-  }
-
-  const response = await chatCompletions({
-    model: defaultModel(),
-    messages: [
-      { role: 'system', content: buildOnePagerSystemPrompt() },
-      { role: 'user', content: buildOnePagerUserMessage(companyContext.slice(0, 10_000)) },
-    ],
-    stream: false,
-    max_tokens: maxTokens(),
+  const formData = await request.formData();
+  const companyContext = await buildFundraiseCompanyContext(formData, {
+    maxContextChars: 10_000,
+    maxAttachmentChars: 30_000,
   });
+  if (!companyContext?.trim()) {
+    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+  }
 
-  const json = await response.json() as { choices: [{ message: { content: string } }] };
-  const content = json.choices[0]?.message?.content ?? '';
+  try {
+    const response = await chatCompletions({
+      model: defaultModel(),
+      messages: [
+        { role: 'system', content: buildOnePagerSystemPrompt() },
+        { role: 'user', content: buildOnePagerUserMessage(companyContext) },
+      ],
+      stream: false,
+      max_tokens: maxTokens(),
+    });
 
-  return NextResponse.json({ content });
+    const json = await response.json() as { choices: [{ message: { content: string } }] };
+    const content = json.choices[0]?.message?.content ?? '';
+
+    return NextResponse.json({ content });
+  } catch (error) {
+    return handleFundraiseExternalError('fundraise.one-pager', error);
+  }
 }

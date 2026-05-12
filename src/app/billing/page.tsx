@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 import { BuyPackButton } from '@/components/BuyPackButton';
-import { BackNavigation } from '@/components/navigation';
 
 export const metadata: Metadata = {
   title: 'Credits | Thunder',
@@ -46,10 +45,6 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
       {/* Subtle ambient glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-[500px] w-[900px] -translate-x-1/2 rounded-full bg-accent/[0.025] blur-3xl" />
-      </div>
-
-      <div className="absolute top-6 left-6 z-10">
-        <BackNavigation fallbackHref="/" />
       </div>
 
       <div className="mx-auto max-w-md space-y-10">

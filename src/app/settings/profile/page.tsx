@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
-import { BackNavigation } from '@/components/navigation';
 import { ProfileForm } from '@/components/ProfileForm';
 import type { Profile } from '@/types';
 
@@ -43,10 +42,6 @@ export default async function SettingsProfilePage() {
     <main className="relative min-h-screen bg-background px-4 py-16 text-text-primary sm:px-6">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-0 h-125 w-225 -translate-x-1/2 rounded-full bg-accent/2.5 blur-3xl" />
-      </div>
-
-      <div className="absolute top-6 left-6 z-10">
-        <BackNavigation fallbackHref="/" />
       </div>
 
       <div className="mx-auto max-w-3xl space-y-10">

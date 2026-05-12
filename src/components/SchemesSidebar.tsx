@@ -3,8 +3,6 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { BackNavigation } from '@/components/navigation';
-import { FEATURED_SCHEME_ID } from '@/config/site';
 import { filterSchemes, groupSchemesByJurisdiction } from '@/lib/schemes/filter';
 import type { Scheme } from '@/types';
 
@@ -39,9 +37,7 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
           open ? 'w-64' : 'w-0 overflow-hidden'
         } hidden lg:flex lg:flex-col`}
       >
-        {/* Top: back nav */}
-        <div className="flex items-center justify-between px-4 py-4">
-          <BackNavigation fallbackHref={`/schemes/${FEATURED_SCHEME_ID}`} />
+        <div className="flex justify-end px-4 py-4">
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -67,8 +63,6 @@ export function SchemesSidebar({ schemes, activeId, children }: SchemesSidebarPr
             />
           </label>
         </div>
-
-        {/* Scheme list grouped by jurisdiction */}
         <nav className="flex-1 overflow-y-auto pb-4">
           {grouped.map(([category, items]) => (
             <div key={category} className="mb-1">

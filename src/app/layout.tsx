@@ -10,6 +10,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AuthButton } from '@/components/AuthButton';
+import { AppPageNavigation } from '@/components/navigation/AppPageNavigation';
 
 import './globals.css';
 
@@ -59,6 +60,9 @@ export default function RootLayout({
         />
         <Suspense fallback={null}>
           <NavigationProgress />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AppPageNavigation />
         </Suspense>
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
           <AuthButton />

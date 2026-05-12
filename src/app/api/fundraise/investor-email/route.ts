@@ -7,6 +7,8 @@ import { buildInvestorEmailSystemPrompt, buildInvestorEmailUserMessage } from '@
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
+import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
@@ -31,38 +33,45 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Insufficient credits. Top up to continue.' }, { status: 402 });
   }
 
-  let body: { investorName: string; investorFirm: string; investorThesis: string; companyContext: string };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-  }
-
-  const { investorName, investorFirm, investorThesis, companyContext } = body;
-  if (!investorName?.trim() || !companyContext?.trim()) {
-    return NextResponse.json({ error: 'investorName and companyContext are required' }, { status: 400 });
-  }
-
-  const response = await chatCompletions({
-    model: defaultModel(),
-    messages: [
-      { role: 'system', content: buildInvestorEmailSystemPrompt() },
-      {
-        role: 'user',
-        content: buildInvestorEmailUserMessage(
-          investorName.trim(),
-          investorFirm.trim(),
-          investorThesis.trim(),
-          companyContext.slice(0, 5_000),
-        ),
-      },
-    ],
-    stream: false,
-    max_tokens: 512,
+  const formData = await request.formData();
+  const investorNameRaw = formData.get('investorName');
+  const investorFirmRaw = formData.get('investorFirm');
+  const investorThesisRaw = formData.get('investorThesis');
+  const investorName = typeof investorNameRaw === 'string' ? investorNameRaw : '';
+  const investorFirm = typeof investorFirmRaw === 'string' ? investorFirmRaw : '';
+  const investorThesis = typeof investorThesisRaw === 'string' ? investorThesisRaw : '';
+  const companyContext = await buildFundraiseCompanyContext(formData, {
+    maxContextChars: 5_000,
+    maxAttachmentChars: 30_000,
   });
+  if (!investorName?.trim() || !companyContext?.trim()) {
+    return NextResponse.json({ error: 'investor name and company context are required' }, { status: 400 });
+  }
 
-  const json = await response.json() as { choices: [{ message: { content: string } }] };
-  const content = json.choices[0]?.message?.content ?? '';
+  try {
+    const response = await chatCompletions({
+      model: defaultModel(),
+      messages: [
+        { role: 'system', content: buildInvestorEmailSystemPrompt() },
+        {
+          role: 'user',
+          content: buildInvestorEmailUserMessage(
+            investorName.trim(),
+            investorFirm.trim(),
+            investorThesis.trim(),
+            companyContext,
+          ),
+        },
+      ],
+      stream: false,
+      max_tokens: 512,
+    });
 
-  return NextResponse.json({ content });
+    const json = await response.json() as { choices: [{ message: { content: string } }] };
+    const content = json.choices[0]?.message?.content ?? '';
+
+    return NextResponse.json({ content });
+  } catch (error) {
+    return handleFundraiseExternalError('fundraise.investor-email', error);
+  }
 }

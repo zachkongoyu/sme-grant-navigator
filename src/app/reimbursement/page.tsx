@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Reimbursement Guide | Easy BUD | Thunder',
@@ -9,17 +8,7 @@ export const metadata: Metadata = {
 export default function ReimbursementPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-text-tertiary transition hover:text-accent"
-      >
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3" aria-hidden="true">
-          <path d="M10 13L5 8l5-5" />
-        </svg>
-        Home
-      </Link>
-
-      <h1 className="mt-6 text-3xl font-semibold tracking-tight">Easy BUD Reimbursement Guide</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Easy BUD Reimbursement Guide</h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-text-secondary">
         After your project completes, you claim the government&apos;s matching share by submitting a reimbursement package through HKPC. Here is what that looks like.
       </p>

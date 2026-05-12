@@ -12,13 +12,11 @@ import {
   streamDraftGeneration,
 } from '@/lib/api/draft-client';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
-import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
 import { CopyButton } from '@/components/CopyButton';
 
 interface DrafterProps {
   readonly scheme: Scheme;
-  readonly backHref: string;
   readonly headerControls?: ReactNode;
 }
 
@@ -40,7 +38,7 @@ interface DraftFileAttachment extends AttachmentFile {
 
 type DraftAttachment = DraftFileAttachment | LinkAttachment;
 
-export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
+export function Drafter({ scheme, headerControls }: DrafterProps) {
   const [context, setContext] = useState('');
   const [draft, setDraft] = useState('');
   const [stage, setStage] = useState<Stage>('compose');
@@ -252,10 +250,6 @@ export function Drafter({ scheme, backHref, headerControls }: DrafterProps) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Back nav */}
-        <div className="absolute top-6 left-6">
-          <BackNavigation fallbackHref={backHref} />
-        </div>
         <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         {headerControls && (
           <div className="mb-6 flex justify-center">

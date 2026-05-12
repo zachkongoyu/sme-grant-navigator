@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-
-import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
 
 export const metadata: Metadata = {
@@ -12,9 +10,6 @@ export const metadata: Metadata = {
 export default function McpPage() {
   return (
     <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-      <div className="absolute top-6 left-6">
-        <BackNavigation fallbackHref="/" />
-      </div>
       <StatusChip variant="soon" />
       <h1 className="mt-3 text-2xl font-semibold tracking-tight">MCP Server</h1>
       <p className="mt-3 max-w-sm text-sm leading-6 text-text-secondary">

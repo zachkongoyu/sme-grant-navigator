@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { EligibilityChecker } from '@/components/EligibilityChecker';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { FEATURED_SCHEME_ID } from '@/config/site';
+import { requireUser } from '@/lib/auth';
 import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
@@ -16,6 +16,8 @@ interface EligibilityPageProps {
 }
 
 export default async function EligibilityPage({ searchParams }: EligibilityPageProps) {
+  await requireUser('/eligibility');
+
   const schemes = await listSchemes();
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;
@@ -59,7 +61,6 @@ export default async function EligibilityPage({ searchParams }: EligibilityPageP
     <main className="min-h-screen bg-background text-text-primary">
       <EligibilityChecker
         scheme={selectedScheme}
-        backHref={`/schemes/${FEATURED_SCHEME_ID}`}
         headerControls={combobox}
       />
     </main>

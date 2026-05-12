@@ -6,6 +6,39 @@
 
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1';
 
+export class OpenRouterError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'OpenRouterError';
+    this.status = status;
+  }
+}
+
+function extractOpenRouterErrorMessage(rawText: string, status: number): string {
+  try {
+    const parsed = JSON.parse(rawText) as {
+      error?: {
+        message?: string;
+        metadata?: { raw?: string };
+      };
+    };
+    const directMessage = parsed.error?.message?.trim();
+    if (directMessage) {
+      return `OpenRouter ${status}: ${directMessage}`;
+    }
+    const rawMessage = parsed.error?.metadata?.raw?.trim();
+    if (rawMessage) {
+      return `OpenRouter ${status}: ${rawMessage}`;
+    }
+  } catch {
+    // Fall back to raw text below.
+  }
+
+  return `OpenRouter ${status}: ${rawText}`;
+}
+
 export function getHeaders(): Record<string, string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -44,7 +77,7 @@ export async function chatCompletions(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`OpenRouter ${response.status}: ${text}`);
+    throw new OpenRouterError(response.status, extractOpenRouterErrorMessage(text, response.status));
   }
 
   return response;

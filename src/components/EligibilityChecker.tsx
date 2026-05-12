@@ -9,7 +9,6 @@ import type {
   EligibilityCriterion,
   EligibilityVerdict,
 } from '@/lib/api/eligibility-client';
-import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
 import { CopyButton } from '@/components/CopyButton';
@@ -352,11 +351,10 @@ function VerdictBanner({ result }: { result: EligibilityCheckResult }) {
 
 interface EligibilityCheckerProps {
   readonly scheme: Scheme;
-  readonly backHref: string;
   readonly headerControls?: ReactNode;
 }
 
-export function EligibilityChecker({ scheme, backHref, headerControls }: EligibilityCheckerProps) {
+export function EligibilityChecker({ scheme, headerControls }: EligibilityCheckerProps) {
   const {
     context, setContext, stage, result, errorMsg, warnings,
     followupAnswers, progress, check, recheckWithFollowups, reset, setFollowupAnswer,
@@ -437,7 +435,6 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
 
   const pageShell = (children: ReactNode) => (
     <div className="relative min-h-screen bg-background">
-      <div className="absolute top-6 left-6 z-10"><BackNavigation fallbackHref={backHref} /></div>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
         {headerControls && <div className="mb-6 flex justify-center">{headerControls}</div>}
         <div className="mb-8 flex flex-col items-center gap-3 text-center">

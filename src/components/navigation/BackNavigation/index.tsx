@@ -1,8 +1,27 @@
+ 'use client';
+
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export function BackNavigation({ fallbackHref }: { readonly fallbackHref: string }) {
+import type { NavigationPolicy } from '@/lib/navigation/policy';
+
+interface BackNavigationProps {
+  readonly policy: NavigationPolicy;
+}
+
+export function BackNavigation({ policy }: BackNavigationProps) {
+  const router = useRouter();
   const sharedControlClassName =
     'inline-flex h-9 items-center justify-center rounded-full text-text-secondary transition duration-200 hover:-translate-y-px hover:text-text-primary';
+
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push(policy.backHref);
+  }
 
   return (
     <div
@@ -13,30 +32,35 @@ export function BackNavigation({ fallbackHref }: { readonly fallbackHref: string
         boxShadow: 'inset 0 1px 0 color-mix(in srgb, white 12%, transparent)',
       }}
     >
-      <Link
-        href={fallbackHref}
+      <button
+        type="button"
+        onClick={handleBack}
         className={`${sharedControlClassName} min-w-24 gap-2.5 px-3.5 font-mono text-[10px] uppercase tracking-[0.24em]`}
       >
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
           <path d="M10 13L5 8l5-5" />
         </svg>
         Back
-      </Link>
-      <span
-        className="h-5 w-px shrink-0"
-        aria-hidden="true"
-        style={{ backgroundColor: 'color-mix(in srgb, var(--border) 78%, transparent)' }}
-      />
-      <Link
-        href="/"
-        aria-label="Home"
-        className={`${sharedControlClassName} w-9 shrink-0`}
-      >
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
-          <path d="M2.5 7.25 8 2.75l5.5 4.5" />
-          <path d="M4.25 6.5v6.75h7.5V6.5" />
-        </svg>
-      </Link>
+      </button>
+      {policy.showHome && (
+        <>
+          <span
+            className="h-5 w-px shrink-0"
+            aria-hidden="true"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--border) 78%, transparent)' }}
+          />
+          <Link
+            href={policy.homeHref}
+            aria-label="Home"
+            className={`${sharedControlClassName} w-9 shrink-0`}
+          >
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5" aria-hidden="true">
+              <path d="M2.5 7.25 8 2.75l5.5 4.5" />
+              <path d="M4.25 6.5v6.75h7.5V6.5" />
+            </svg>
+          </Link>
+        </>
+      )}
     </div>
   );
 }

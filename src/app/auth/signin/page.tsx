@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import { BackNavigation } from '@/components/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 function getAuthCallbackUrl() {
@@ -73,9 +72,6 @@ export default function SignInPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-4">
-      <div className="absolute top-6 left-6">
-        <BackNavigation fallbackHref="/" />
-      </div>
       <div className="w-full max-w-sm">
         <div className="mb-6 rounded-xl border border-border bg-surface px-4 py-3.5">
           <p className="text-sm font-medium text-text-primary">3 free credits when you sign up.</p>

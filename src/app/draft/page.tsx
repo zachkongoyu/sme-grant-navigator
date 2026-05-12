@@ -4,7 +4,7 @@ import { Drafter } from '@/components/Drafter';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
 import { CreditInfoBar } from '@/components/CreditInfoBar';
-import { FEATURED_SCHEME_ID } from '@/config/site';
+import { requireUser } from '@/lib/auth';
 import { listSchemes } from '@/lib/schemes';
 
 export const metadata: Metadata = {
@@ -17,6 +17,8 @@ interface DraftPageProps {
 }
 
 export default async function DraftPage({ searchParams }: DraftPageProps) {
+  await requireUser('/draft');
+
   const schemes = await listSchemes();
   const params = searchParams ? await searchParams : undefined;
   const requestedSchemeId = params?.scheme;
@@ -52,7 +54,6 @@ export default async function DraftPage({ searchParams }: DraftPageProps) {
     <main className="min-h-screen bg-background text-text-primary">
       <Drafter
         scheme={selectedScheme}
-        backHref={`/schemes/${FEATURED_SCHEME_ID}`}
         headerControls={
           <div className="flex flex-col items-center gap-3 w-full">
             {combobox}

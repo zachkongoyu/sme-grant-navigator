@@ -7,6 +7,8 @@ import { buildPitchDeckSystemPrompt, buildPitchDeckUserMessage } from '@/lib/pro
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
+import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
   if (!user) {
@@ -31,38 +33,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Insufficient credits. Top up to continue.' }, { status: 402 });
   }
 
-  let body: { companyContext: string; currentMrr: number; monthlyBurn: number; assumedGrowthPct: number };
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-  }
-
-  const { companyContext, currentMrr, monthlyBurn, assumedGrowthPct } = body;
-  if (!companyContext?.trim()) {
-    return NextResponse.json({ error: 'companyContext is required' }, { status: 400 });
-  }
-
-  const response = await chatCompletions({
-    model: defaultModel(),
-    messages: [
-      { role: 'system', content: buildPitchDeckSystemPrompt() },
-      {
-        role: 'user',
-        content: buildPitchDeckUserMessage(
-          companyContext.slice(0, 3_000),
-          Number(currentMrr) || 0,
-          Number(monthlyBurn) || 0,
-          Number(assumedGrowthPct) || 0,
-        ),
-      },
-    ],
-    stream: false,
-    max_tokens: maxTokens(),
+  const formData = await request.formData();
+  const companyContext = await buildFundraiseCompanyContext(formData, {
+    maxContextChars: 3_000,
+    maxAttachmentChars: 30_000,
   });
+  const currentMrr = Number(formData.get('currentMrr')) || 0;
+  const monthlyBurn = Number(formData.get('monthlyBurn')) || 0;
+  const assumedGrowthPct = Number(formData.get('assumedGrowthPct')) || 0;
+  if (!companyContext?.trim()) {
+    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+  }
 
-  const json = await response.json() as { choices: [{ message: { content: string } }] };
-  const content = json.choices[0]?.message?.content ?? '';
+  try {
+    const response = await chatCompletions({
+      model: defaultModel(),
+      messages: [
+        { role: 'system', content: buildPitchDeckSystemPrompt() },
+        {
+          role: 'user',
+          content: buildPitchDeckUserMessage(
+            companyContext,
+            currentMrr,
+            monthlyBurn,
+            assumedGrowthPct,
+          ),
+        },
+      ],
+      stream: false,
+      max_tokens: maxTokens(),
+    });
 
-  return NextResponse.json({ content });
+    const json = await response.json() as { choices: [{ message: { content: string } }] };
+    const content = json.choices[0]?.message?.content ?? '';
+
+    return NextResponse.json({ content });
+  } catch (error) {
+    return handleFundraiseExternalError('fundraise.pitch-deck', error);
+  }
 }
