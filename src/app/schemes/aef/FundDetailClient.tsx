@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Scheme } from '@/types';
@@ -10,6 +10,7 @@ import { useLocale } from '@/lib/i18n/I18nProvider';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import MetadataTabs from './MetadataTabs';
 import InvestmentStage from './InvestmentStage';
+import SectionEditor from './SectionEditor';
 
 interface FundDetailClientProps {
   scheme: Scheme;
@@ -41,6 +42,7 @@ export default function FundDetailClient({
 }: FundDetailClientProps) {
   const t = useTranslations();
   const { locale } = useLocale();
+  const [isEditing, setIsEditing] = useState(false);
 
   const sections = sectionsByLocale[locale] ?? sectionsByLocale['zh'] ?? [];
   const fieldTranslations = fieldTranslationsByLocale[locale] ?? fieldTranslationsByLocale['zh'] ?? [];
@@ -92,22 +94,22 @@ export default function FundDetailClient({
           </h1>
 
           {/* Key stats inline */}
-          <div className="mt-6 flex flex-wrap gap-6">
+          <div className="mt-6 grid grid-cols-2 gap-6">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundSize')}</p>
               <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{fundSize}</p>
-            </div>
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.investmentStage')}</p>
-              <div className="mt-1">
-                <InvestmentStage activeStage={stageValue} />
-              </div>
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundType')}</p>
               <p className="mt-1 font-mono text-xl font-semibold text-text-primary">
                 {fundTypeValue ? t(`fundType.${fundTypeValue}` as any) : '—'}
               </p>
+            </div>
+            <div className="col-span-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.investmentStage')}</p>
+              <div className="mt-1">
+                <InvestmentStage activeStage={stageValue} />
+              </div>
             </div>
           </div>
         </div>
@@ -173,14 +175,34 @@ export default function FundDetailClient({
           </div>
         </div>
 
+        {/* Edit toggle */}
+        <div className="mt-4 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setIsEditing((v) => !v)}
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-accent hover:text-accent"
+          >
+            {isEditing ? 'Cancel Edit' : 'Edit Sections'}
+          </button>
+        </div>
+
         {/* Structured content — loaded from DB */}
         <div className="mt-8 space-y-0">
-          {sections.map((section) => (
-            <CollapsibleSection
-              key={section.section_key}
-              title={section.title}
-              defaultOpen={section.section_key === 'overview'}
-            >
+          {isEditing ? (
+            <SectionEditor
+              schemeId={scheme.id}
+              sections={sections}
+              locale={locale}
+              onSaved={() => window.location.reload()}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            sections.map((section) => (
+              <CollapsibleSection
+                key={section.section_key}
+                title={section.title}
+                defaultOpen={section.section_key === 'overview'}
+              >
               {section.is_list ? (
                 <ol className="list-decimal list-inside space-y-3 text-sm leading-7 text-text-secondary">
                   {section.content.split('|').map((item, i) => {
@@ -212,7 +234,7 @@ export default function FundDetailClient({
                 </div>
               )}
             </CollapsibleSection>
-          ))}
+          )))}
         </div>
 
         {/* Metadata tags */}
