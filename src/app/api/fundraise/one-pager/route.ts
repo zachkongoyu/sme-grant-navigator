@@ -4,10 +4,11 @@ import { getAuthUser } from '@/lib/auth';
 import { validateLlmConfiguration, defaultModel, maxTokens } from '@/lib/llm';
 import { chatCompletions } from '@/lib/llm/openrouter';
 import { buildOnePagerSystemPrompt, buildOnePagerUserMessage } from '@/lib/prompts/one-pager';
+import { hasRawContextInput } from '@/lib/context/input';
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
-import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+import { buildFundraiseCompanyContext, createFundraiseContextInputError, handleFundraiseExternalError } from '../shared';
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
@@ -34,12 +35,16 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
+  if (!hasRawContextInput(formData)) {
+    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+  }
+
   const companyContext = await buildFundraiseCompanyContext(formData, {
     maxContextChars: 10_000,
     maxAttachmentChars: 30_000,
   });
   if (!companyContext?.trim()) {
-    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+    return createFundraiseContextInputError();
   }
 
   try {

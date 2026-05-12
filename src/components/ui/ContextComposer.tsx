@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ClipboardEvent, type MutableRefObject, type ReactNode } from 'react';
+import { useRef, useState, type ClipboardEvent, type DragEvent, type MutableRefObject, type ReactNode } from 'react';
 
 import type { Attachment, AttachmentFile, LinkAttachment } from '@/types';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
@@ -51,6 +51,7 @@ export function ContextComposer({
 }: ContextComposerProps) {
   const [linkInputVisible, setLinkInputVisible] = useState(false);
   const [linkDraft, setLinkDraft] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function addFiles(fileList: FileList | File[]) {
@@ -84,8 +85,33 @@ export function ContextComposer({
     }
   }
 
+  function handleDragOver(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: DragEvent<HTMLDivElement>) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      setIsDragging(false);
+    }
+  }
+
+  function handleDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files);
+    }
+  }
+
   return (
-    <div className={bordered ? 'border-t border-border' : undefined}>
+    <div
+      className={`${bordered ? 'border-t border-border' : ''} transition-colors ${isDragging ? 'bg-surface/60' : ''}`.trim() || undefined}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {label && (
         <div className="px-5 pt-5 pb-0">
           <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
@@ -94,14 +120,16 @@ export function ContextComposer({
           </label>
         </div>
       )}
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onPaste={handlePaste}
-        placeholder={placeholder}
-        rows={rows}
-        className={`w-full resize-none bg-transparent px-5 pb-3 text-sm leading-7 text-text-primary placeholder:text-text-tertiary focus:outline-none${label ? ' pt-2' : ' pt-5'}`}
-      />
+      <div className={`transition-colors ${isDragging ? 'ring-1 ring-accent/40' : ''}`}>
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onPaste={handlePaste}
+          placeholder={placeholder}
+          rows={rows}
+          className={`w-full resize-none bg-transparent px-5 pb-3 text-sm leading-7 text-text-primary placeholder:text-text-tertiary focus:outline-none${label ? ' pt-2' : ' pt-5'}`}
+        />
+      </div>
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-1.5 border-t border-border px-5 py-3">
           {attachments.map((a) => (

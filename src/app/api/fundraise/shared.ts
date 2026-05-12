@@ -56,3 +56,10 @@ export function handleFundraiseExternalError(feature: string, error: unknown) {
 
   return NextResponse.json({ error: 'Generation failed. Please try again.' }, { status: 500 });
 }
+
+export function createFundraiseContextInputError() {
+  return NextResponse.json(
+    { error: 'Could not use the provided context input. Add some text or provide a text-based file or URL.' },
+    { status: 400 },
+  );
+}

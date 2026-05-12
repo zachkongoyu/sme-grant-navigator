@@ -1,13 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getAuthUser } from '@/lib/auth';
-import { validateLlmConfiguration, defaultModel, maxTokens } from '@/lib/llm';
+import { validateLlmConfiguration, defaultModel } from '@/lib/llm';
 import { chatCompletions } from '@/lib/llm/openrouter';
+import { hasRawContextInput } from '@/lib/context/input';
 import { buildInvestorEmailSystemPrompt, buildInvestorEmailUserMessage } from '@/lib/prompts/investor-email';
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
-import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+import { buildFundraiseCompanyContext, createFundraiseContextInputError, handleFundraiseExternalError } from '../shared';
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
@@ -40,12 +41,16 @@ export async function POST(request: NextRequest) {
   const investorName = typeof investorNameRaw === 'string' ? investorNameRaw : '';
   const investorFirm = typeof investorFirmRaw === 'string' ? investorFirmRaw : '';
   const investorThesis = typeof investorThesisRaw === 'string' ? investorThesisRaw : '';
+  if (!investorName?.trim() || !hasRawContextInput(formData)) {
+    return NextResponse.json({ error: 'investor name and company context are required' }, { status: 400 });
+  }
+
   const companyContext = await buildFundraiseCompanyContext(formData, {
     maxContextChars: 5_000,
     maxAttachmentChars: 30_000,
   });
   if (!investorName?.trim() || !companyContext?.trim()) {
-    return NextResponse.json({ error: 'investor name and company context are required' }, { status: 400 });
+    return createFundraiseContextInputError();
   }
 
   try {

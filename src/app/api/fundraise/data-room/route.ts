@@ -3,11 +3,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
 import { validateLlmConfiguration, defaultModel, maxTokens } from '@/lib/llm';
 import { chatCompletions } from '@/lib/llm/openrouter';
+import { hasRawContextInput } from '@/lib/context/input';
 import { buildDataRoomSystemPrompt, buildDataRoomUserMessage } from '@/lib/prompts/data-room';
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
-import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+import { buildFundraiseCompanyContext, createFundraiseContextInputError, handleFundraiseExternalError } from '../shared';
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
@@ -38,12 +39,16 @@ export async function POST(request: NextRequest) {
   const sectorRaw = formData.get('sector');
   const stage = typeof stageRaw === 'string' ? stageRaw : '';
   const sector = typeof sectorRaw === 'string' ? sectorRaw : '';
+  const hasAnyContextInput = hasRawContextInput(formData);
   const companyContext = await buildFundraiseCompanyContext(formData, {
     maxContextChars: 3_000,
     maxAttachmentChars: 30_000,
   });
   if (!stage?.trim() || !sector?.trim()) {
     return NextResponse.json({ error: 'stage and sector are required' }, { status: 400 });
+  }
+  if (hasAnyContextInput && !companyContext.trim()) {
+    return createFundraiseContextInputError();
   }
 
   try {

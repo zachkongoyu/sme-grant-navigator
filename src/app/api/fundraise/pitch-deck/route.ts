@@ -3,11 +3,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
 import { validateLlmConfiguration, defaultModel, maxTokens } from '@/lib/llm';
 import { chatCompletions } from '@/lib/llm/openrouter';
+import { hasRawContextInput } from '@/lib/context/input';
 import { buildPitchDeckSystemPrompt, buildPitchDeckUserMessage } from '@/lib/prompts/pitch-deck';
 import { createClient } from '@/lib/supabase/server';
 import { BILLING } from '@/config/billing';
 
-import { buildFundraiseCompanyContext, handleFundraiseExternalError } from '../shared';
+import { buildFundraiseCompanyContext, createFundraiseContextInputError, handleFundraiseExternalError } from '../shared';
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser();
@@ -34,6 +35,19 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
+  const rawContextText = formData.get('contextText');
+  const contextText = typeof rawContextText === 'string' ? rawContextText.trim() : '';
+  const fileCount = formData.getAll('files').filter((entry) => entry instanceof File).length;
+  const urlCount = formData.getAll('urls').filter((entry) => typeof entry === 'string' && entry.trim().length > 0).length;
+  if (!hasRawContextInput(formData)) {
+    console.warn('[fundraise.pitch-deck] missing raw context input', {
+      hasContextText: contextText.length > 0,
+      fileCount,
+      urlCount,
+    });
+    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+  }
+
   const companyContext = await buildFundraiseCompanyContext(formData, {
     maxContextChars: 3_000,
     maxAttachmentChars: 30_000,
@@ -42,7 +56,12 @@ export async function POST(request: NextRequest) {
   const monthlyBurn = Number(formData.get('monthlyBurn')) || 0;
   const assumedGrowthPct = Number(formData.get('assumedGrowthPct')) || 0;
   if (!companyContext?.trim()) {
-    return NextResponse.json({ error: 'company context is required' }, { status: 400 });
+    console.warn('[fundraise.pitch-deck] empty merged companyContext after extraction', {
+      contextTextLength: contextText.length,
+      fileCount,
+      urlCount,
+    });
+    return createFundraiseContextInputError();
   }
 
   try {

@@ -3,6 +3,9 @@
  * Called at submit time by the eligibility and draft API routes.
  */
 
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 /* eslint-disable @typescript-eslint/no-require-imports */
 
 /**
@@ -32,6 +35,9 @@ export const MAX_URL_COUNT   = 3;
 export const MAX_FILE_CHARS  = 100_000;
 export const MAX_URL_CHARS   = 30_000;
 const LINK_FETCH_TIMEOUT_MS  = 5_000;
+const PDF_WORKER_SRC = pathToFileURL(
+  join(process.cwd(), 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs'),
+).href;
 
 export interface ExtractedFile {
   id: string;
@@ -73,12 +79,27 @@ async function extractTextFromBuffer(
 
   // PDF
   if (mime === 'application/pdf' || lowerName.endsWith('.pdf')) {
-    const pdfParse = tryRequire('pdf-parse') as
-      | ((buf: Buffer) => Promise<{ text: string }>)
-      | null;
-    if (!pdfParse) return '';
-    const result = await pdfParse(buffer);
-    return result.text ?? '';
+    const { PDFParse } = await import('pdf-parse');
+    PDFParse.setWorker(PDF_WORKER_SRC);
+    const parser = new PDFParse({ data: buffer });
+
+    try {
+      const result = await parser.getText();
+      console.warn('[pdf-parse] text length', {
+        name,
+        textLength: result.text?.length ?? 0,
+      });
+      return result.text ?? '';
+    } catch (error) {
+      console.error('[pdf-parse] getText failed', {
+        name,
+        mime,
+        error: error instanceof Error ? error.stack ?? error.message : error,
+      });
+      throw error;
+    } finally {
+      await parser.destroy().catch(() => undefined);
+    }
   }
 
   // DOCX
