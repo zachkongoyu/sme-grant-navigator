@@ -49,5 +49,16 @@
   "home": {
     "browseSchemes": "Browse Schemes",
     "schemes": "Schemes"
+  },
+  "investmentStage": {
+    "early": "Development",
+    "growth": "Growth",
+    "mature": "Mature",
+    "earlyDesc": "Seed / Angel round. Companies are typically at concept validation or early product development stage, needing capital to turn ideas into actual business.",
+    "growthDesc": "Series A, B, C. Companies have validated business models with stable revenue, needing capital to expand market scale and accelerate growth.",
+    "matureDesc": "Series D, E and pre-IPO. Companies have reached significant scale, preparing for listing or strategic expansion."
+  },
+  "fundType": {
+    "corporate": "Corporate"
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 function InfoPopover({
   label,
@@ -29,7 +30,7 @@ function InfoPopover({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="group inline-flex items-center justify-center rounded-full p-1 transition hover:bg-surface"
-        aria-label={`${label} 說明`}
+        aria-label={`${label} info`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -50,21 +51,23 @@ function InfoPopover({
 }
 
 export default function InvestmentStage() {
+  const t = useTranslations('investmentStage');
+
   return (
     <div className="flex items-center gap-2">
       <InfoPopover
-        label="開發階段"
-        description="種子輪／天使輪。企業通常處於概念驗證或產品開發初期，需要資金將想法轉化為實際業務。"
+        label={t('early')}
+        description={t('earlyDesc')}
       />
       <span className="text-text-tertiary text-xl">|</span>
       <InfoPopover
-        label="成長階段"
-        description="A輪、B輪、C輪。企業已驗證商業模式並具備穩定收入，需要資金擴大市場規模及加速發展。"
+        label={t('growth')}
+        description={t('growthDesc')}
       />
       <span className="text-text-tertiary text-xl">|</span>
       <InfoPopover
-        label="成熟階段"
-        description="D輪、E輪及IPO前期。企業已達相當規模，正進行上市準備或進行策略性擴張。"
+        label={t('mature')}
+        description={t('matureDesc')}
       />
     </div>
   );

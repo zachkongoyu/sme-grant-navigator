@@ -51,7 +51,7 @@ export default function FundDetailPage() {
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundType')}</p>
-              <p className="mt-1 font-mono text-xl font-semibold text-text-primary">企業導向</p>
+              <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{t('fundType.corporate')}</p>
             </div>
           </div>
         </div>
