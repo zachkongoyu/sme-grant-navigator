@@ -32,7 +32,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
 
   const filterOptions = {
     stage: [t('filters.all'), t('filters.early'), t('filters.growth'), t('filters.mature')],
-    type: [t('filters.all'), t('filters.idea'), t('filters.startup'), t('filters.sme')],
+    type: [t('filters.all'), t('filters.government'), t('filters.corporate'), t('filters.university')],
   };
 
   const sortOptions: { key: SortKey; label: string }[] = [

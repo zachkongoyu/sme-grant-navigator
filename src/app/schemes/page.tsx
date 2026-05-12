@@ -25,7 +25,7 @@ const staticSchemes = [
     nextDeadline: null,
     version: 1,
     stage: '成長期',
-    type: '初創',
+    type: '企業',
     industry: '任何類型',
     difficulty: 4,
   },
