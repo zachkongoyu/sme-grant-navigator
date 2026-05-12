@@ -6,15 +6,16 @@ import { useTranslations } from 'next-intl';
 import type { Scheme } from '@/types';
 import type { SchemeSection, SchemeMetadata, SchemeFieldTranslation } from '@/lib/supabase/scheme-details';
 import { formatFundingAmount } from '@/lib/schemes/presentation';
+import { useLocale } from '@/lib/i18n/I18nProvider';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import MetadataTabs from './MetadataTabs';
 import InvestmentStage from './InvestmentStage';
 
 interface FundDetailClientProps {
   scheme: Scheme;
-  sections: ReadonlyArray<SchemeSection>;
+  sectionsByLocale: Record<string, ReadonlyArray<SchemeSection>>;
   metadata: ReadonlyArray<SchemeMetadata>;
-  fieldTranslations: ReadonlyArray<SchemeFieldTranslation>;
+  fieldTranslationsByLocale: Record<string, ReadonlyArray<SchemeFieldTranslation>>;
 }
 
 function getFieldTranslation(
@@ -34,11 +35,15 @@ function getMetadataValue(
 
 export default function FundDetailClient({
   scheme,
-  sections,
+  sectionsByLocale,
   metadata,
-  fieldTranslations,
+  fieldTranslationsByLocale,
 }: FundDetailClientProps) {
   const t = useTranslations();
+  const { locale } = useLocale();
+
+  const sections = sectionsByLocale[locale] ?? sectionsByLocale['zh'] ?? [];
+  const fieldTranslations = fieldTranslationsByLocale[locale] ?? fieldTranslationsByLocale['zh'] ?? [];
 
   const name = getFieldTranslation(fieldTranslations, 'name', scheme.name);
   const administrator = getFieldTranslation(fieldTranslations, 'administrator', scheme.administrator ?? '');
@@ -47,6 +52,18 @@ export default function FundDetailClient({
 
   const difficultyValue = getMetadataValue(metadata, 'difficulty');
   const difficultyNumber = difficultyValue ? parseInt(difficultyValue, 10) : 0;
+
+  const stageValue = getMetadataValue(metadata, 'investment_stage');
+  const fundTypeValue = getMetadataValue(metadata, 'fund_type');
+
+  const difficultyLabelMap: Record<number, string> = {
+    1: t('fundDetail.difficultyVeryEasy'),
+    2: t('fundDetail.difficultyEasy'),
+    3: t('fundDetail.difficultyMedium'),
+    4: t('fundDetail.difficultyHard'),
+    5: t('fundDetail.difficultyVeryHard'),
+  };
+  const difficultyLabel = difficultyValue ? (difficultyLabelMap[difficultyNumber] ?? '—') : '—';
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-text-primary">
@@ -83,12 +100,14 @@ export default function FundDetailClient({
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.investmentStage')}</p>
               <div className="mt-1">
-                <InvestmentStage />
+                <InvestmentStage activeStage={stageValue} />
               </div>
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-text-tertiary">{t('fundDetail.fundType')}</p>
-              <p className="mt-1 font-mono text-xl font-semibold text-text-primary">{t('fundType.corporate')}</p>
+              <p className="mt-1 font-mono text-xl font-semibold text-text-primary">
+                {fundTypeValue ? t(`fundType.${fundTypeValue}` as any) : '—'}
+              </p>
             </div>
           </div>
         </div>
@@ -96,39 +115,29 @@ export default function FundDetailClient({
         {/* Right-rail: actions + links */}
         <div className="py-8 border-b border-border grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Official links */}
-          <div className="rounded-xl border border-border bg-surface p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">{t('fundDetail.officialPortal')}</p>
-            <ul className="mt-3 space-y-2">
-              <li>
-                <a
-                  href="https://www.alibabafund.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 text-sm underline underline-offset-4 transition"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  Alibaba Entrepreneurs Fund
-                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-2.5 w-2.5 shrink-0 opacity-60">
-                    <path d="M2 10L10 2M5 2h5v5" />
-                  </svg>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.jumpstarter.hk"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 text-sm underline underline-offset-4 transition"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  JUMPSTARTER 競賽
-                  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-2.5 w-2.5 shrink-0 opacity-60">
-                    <path d="M2 10L10 2M5 2h5v5" />
-                  </svg>
-                </a>
-              </li>
-            </ul>
-          </div>
+          {scheme.links.length > 0 && (
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text-tertiary">{t('fundDetail.officialPortal')}</p>
+              <ul className="mt-3 space-y-2">
+                {scheme.links.map((link) => (
+                  <li key={link.url}>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-sm underline underline-offset-4 transition"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      {link.label}
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-2.5 w-2.5 shrink-0 opacity-60">
+                        <path d="M2 10L10 2M5 2h5v5" />
+                      </svg>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Right column: difficulty + save */}
           <div className="flex flex-col gap-4">
@@ -145,7 +154,7 @@ export default function FundDetailClient({
                     }}
                   />
                 ))}
-                <span className="ml-1.5 text-xs font-medium text-text-primary">{t('fundDetail.high')}</span>
+                <span className="ml-1.5 text-xs font-medium text-text-primary">{difficultyLabel}</span>
               </div>
             </div>
 
@@ -171,14 +180,17 @@ export default function FundDetailClient({
               key={section.section_key}
               title={section.title}
               defaultOpen={section.section_key === 'overview'}
-              hasNumbers={section.is_list}
             >
               {section.is_list ? (
                 <ol className="list-decimal list-inside space-y-3 text-sm leading-7 text-text-secondary">
                   {section.content.split('|').map((item, i) => {
                     const trimmed = item.trim();
-                    // Check if item has a bold prefix like "Label: content"
-                    const colonIndex = trimmed.indexOf('：');
+                    // Check if item has a bold prefix like "Label: content" or "Label：content"
+                    const zhColonIndex = trimmed.indexOf('：');
+                    const enColonIndex = trimmed.indexOf(':');
+                    const colonIndex = zhColonIndex !== -1
+                      ? (enColonIndex !== -1 ? Math.min(zhColonIndex, enColonIndex) : zhColonIndex)
+                      : enColonIndex;
                     if (colonIndex > 0) {
                       const label = trimmed.slice(0, colonIndex + 1);
                       const rest = trimmed.slice(colonIndex + 1);

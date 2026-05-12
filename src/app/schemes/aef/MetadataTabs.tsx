@@ -1,35 +1,21 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import type { SchemeMetadata } from '@/lib/supabase/scheme-details';
 
 interface MetadataTabsProps {
   metadata: ReadonlyArray<SchemeMetadata>;
 }
 
-// Map field_key to display label
-const fieldLabels: Record<string, string> = {
-  investment_stage: '投資階段',
-  fund_type: '基金類型',
-  difficulty: '申請難度',
-};
-
-// Map enum value to display value
-const valueLabels: Record<string, string> = {
-  development: '開發階段',
-  growth: '成長期',
-  mature: '成熟期',
-  government: '政府',
-  corporate: '企業',
-  university: '大學',
-};
-
 export default function MetadataTabs({ metadata }: MetadataTabsProps) {
+  const t = useTranslations();
+
   const cards = metadata
     .filter((m) => m.field_key !== 'difficulty') // difficulty shown in hero, not cards
     .map((m) => ({
-      label: fieldLabels[m.field_key] ?? m.field_key,
-      value: valueLabels[m.value] ?? m.value,
+      label: t(`filters.${m.field_key === 'investment_stage' ? 'stage' : m.field_key === 'fund_type' ? 'type' : m.field_key}` as any),
+      value: t(`${m.field_key === 'investment_stage' ? 'filters' : 'fundType'}.${m.value}` as any),
     }));
 
   if (cards.length === 0) return null;

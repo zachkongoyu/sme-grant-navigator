@@ -19,9 +19,12 @@ export function I18nProvider({
   children: React.ReactNode;
   messages: Record<string, unknown>;
 }) {
+  // Always start with default locale during SSR/hydration to avoid mismatch
   const [locale, setLocaleState] = useState('zh');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem('thunder.locale');
     if (saved === 'en' || saved === 'zh') {
       setLocaleState(saved);
@@ -33,9 +36,13 @@ export function I18nProvider({
     localStorage.setItem('thunder.locale', l);
   }, []);
 
+  // During SSR and initial hydration, always render with default locale
+  // After hydration, switch to saved locale
+  const effectiveLocale = mounted ? locale : 'zh';
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale }}>
-      <NextIntlClientProvider locale={locale} messages={messages[locale] ?? {}}>
+    <I18nContext.Provider value={{ locale: effectiveLocale, setLocale }}>
+      <NextIntlClientProvider locale={effectiveLocale} messages={messages[effectiveLocale] ?? {}}>
         {children}
       </NextIntlClientProvider>
     </I18nContext.Provider>

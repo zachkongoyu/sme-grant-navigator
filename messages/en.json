@@ -37,7 +37,11 @@
     "saveFund": "Save Fund",
     "applyNow": "Apply Now",
     "applicationDifficulty": "Difficulty",
-    "high": "High"
+    "difficultyVeryEasy": "Very Easy",
+    "difficultyEasy": "Easy",
+    "difficultyMedium": "Medium",
+    "difficultyHard": "Hard",
+    "difficultyVeryHard": "Very Hard"
   },
   "sections": {
     "overview": "Overview",
@@ -59,7 +63,9 @@
     "matureDesc": "Series D, E and pre-IPO. Companies have reached significant scale, preparing for listing or strategic expansion."
   },
   "fundType": {
-    "corporate": "Corporate"
+    "government": "Government",
+    "corporate": "Corporate",
+    "university": "University"
   },
   "landing": {
     "live": "Live",

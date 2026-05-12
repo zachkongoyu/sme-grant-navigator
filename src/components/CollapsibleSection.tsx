@@ -6,14 +6,12 @@ interface CollapsibleSectionProps {
   readonly title: string;
   readonly children: React.ReactNode;
   readonly defaultOpen?: boolean;
-  readonly hasNumbers?: boolean;
 }
 
 export function CollapsibleSection({
   title,
   children,
   defaultOpen = false,
-  hasNumbers = false,
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -26,11 +24,6 @@ export function CollapsibleSection({
       >
         <h2 className="text-lg font-semibold tracking-tight text-text-primary">
           {title}
-          {hasNumbers && (
-            <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
-              (foldable)
-            </span>
-          )}
         </h2>
         <svg
           viewBox="0 0 24 24"

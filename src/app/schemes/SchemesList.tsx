@@ -123,6 +123,7 @@ export default function SchemesList({ schemes }: SchemesListProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-xl border border-border bg-surface py-3 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-tertiary transition focus:border-accent focus:outline-none"
+            suppressHydrationWarning
           />
         </div>
       </div>

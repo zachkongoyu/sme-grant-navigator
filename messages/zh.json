@@ -30,14 +30,18 @@
   },
   "fundDetail": {
     "backToList": "返回列表",
-    "fundSize": "基金規模",
+    "fundSize": "資助金額",
     "investmentStage": "投資階段",
     "fundType": "基金類型",
     "officialPortal": "官方網站",
     "saveFund": "收藏基金",
     "applyNow": "立即申請",
     "applicationDifficulty": "申請難度",
-    "high": "偏高"
+    "difficultyVeryEasy": "非常容易",
+    "difficultyEasy": "容易",
+    "difficultyMedium": "中等",
+    "difficultyHard": "偏高",
+    "difficultyVeryHard": "非常高"
   },
   "sections": {
     "overview": "計劃總覽",
@@ -59,7 +63,9 @@
     "matureDesc": "D輪、E輪及IPO前期。企業已達相當規模，正進行上市準備或進行策略性擴張。"
   },
   "fundType": {
-    "corporate": "企業導向"
+    "government": "政府",
+    "corporate": "企業導向",
+    "university": "大學"
   },
   "landing": {
     "live": "即時",

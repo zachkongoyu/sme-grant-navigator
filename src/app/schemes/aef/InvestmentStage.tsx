@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl';
 function InfoPopover({
   label,
   description,
+  isActive,
 }: {
   label: string;
   description: string;
+  isActive?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
@@ -25,7 +27,15 @@ function InfoPopover({
 
   return (
     <span ref={ref} className="relative inline-flex items-center gap-1">
-      <span className="font-mono text-xl font-semibold text-text-primary">{label}</span>
+      <span
+        className={`font-mono text-xl transition ${
+          isActive
+            ? 'font-semibold text-text-primary'
+            : 'font-normal text-text-tertiary opacity-25'
+        }`}
+      >
+        {label}
+      </span>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -50,25 +60,33 @@ function InfoPopover({
   );
 }
 
-export default function InvestmentStage() {
+interface InvestmentStageProps {
+  readonly activeStage?: 'development' | 'growth' | 'mature' | string | undefined;
+}
+
+export default function InvestmentStage({ activeStage }: InvestmentStageProps) {
   const t = useTranslations('investmentStage');
+
+  const stages: Array<{ key: string; label: string; desc: string }> = [
+    { key: 'development', label: t('early'), desc: t('earlyDesc') },
+    { key: 'growth', label: t('growth'), desc: t('growthDesc') },
+    { key: 'mature', label: t('mature'), desc: t('matureDesc') },
+  ];
 
   return (
     <div className="flex items-center gap-2">
-      <InfoPopover
-        label={t('early')}
-        description={t('earlyDesc')}
-      />
-      <span className="text-text-tertiary text-xl">|</span>
-      <InfoPopover
-        label={t('growth')}
-        description={t('growthDesc')}
-      />
-      <span className="text-text-tertiary text-xl">|</span>
-      <InfoPopover
-        label={t('mature')}
-        description={t('matureDesc')}
-      />
+      {stages.map((stage, index) => (
+        <React.Fragment key={stage.key}>
+          {index > 0 && (
+            <span className="text-text-tertiary text-xl">|</span>
+          )}
+          <InfoPopover
+            label={stage.label}
+            description={stage.desc}
+            isActive={activeStage === stage.key}
+          />
+        </React.Fragment>
+      ))}
     </div>
   );
 }

@@ -39,7 +39,7 @@ export async function fetchSchemeSections(
 ): Promise<ReadonlyArray<SchemeSection>> {
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    const { data, error, status, statusText } = await supabase
       .from('scheme_sections')
       .select('*')
       .eq('scheme_id', schemeId)
@@ -47,10 +47,14 @@ export async function fetchSchemeSections(
       .order('display_order', { ascending: true });
 
     if (error) {
-      console.error('Failed to load scheme sections:', error);
+      console.error(
+        `fetchSchemeSections(schemeId=${schemeId}, locale=${locale}) failed:`,
+        { message: error.message, code: error.code, details: error.details, hint: error.hint, status, statusText },
+      );
       return [];
     }
 
+    console.log(`fetchSchemeSections(schemeId=${schemeId}, locale=${locale}) returned ${data?.length ?? 0} rows`);
     return (data ?? []) as ReadonlyArray<SchemeSection>;
   } catch (error) {
     console.error('Unexpected scheme sections load failure:', error);
@@ -63,17 +67,21 @@ export async function fetchSchemeMetadata(
 ): Promise<ReadonlyArray<SchemeMetadata>> {
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    const { data, error, status, statusText } = await supabase
       .from('scheme_metadata')
       .select('*')
       .eq('scheme_id', schemeId)
       .order('display_order', { ascending: true });
 
     if (error) {
-      console.error('Failed to load scheme metadata:', error);
+      console.error(
+        `fetchSchemeMetadata(schemeId=${schemeId}) failed:`,
+        { message: error.message, code: error.code, details: error.details, hint: error.hint, status, statusText },
+      );
       return [];
     }
 
+    console.log(`fetchSchemeMetadata(schemeId=${schemeId}) returned ${data?.length ?? 0} rows`);
     return (data ?? []) as ReadonlyArray<SchemeMetadata>;
   } catch (error) {
     console.error('Unexpected scheme metadata load failure:', error);
@@ -87,17 +95,21 @@ export async function fetchSchemeFieldTranslations(
 ): Promise<ReadonlyArray<SchemeFieldTranslation>> {
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    const { data, error, status, statusText } = await supabase
       .from('scheme_field_translations')
       .select('*')
       .eq('scheme_id', schemeId)
       .eq('locale', locale);
 
     if (error) {
-      console.error('Failed to load scheme field translations:', error);
+      console.error(
+        `fetchSchemeFieldTranslations(schemeId=${schemeId}, locale=${locale}) failed:`,
+        { message: error.message, code: error.code, details: error.details, hint: error.hint, status, statusText },
+      );
       return [];
     }
 
+    console.log(`fetchSchemeFieldTranslations(schemeId=${schemeId}, locale=${locale}) returned ${data?.length ?? 0} rows`);
     return (data ?? []) as ReadonlyArray<SchemeFieldTranslation>;
   } catch (error) {
     console.error('Unexpected scheme field translations load failure:', error);
