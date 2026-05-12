@@ -30,11 +30,6 @@ For each criterion, output a block:
   DETAIL: <one or two sentences explaining why this status — cite the rule and the user's facts>
   FOLLOWUP_QUESTION: <a specific clarifying question that would resolve this criterion, or "none" for pass/fail>
 
-BLOCKERS
-List every criterion with status "fail" or "unclear" that would prevent approval:
-  CRITERION_ID: <id>
-  REASON: <why this is a blocker>
-
 TIPS
 List up to 5 actionable suggestions that could improve the applicant's chances or resolve outstanding criteria:
   AREA: <short topic label>

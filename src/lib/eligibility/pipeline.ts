@@ -36,18 +36,6 @@ const ELIGIBILITY_SCHEMA: JsonSchemaResponseFormat = {
             required: ['id', 'description', 'status', 'detail', 'user_input_used', 'source_rule', 'followup_question'],
           },
         },
-        blockers: {
-          type: 'array',
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              criterion_id: { type: 'string' },
-              reason: { type: 'string' },
-            },
-            required: ['criterion_id', 'reason'],
-          },
-        },
         tips: {
           type: 'array',
           items: {
@@ -61,7 +49,7 @@ const ELIGIBILITY_SCHEMA: JsonSchemaResponseFormat = {
           },
         },
       },
-      required: ['verdict', 'summary', 'criteria', 'blockers', 'tips'],
+      required: ['verdict', 'summary', 'criteria', 'tips'],
     },
   },
 };

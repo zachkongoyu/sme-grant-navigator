@@ -5,7 +5,8 @@
       "Bash(grep -E \"\\\\.\\(json|yml|yaml|md\\)$|^d\")",
       "Bash(xargs grep *)",
       "Bash(Remove-Item *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git push *)"
     ]
   }
 }

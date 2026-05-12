@@ -4,6 +4,10 @@ export const BILLING = {
   creditCost: {
     eligibilityCheck: 1,
     draft: 3,
+    onePager: 1,
+    pitchDeck: 1,
+    investorEmail: 1,
+    dataRoomChecklist: 1,
   },
   packs: [
     { id: 'starter', label: 'Starter', credits: 10,  priceMinorUnits: 5800  },

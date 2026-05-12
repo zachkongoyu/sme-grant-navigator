@@ -12,7 +12,52 @@ import type {
 import { BackNavigation } from '@/components/navigation';
 import { StatusChip } from '@/components/StatusChip';
 import { AttachmentChip } from '@/components/chat/AttachmentChip';
+import { CopyButton } from '@/components/CopyButton';
 import { useEligibilityCheck, type ProgressEntry } from '@/components/eligibility/useEligibilityCheck';
+
+// ── Eligibility markdown builder (used by CopyButton) ───────────────────────
+
+function buildEligibilityMarkdown(
+  result: EligibilityCheckResult,
+  schemeName: string,
+  verdictLabel: string,
+): string {
+  const fails   = result.criteria.filter((c) => c.status === 'fail');
+  const passes  = result.criteria.filter((c) => c.status === 'pass');
+  const unclear = result.criteria.filter((c) => c.status === 'unclear');
+  const missing = result.criteria.filter((c) => c.status === 'missing');
+
+  const lines: string[] = [
+    `## Eligibility Check — ${schemeName}`,
+    `**Verdict:** ${verdictLabel}`,
+    '',
+    result.summary,
+  ];
+
+  if (fails.length > 0) {
+    lines.push('', '### Failed');
+    fails.forEach((c) => lines.push(`- ✗ ${c.description}${c.detail ? ` — ${c.detail}` : ''}`));
+  }
+  if (passes.length > 0) {
+    lines.push('', '### Passed');
+    passes.forEach((c) => lines.push(`- ✓ ${c.description}`));
+  }
+  if (unclear.length > 0) {
+    lines.push('', '### Unclear');
+    unclear.forEach((c) => lines.push(`- ? ${c.description}${c.detail ? ` — ${c.detail}` : ''}`));
+  }
+  if (missing.length > 0) {
+    lines.push('', '### Missing Info');
+    missing.forEach((c) => lines.push(`- · ${c.description}`));
+  }
+  if (result.tips.length > 0) {
+    lines.push('', '### Tips');
+    result.tips.forEach((t) => lines.push(`**${t.area}**: ${t.advice}`));
+  }
+
+  lines.push('', '---', 'AI-generated assessment. Verify against official scheme documentation before applying.');
+  return lines.join('\n');
+}
 
 // ── Verdict config ────────────────────────────────────────────────────────────
 
@@ -66,8 +111,8 @@ function MissingIcon() {
 
 interface CriterionRowProps {
   item: EligibilityCriterion;
-  followupAnswer?: string;
-  onFollowupChange?: (answer: string) => void;
+  followupAnswer?: string | undefined;
+  onFollowupChange?: ((answer: string) => void) | undefined;
 }
 
 function CriterionRow({ item, followupAnswer, onFollowupChange }: CriterionRowProps) {
@@ -132,7 +177,7 @@ function CriterionRow({ item, followupAnswer, onFollowupChange }: CriterionRowPr
 
 // ── SectionLabel ──────────────────────────────────────────────────────────────
 
-function SectionLabel({ children, color }: { children: ReactNode; color?: string }) {
+function SectionLabel({ children, color }: { children: ReactNode; color?: string | undefined }) {
   return (
     <div className="mb-3 mt-7 flex items-center gap-3">
       <span className="font-mono text-[10px] uppercase tracking-[0.2em] shrink-0" style={{ color: color ?? 'var(--text-tertiary)' }}>
@@ -320,6 +365,7 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [linkInputVisible, setLinkInputVisible] = useState(false);
   const [linkDraft, setLinkDraft] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
   const fileMapRef = useRef<Map<string, File>>(new Map());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -363,6 +409,28 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
       .filter((a): a is LinkAttachment => a.kind === 'link')
       .map((a) => a.url);
     void check(files, urls);
+  }
+
+  async function downloadPdf() {
+    if (!result) return;
+    setPdfLoading(true);
+    try {
+      const res = await fetch(`/api/eligibility/${scheme.id}/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result, userContext: context }),
+      });
+      if (!res.ok) throw new Error('PDF generation failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${scheme.id}-eligibility.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setPdfLoading(false);
+    }
   }
 
   const capDisplay = scheme.maxFunding ? `HK$${(scheme.maxFunding / 1000).toFixed(0)}K` : 'Varies';
@@ -505,23 +573,10 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
         </div>
       )}
 
-      {result.blockers.length > 0 && (
-        <div className="mb-4 rounded-xl border px-5 py-4" style={{ borderColor: 'color-mix(in srgb, #ef4444 25%, transparent)', backgroundColor: 'color-mix(in srgb, #ef4444 5%, transparent)' }}>
-          <p className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: '#ef4444' }}>Hard blockers</p>
-          <ul className="space-y-1.5">
-            {result.blockers.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#ef4444' }}>
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" aria-hidden="true" />{b.reason}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {fails.length > 0 && (<><SectionLabel color="#ef4444">Failed</SectionLabel><div className="space-y-2">{fails.map((item, i) => <CriterionRow key={i} item={item} />)}</div></>)}
       {passes.length > 0 && (<><SectionLabel color="#22c55e">Passed</SectionLabel><div className="space-y-2">{passes.map((item, i) => <CriterionRow key={i} item={item} />)}</div></>)}
-      {unclear.length > 0 && (<><SectionLabel color="#f59e0b">Unclear — answer to resolve</SectionLabel><div className="space-y-2">{unclear.map((item, i) => <CriterionRow key={i} item={item} followupAnswer={followupAnswers[item.id] ?? ''} onFollowupChange={(ans) => setFollowupAnswer(item.id, ans)} />)}</div></>)}
-      {missing.length > 0 && (<><SectionLabel>Missing info</SectionLabel><div className="space-y-2">{missing.map((item, i) => <CriterionRow key={i} item={item} followupAnswer={followupAnswers[item.id] ?? ''} onFollowupChange={(ans) => setFollowupAnswer(item.id, ans)} />)}</div></>)}
+      {unclear.length > 0 && (<><SectionLabel color={result.verdict !== 'ineligible' ? '#f59e0b' : undefined}>{result.verdict !== 'ineligible' ? 'Unclear — answer to resolve' : 'Unclear'}</SectionLabel><div className="space-y-2">{unclear.map((item, i) => <CriterionRow key={i} item={item} followupAnswer={result.verdict !== 'ineligible' ? (followupAnswers[item.id] ?? '') : undefined} onFollowupChange={result.verdict !== 'ineligible' ? (ans) => setFollowupAnswer(item.id, ans) : undefined} />)}</div></>)}
+      {missing.length > 0 && (<><SectionLabel>Missing info</SectionLabel><div className="space-y-2">{missing.map((item, i) => <CriterionRow key={i} item={item} followupAnswer={result.verdict !== 'ineligible' ? (followupAnswers[item.id] ?? '') : undefined} onFollowupChange={result.verdict !== 'ineligible' ? (ans) => setFollowupAnswer(item.id, ans) : undefined} />)}</div></>)}
 
       {result.tips.length > 0 && (
         <><SectionLabel>Tips</SectionLabel>
@@ -552,15 +607,61 @@ export function EligibilityChecker({ scheme, backHref, headerControls }: Eligibi
         </details>
       )}
 
-      <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6">
+      <div className="mt-8 space-y-3 border-t border-border pt-6">
+        {/* Primary CTA */}
         {result.verdict !== 'ineligible' && (
-          <Link href={`/draft?scheme=${scheme.id}`} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition hover:opacity-90" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+          <Link
+            href={`/draft?scheme=${scheme.id}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /></svg>
             Draft application
           </Link>
         )}
-        <button type="button" onClick={reset} className="inline-flex items-center rounded-xl border border-border px-5 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent">Check again</button>
-        <Link href={`/schemes/${scheme.id}`} className="text-sm text-text-tertiary underline underline-offset-4 transition hover:text-text-secondary">View scheme details</Link>
+
+        {/* Utility row: PDF + Copy */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void downloadPdf()}
+            disabled={pdfLoading}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm text-text-secondary transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
+              <path d="M8 2v8M5 7l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2.5 12.5h11" strokeLinecap="round" />
+            </svg>
+            {pdfLoading ? 'Generating…' : 'Download PDF'}
+          </button>
+          <CopyButton
+            value={buildEligibilityMarkdown(
+              result,
+              scheme.name,
+              (VERDICT[result.verdict] ?? VERDICT.insufficient_info).label,
+            )}
+            label="Copy report"
+            className="flex-1 justify-center"
+          />
+        </div>
+
+        {/* Tertiary: reset + scheme link */}
+        <div className="flex items-center justify-center gap-4 pt-1">
+          <button
+            type="button"
+            onClick={reset}
+            className="text-sm text-text-tertiary transition hover:text-text-secondary"
+          >
+            Check again
+          </button>
+          <span className="h-3.5 w-px bg-border" aria-hidden="true" />
+          <Link
+            href={`/schemes/${scheme.id}`}
+            className="text-sm text-text-tertiary transition hover:text-text-secondary"
+          >
+            View scheme details
+          </Link>
+        </div>
       </div>
 
       <p className="mt-6 text-xs leading-5 text-text-tertiary">AI-generated assessment based on the information you provided. Verify against official scheme documentation before applying.</p>

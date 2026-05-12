@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { EligibilityChecker } from '@/components/EligibilityChecker';
 import { SchemeCombobox } from '@/components/SchemeCombobox';
 import { StatusChip } from '@/components/StatusChip';
-import { CreditInfoBar } from '@/components/CreditInfoBar';
 import { FEATURED_SCHEME_ID } from '@/config/site';
 import { listSchemes } from '@/lib/schemes';
 
@@ -61,12 +60,7 @@ export default async function EligibilityPage({ searchParams }: EligibilityPageP
       <EligibilityChecker
         scheme={selectedScheme}
         backHref={`/schemes/${FEATURED_SCHEME_ID}`}
-        headerControls={
-          <div className="flex flex-col items-center gap-3 w-full">
-            {combobox}
-            <CreditInfoBar />
-          </div>
-        }
+        headerControls={combobox}
       />
     </main>
   );
