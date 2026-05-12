@@ -3,10 +3,8 @@
 import React from 'react';
 
 const data = [
-  { label: '劃類型', value: '初創' },
   { label: '基金位置', value: '香港' },
   { label: '行業重點', value: '任何類型' },
-  { label: '適合階段', value: '已經有成品/專利' },
 ];
 
 export default function MetadataTabs() {
